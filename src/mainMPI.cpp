@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 		MPI_Finalize();
 		return -1;
 	}
-
+	
 	if(rank == 0) {
 		if(io.showLegal) {
 			std::cout << "Copyright 2012 Mark Boots (mark.boots@usask.ca).\n\n"
@@ -56,33 +56,39 @@ int main(int argc, char** argv) {
 						 "GNU General Public License for more details.\n\n"
 
 						 "You should have received a copy of the GNU General Public License\n"
-						 "along with PEG.  If not, see <http://www.gnu.org/licenses/>.\n\n";
+						 "along with PEG.  If not, see <http://www.gnu.org/licenses/>.\n\n"
+
+						 "NOTE: This copy has been modified from the original by a third party\n"
+						 "who is not the original author and not a domain expert in this field.\n"
+						 "These modifications come with NO WARRANTY of any kind, in addition to\n"
+						 "the disclaimer above; use at your own risk and verify results independently.\n\n";
+						 "(Jesaja Weintritt, jesaja.weintritt@stud.eah-jena.de)\n\n";
 		}
 		else {
-			std::cout << "PEG  Copyright (C) 2012  Mark Boots (mark.boots@usask.ca)\nThis program comes with ABSOLUTELY NO WARRANTY.\nThis is free software, and you are welcome to redistribute it under certain\nconditions; run with --showLegal for details.\n\n";
+			std::cout << "PEG  Copyright (C) 2012  Mark Boots (mark.boots@usask.ca)\nThis program comes with ABSOLUTELY NO WARRANTY.\nThis is free software, and you are welcome to redistribute it under certain\nconditions; run with --showLegal for details.\n"
+						 "NOTE: This copy has been modified by a non-expert third party; no additional warranty is given (Jesaja Weintritt, jesaja.weintritt@stud.eah-jena.de).\n\n";
 		}
 	}
-	
 	// On Process 0: Open the output file:
 	std::ofstream outputFile;
 	std::streampos outputFilePosition;
 	if(rank == 0) {
 		outputFile.open(io.outputFile.c_str(), std::ios::out | std::ios::trunc);
-		
-		// if(!outputFile.is_open()) {
-		// 	std::cerr << "Could not open output file " << io.outputFile;
-		// 	return -1;
-		// }
+
+		if(!outputFile.is_open()) {
+			std::cerr << "Could not open output file " << io.outputFile << std::endl;
+			MPI_Abort(MPI_COMM_WORLD, -1);
+		}
 
 		// Check that we can open the progress file, if provided:
-		// if(!io.progressFile.empty()) {
-		// 	std::ofstream progressFile(io.progressFile.c_str(), std::ios::out | std::ios::trunc);
-		// 	if(!progressFile.is_open()) {
-		// 		std::cerr << "Could not open progress file " << io.progressFile;
-		// 		return -1;
-		// 	}
-		// }
-		
+		if(!io.progressFile.empty()) {
+			std::ofstream progressFile(io.progressFile.c_str(), std::ios::out | std::ios::trunc);
+			if(!progressFile.is_open()) {
+				std::cerr << "Could not open progress file " << io.progressFile << std::endl;
+				MPI_Abort(MPI_COMM_WORLD, -1);
+			}
+		}
+
 		// Write the file header:
 		writeOutputFileHeader(outputFile, io);
 		// Remember this position in the output file; it is where we will write the progress and output lines
@@ -118,6 +124,7 @@ int main(int argc, char** argv) {
 		break;
 	case PEGrating::CustomProfile:
 		grating = std::make_unique<PECustomProfileGrating>(io.period, io.geometry, io.material);
+		/// \todo here should be io.coatingThickness too 
 		break;
 	default:
 		if(rank == 0)
@@ -141,7 +148,7 @@ int main(int argc, char** argv) {
 	// On all processes, create a send buffer for packing up the results
 	std::vector<double> mpiSendBuffer(resultSize);
 	
-	// Loop over calculation steps.  Loop goes up by commSize each round, since we handle that many steps simultaneously.
+	// Loop over calculation steps. Loop goes up by commSize each round, since we handle that many steps simultaneously.
 	for(int i=0; i<totalSteps; i+=commSize) {
 		
 		double currentValue = io.min + io.increment*(i+rank);	// creates a cyclic partition. i=0 to P0, i=1 to P1, i=2 to P2... 
@@ -174,6 +181,33 @@ int main(int argc, char** argv) {
 		PEResult result = PEResult(PEResult::InactiveCalculation);
 		if(i+rank < totalSteps)
 			result = grating->getEff(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads);	/// Debug output only shown on Process 0?
+
+
+/// \todo Once TM polarization support is added to PEGrating/PESolver, the selected
+/// polarization (TE/TM) needs to be threaded through here too - either as an extra
+/// getEff() argument, or bundled into mathOptions above.
+/*
+// run the calculation, but only if (i+rank) is still in range.
+PEResult resultTE = PEResult(PEResult::InactiveCalculation);
+PEResult resultTM = PEResult(PEResult::InactiveCalculation);
+if(i+rank < totalSteps) {
+	resultTE = grating->getEff(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions,
+								(io.printDebugOutput && rank == 0), io.threads, io.measureTiming, TE);
+	if(io.computeTM)
+		resultTM = grating->getEff(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions,
+									(io.printDebugOutput && rank == 0), io.threads, io.measureTiming, TM);
+}
+
+// Combine into a single result to send: TE alone, or the unpolarized average if TM was requested.
+PEResult result = resultTE;
+if(io.computeTM && resultTE.status == PEResult::Success && resultTM.status == PEResult::Success) {
+	for(std::size_t k = 0; k < result.eff.size(); ++k)
+		result.eff[k] = (resultTE.eff[k] + resultTM.eff[k]) / 2.0;
+}
+
+// Pack up result into the send buffer
+result.toDoubleArray(mpiSendBuffer.data());
+*/
 		
 		// Pack up result into the send buffer
 		result.toDoubleArray(mpiSendBuffer.data());

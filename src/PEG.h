@@ -54,9 +54,9 @@ public:
 	/// Result of the calculation: Success, InvalidGratingFailure, ConvergenceFailure, InsufficientCoefficientsFailure, AlgebraError, or OtherFailure
 	Code status;
 	/// Wavelength for this calculation
-	double wavelength;
+	double wavelength = 0.0;
 	/// Incidence angle for this calculation
-	double incidenceDeg;
+	double incidenceDeg = 0.0;
 	/// Array of efficiencies, going from -N order up to N.  Size is 2N+1; the 0-order efficiency can be found at eff[N].
 	std::vector<double> eff;
 	
@@ -95,15 +95,9 @@ public:
 	enum Profile { InvalidProfile, RectangularProfile, BlazedProfile, SinusoidalProfile, TrapezoidalProfile, CustomProfile };
 	
 	/// Default constructor; does not provide a valid grating. Use the constructors in the subclasses for a valid grating.
-	PEGrating() {
-		profile_ = InvalidProfile;
-		period_ = 1.0;
-		substrateMaterial_ = "SiO2";
-		coatingMaterial_ = "Au";
-		coatingThickness_ = 0.;
-	}
+	PEGrating() = default;
 	
-	virtual ~PEGrating() {}
+	virtual ~PEGrating() = default;
 	
 	// Accessor Functions
 	////////////////////////
@@ -173,7 +167,7 @@ public:
 
 	Base class returns negative number to indicate geometry failure; must re-implement.
 */
-	virtual double xIntersection1(double y) const { (void)y; return -1; }
+	virtual double xIntersection1(double /*y*/) const { return -1; }
 	/// Returns the x-coordinate of the second intersection with the bump [i.e., leaving the material], at height \c y (assuming no coating).
 	/*! This is used by computeK2StepsAtY() for simple bump shapes with a single maximum; if re-implementing computeK2StepsAtY(), you can omit this.
 
@@ -181,24 +175,24 @@ public:
 
 	Base class returns negative number to indicate geometry failure; must re-implement.
 */
-	virtual double xIntersection2(double y) const { (void)y; return -1; }
+	virtual double xIntersection2(double /*y*/) const { return -1; }
 
 	////////////////////////////
 	
 	
 protected:
 	/// Grating profile type
-	Profile profile_;
+	Profile profile_ = InvalidProfile;
 	/// Grating periodicity, in um
-	double period_;
+	double period_ = 1.0;
 	/// General geometry parameters. Interpretation depends on profile.
 	std::vector<double> geo_;
 	/// Substrate material
-	std::string substrateMaterial_;
+	std::string substrateMaterial_ = "SiO2";
 	/// Coating material
-	std::string coatingMaterial_;
+	std::string coatingMaterial_ = "Au";
 	/// The thickness of the coating (um), or 0 for no coating.
-	double coatingThickness_;
+	double coatingThickness_ = 0.;
 
 	// Helper functions:
 	/////////////////////////////
@@ -332,6 +326,7 @@ public:
 
 		substrateMaterial_ = material;
 		coatingThickness_ = 0;
+		///\todo multilayer and single layer coating
 	}
 
 	/// Constructs a grating with a custom profile. The required geometry parameters are a \c maxHeight in um, followed by a vector of \c xPoints and \c yPoints from (x_0, y_0) = (0,0) to (x_I, y_I) = (1,0).  The \c points are scaled so that (0,0)->(1,1) maps to (0,0)->(period,maxHeight).
