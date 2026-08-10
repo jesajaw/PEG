@@ -346,7 +346,8 @@ PEResult::Code PESolver::computeGratingExpansion(double y, gsl_complex* k2) cons
 	return PEResult::Success;
 }
 
-// Now unused:
+///\todo Now unused:
+/*
 PEResult::Code PESolver::integrateTrialSolutionAlongY(gsl_vector_complex* u, gsl_vector_complex* uprime, double yStart, double yEnd) {
 
 	// fill starting conditions from u, uprime
@@ -374,6 +375,7 @@ PEResult::Code PESolver::integrateTrialSolutionAlongY(gsl_vector_complex* u, gsl
 	delete [] w;
 	return status;
 }
+*/
 
 PEResult::Code PESolver::integrateTrialSolutionAlongY(double *w, double yStart, double yEnd) {
 	// define ode solving system, with our function to evaluate dw/dy, the Jacobian, and 8*N_+4 components.
@@ -683,7 +685,8 @@ PEResult::Code PESolver::computeTMatrixBelowLayer(int m, bool printDebugOutput)
 	bool integrationFailureOccurred = false;
 
 	// We now need 2*(2N+1) trial solutions.  j will be the loop index over p, but ranging from [0,4*N+1].
-#pragma omp parallel for num_threads(numThreads_) schedule(dynamic)
+	// I added reduction(||:integrationFailureOccurred); this shoould give every thread a private copy - associate them at the end of parallel with ||
+#pragma omp parallel for num_threads(numThreads_) schedule(dynamic) reduction(||:integrationFailureOccurred)
 	for(int j=0; j<fourNp2_; ++j) {
 
 		// Get a [u,uprime] vector to work with for this trial solution.

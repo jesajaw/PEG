@@ -33,16 +33,13 @@ public:
 	PESolver(const PEGrating& grating, const PEMathOptions& mo = PEMathOptions(), int numThreads = 1, bool measureTiming = false);
 	/// Destroy a solver context
 	~PESolver();
+
+	/// PESolver owns raw pointers and GSL structures freed in the destructor; copying would shallow-copy them and cause a double-free. Explicitly non-copyable (and, due to the user-declared destructor, non-movable by default too).
+	PESolver(const PESolver&) = delete;
+	PESolver& operator=(const PESolver&) = delete;
 	
 	/// Calculates the efficiency at incidence angle \c incidenceDeg and wavelength \c wl.  Side effects: sets the refractive index member variable v_1_; modifies the contents of u_, uprime_, alpha_, beta_, etc.
 	PEResult getEff(double incidenceDeg, double wl, double rmsRoughnessNm = 0, bool printDebugOutput = false);
-	
-	
-
-
-
-
-
 
 
 	// Solving implementation functions
@@ -69,8 +66,9 @@ public:
 
 	/// Integrates the electric field Fourier component vectors contained in \c w from y = \c yStart to y = \c yEnd, using the differential equation and ______ method.  Array \c w should contain vector \c u followed by \c uprime, with each entry in {re,im} order. Calls computeGratingExpansion() at each y value, so reads member variables N_, v_1_, and g_.  Modifies k2 (for thread) at each step.  Results are returned in-place.
 	PEResult::Code integrateTrialSolutionAlongY(double* w, double yStart, double yEnd);
-	/// DEPRECATED. This is an overloaded function. Integrates the electric field Fourier component vectors \c u and \c uprime from y=0 to y=a, using the differential equation and ______ method.  Calls computeGratingExpansion() at each y value, so reads member variables N_, v_1_, and g_.  Modifies k2 (for thread) at each step.  Results are returned in-place.
-	PEResult::Code integrateTrialSolutionAlongY(gsl_vector_complex* u, gsl_vector_complex* uprime, double yStart, double yEnd);
+
+///\todo DEPRECATED. This is an overloaded function. Integrates the electric field Fourier component vectors \c u and \c uprime from y=0 to y=a, using the differential equation and ______ method.  Calls computeGratingExpansion() at each y value, so reads member variables N_, v_1_, and g_.  Modifies k2 (for thread) at each step.  Results are returned in-place.
+///PEResult::Code integrateTrialSolutionAlongY(gsl_vector_complex* u, gsl_vector_complex* uprime, double yStart, double yEnd);
 
 	/// The function callback for the integration process.  Must be static so we have an address for it, so \c peSolver will be a pointer to a solver (this).
 	static int odeFunctionCB(double y, const double w[], double f[], void* peSolver) {
@@ -105,6 +103,25 @@ public:
 
 	/// Helper function: returns the condition number of a complex square matrix. INCOMPLETE!
 	static double conditionNumber(const gsl_matrix_complex* A);
+///\todo is this correct? above is incomplete!
+/*
+double PESolver::conditionNumber(const gsl_matrix_complex *A)
+{
+	// according to http://en.wikipedia.org/wiki/Condition_number, ...
+	gsl_matrix_complex* A2 = gsl_matrix_complex_alloc(A->size1, A->size2);
+	gsl_matrix_complex_memcpy(A2, A);
+	gsl_matrix_complex* Ainv = gsl_matrix_complex_alloc(A->size1, A->size2);
+	gsl_permutation* permut = gsl_permutation_alloc(A->size1);
+	int signum;
+	if(gsl_linalg_complex_LU_decomp(A2, permut, &signum) != GSL_SUCCESS) { ... return 0; }
+	if(gsl_linalg_complex_LU_invert(A2, permut, Ainv) != GSL_SUCCESS) { ... return 0; }
+	// how to get the norm of a complex matrix?
+	gsl_matrix_complex_free(A2);
+	gsl_matrix_complex_free(Ainv);
+	gsl_permutation_free(permut);
+	return 1;
+}
+*/
 
 	/// Solves the linear system AX = B where \c A, \c X, \c B are all \c n x \c n square matrices (\c X is unknown) using the pre-computed LU decomposition of \c A.  Uses gsl_linalg_LU_solve() to do \c n back-substitutions for each column of \c X.
 	static int linalg_LU_complex_solve(const gsl_matrix_complex* LU, const gsl_permutation* P, const gsl_matrix_complex* B, gsl_matrix_complex* X);
@@ -176,7 +193,11 @@ protected:
 	/// refractive index of the grating substrate material, at wl_
 	gsl_complex v_1_;
 	/// refractive index of the coating material, at wl_
-	gsl_complex v_c_;
+	///\todo if its not init
+	//gsl_complex v_c_;
+
+	/// refractive index of the coating material, at wl_ (only meaningful if the grating has a coating)
+	gsl_complex v_c_ = gsl_complex_rect(0, 0);
 
 	/// The y-coordinate of the infinitely-thin Rayleigh layer at y_m, with m = [1, M_ - 1].  y_[0] is unused, so that we can take y_m = y_[m].
 	double* y_;
