@@ -25,7 +25,7 @@ along with PEG.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <algorithm>
 #include <vector>
-#include <string.h>
+#include <cstring>
 
 // This packs the current result into a plain double \c array, for easy communication using standard MPI types.  The array must have pre-allocated room for 2N+1 + 4 elements.
 void PEResult::toDoubleArray(double* array) const {
@@ -37,7 +37,7 @@ void PEResult::toDoubleArray(double* array) const {
 	}
 	else {
 		array[3] = double((eff.size()-1)/2);	// N
-		memcpy(array+4, &(eff.at(0)), eff.size()*sizeof(double));
+		std::memcpy(array+4, &(eff.at(0)), eff.size()*sizeof(double));
 	}
 }
 
@@ -50,7 +50,7 @@ void PEResult::fromDoubleArray(const double* array) {
 	int N = int(array[3]);
 	
 	eff.resize(2*N+1);
-	memcpy(&(eff[0]), array+4, eff.size()*sizeof(double));	
+	std::memcpy(&(eff[0]), array+4, eff.size()*sizeof(double));	
 }
 
 PEResult PEGrating::getEff(double incidenceDeg, double wl, double rmsRoughnessNm, const PEMathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
@@ -77,11 +77,9 @@ gsl_complex PEGrating::refractiveIndex(double wl, const std::string& material) {
 	delta.reserve(3120);
 	beta.reserve(3120);
 
-	// read whole file intp vectors for fast searching.
-	while(!matFile.eof()) {
-		double wl_nmIn, deltaIn, betaIn;
-		matFile >> wl_nmIn >> deltaIn >> betaIn;
-
+	// read the whole file into vectors for fast searching.
+	double wl_nmIn, deltaIn, betaIn;
+	while(matFile >> wl_nmIn >> deltaIn >> betaIn) {
 		wl_nm.push_back(wl_nmIn);
 		delta.push_back(deltaIn);
 		beta.push_back(betaIn);
@@ -134,6 +132,11 @@ gsl_complex PEGrating::refractiveIndex(double wl, const std::string& material) {
 	double interpBeta = lowerBeta + interp*(upperBeta - lowerBeta);
 
 	return gsl_complex_rect(1-interpDelta, 0.9*interpBeta);
+
+	/// \todo is this really needed? interpolation will be the case, if there´re no alpha/beta values for the searched wl... prob due data with a lack of steps?
+	/// \todo UNEXPLAINED: this 0.9 factor is not applied to the exact-match?
+	/// case above (see the `return gsl_complex_rect(1-delta[0], beta[0]);` line). Origin/justification
+	/// unknown; needs verification against the source data, or removal if it's a leftover correction.
 }
 
 
