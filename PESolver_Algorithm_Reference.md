@@ -42,7 +42,7 @@ $$\beta_n^{(M)} = \begin{cases}\sqrt{k^2 - \alpha_n^2} & \text{if } k^2 \ge \alp
 
 There are **two** beta arrays, computed with two different values of `k`, because they serve as boundary conditions at the two ends of the structure:
 
-- `betaM_` — computed with the vacuum/superstrate wavenumber. This is the boundary condition at the *top* (where the outgoing diffracted orders live — "M" for the top medium in the layer numbering, see §1.2).
+- `betaM_` — computed with the vacuum wavenumber. This is the boundary condition at the *top* (where the outgoing diffracted orders live — "M" for the top medium in the layer numbering, see §1.2).
 - `beta1_` — computed with the substrate refractive index `v_1_`. This is the boundary condition at the *bottom*.
 
 ```cpp
@@ -51,7 +51,7 @@ gsl_complex k12minusAn2 = gsl_complex_sub_real(gsl_complex_mul(k_1, k_1), alpha*
 beta1_[i] = complex_sqrt_upperComplexPlane(k12minusAn2);
 ```
 
-`complex_sqrt_upperComplexPlane()` (§6) picks the branch of the complex square root with `Im(w) ≥ 0` — physically, this enforces that waves *decay* (rather than grow) going deeper into an absorbing substrate, which is the correct causal choice.
+`complex_sqrt_upperComplexPlane()` (§6) picks the branch of the complex square root with `Im(w) ≥ 0` — physically, this enforces that waves *decay* (rather than grow) going deeper into an absorbing substrate.
 
 Note that **no coating index (`v_c_`) appears anywhere in this function.** Coating only matters for the *local* material distribution inside the structure (§2.1, §3), not for these two asymptotic boundary conditions above and below everything.
 
@@ -61,14 +61,16 @@ Note that **no coating index (`v_c_`) appears anywhere in this function.** Coati
 // How many layers do we need?
 double a = g_.totalHeight();
 
-double magicNumber = 3;	// should be ln(1e15). However, emperically this is not enough to maintain
-                            // stability (ex: REIXS LEG).  7 = ln(1e3) seems stable for all tests so far.
+double magicNumber = 3;
+// should be ln(1e15). However, emperically this is not enough to maintain
+// stability (ex: REIXS LEG).  7 = ln(1e3) seems stable for all tests so far.
 
 // How many layers to use? In order to keep size of exp(i betaM_{±N}) < 1e15 to avoid losing
 // precision in double values compared with unity-size numbers.
 numLayers_ = std::max( gsl_complex_abs(betaM_[0])*a/magicNumber, gsl_complex_abs(betaM_[2*N_])*a/magicNumber );
 if(numLayers_ < 1)
-    numLayers_ = 1;	// we need at least one layer, in addition to the substrate.
+    numLayers_ = 1;
+    // we need at least one layer, in addition to the substrate.
 ```
 
 Evanescent orders grow/decay as `exp(beta_n · y)` while propagating through the structure. A `double` carries about 15–16 significant decimal digits; if `beta_n · (total height)` gets too large, `exp(beta_n · height)` exceeds that dynamic range, and subsequent matrix operations lose essentially all precision comparing it against unity-sized numbers.
@@ -80,8 +82,9 @@ $$\text{numLayers} = \max\left(\frac{|\beta_0^{(M)}| \cdot a}{\text{magicNumber}
 The comment here is worth calling out explicitly: the theoretically "correct" bound would be `magicNumber ≈ ln(10^15) ≈ 34.5`, but the code uses `3` — a much more conservative choice — because `34.5`, and even the less strict `ln(1000) ≈ 7`, turned out to be *insufficient* in a real test case (referenced in the comment as "REIXS LEG"). This heuristic is not a cosmetic detail: it is the mechanism that keeps the whole algorithm numerically stable regardless of how many "real" material regions (coating, profile, substrate) sit inside the structure. A thin coating barely changes `a`, so it barely changes `numLayers_` — the scheme adapts automatically rather than becoming unstable.
 
 ```cpp
-y_ = new double[M_];	// To be consistent with the text, we number the lowest layer as 1.  y_[0] is
-                        // therefore unused, so that we can use y_m = y_[m], with lowest m=1, highest m=M-1.
+y_ = new double[M_];
+// To be consistent with the text, we number the lowest layer as 1.  y_[0] is
+// therefore unused, so that we can use y_m = y_[m], with lowest m=1, highest m=M-1.
 
 for(int m=1; m<M_; ++m) {
     y_[m] = double(m-1)/numLayers_*a;
@@ -126,7 +129,7 @@ GSL's ODE solver works with a flat array of `double`, not complex vectors, so `u
 
 ```
 w = [ u_{-N}.re, u_{-N}.im, ..., u_N.re, u_N.im,   u'_{-N}.re, u'_{-N}.im, ..., u'_N.re, u'_N.im ]
-      \_____________ fourNp2_ values ______________/ \_______________ fourNp2_ values _______________/
+    \_____________ fourNp2_ values _____________/ \_______________ fourNp2_ values _______________/
 ```
 
 `odeFunction()`'s job ("compute dw/dy") then splits naturally in two:
@@ -375,3 +378,5 @@ When `measureTiming_` is set, `getEff()` reports where the time actually went, i
 - **`dfdy = 0` in `odeJacobian()`** is only exact for rectangular profiles (§2.3) — a documented, not-yet-resolved approximation for blazed/sinusoidal/trapezoidal/custom shapes.
 - **The entire derivation in §2.1 is the scalar wave equation — this is TE polarization specifically.** TM polarization needs the analogous equation formulated with a spatially-varying `1/ε(x,y)` rather than `k²(x,y)` (since it is `H`, not `E`, whose boundary conditions differ across a material interface) — a genuinely different coupled ODE, not a parameter tweak to the one derived here. This is the natural entry point for a TM implementation: a parallel `odeFunction`/`odeJacobian` pair, sharing the geometry/Fourier-expansion machinery in §3.
 - **`conditionNumber()`** is unused and incomplete (§6) — candidate for removal or completion, but not on the critical path of any calculation today.
+- /// \warning assumes numSteps is in [1, PEG_MAX_PROFILE_CROSSINGS]
+- /// \todo IMPORTANT! Leaving dfdy = 0 for now. This is only true in case of rectangular grating...
