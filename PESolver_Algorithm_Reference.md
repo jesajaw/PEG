@@ -2,13 +2,134 @@
 
 ## Purpose and Scope
 
-This document explains, function by function, how `PESolver` computes the diffraction efficiency of a grating for a single (wavelength, incidence angle) pair. It covers `PESolver.h` / `PESolver.cpp`, and references the geometry input it consumes from `PEG.h` / `PEG.cpp` (specifically `PEGrating::computeK2StepsAtY()`, which is where coating geometry enters the calculation). It does **not** cover the MPI orchestration in `mainMPI.cpp` / `mainSerial.cpp`, or the material refractive-index database lookup in `PEGrating::refractiveIndex()` — those are documented separately.
+This document explains how `PESolver` computes the diffraction efficiency of a grating for a single (wavelength, incidence angle) pair. Or to be more acurate, it shows the physical validation how and why you can compute something likes this and also how it is (numerical) implemented. It does not covers the geometry aspect: it consumes this input from `PEG`. It also does not include the MPI orchestration in `mainMPI`, or the material refractive-index database lookup — those are documented separately.
 
-The method implemented here is a **differential (coupled-wave) method**: the structure is treated as a stack of thin horizontal layers; within each layer, a coupled ODE system is integrated numerically along the vertical coordinate `y`; the per-layer results are combined into a numerically stable overall response via **S-matrix recursion**. This is closely related to the family of methods used in Rigorous Coupled-Wave Analysis (RCWA) and multilayer optics/ellipsometry.
+The method implemented here is a **differential (coupled-wave) method**: the structure is treated as a stack of thin horizontal layers; within each layer, a coupled ordinary differential equation (ODE) system is integrated numerically along the vertical coordinate `y`; the per-layer results are combined into a numerically stable overall response via **S-matrix recursion**. This is closely related to the family of methods used in Rigorous Coupled-Wave Analysis (RCWA) and multilayer optics/ellipsometry.
 
 ---
 
-## 1. The Physical Setup
+## Table of Contents
+0. [Physical Setup](#00-physical-setup)
+1. [Maxwell to the Scalar Wave-Function](#1-maxwell-to-the-scalar-wave-function)
+2. [Die Gittergleichung und Randbedingungen](#3-die-gittergleichung-und-randbedingungen)
+[Floquet-Entwicklung und gekoppelte ODEs](#4-floquet-entwicklung-und-gekoppelte-odes)
+[Gittergeometrie und lokale Schichtantwort](#5-gittergeometrie-und-lokale-schichtantwort)
+[Transfermatrix und S-Matrix-Rekursion](#6-transfermatrix-und-s-matrix-rekursion)
+[Reflexionsamplituden und Beugungseffizienz](#7-reflexionsamplituden-und-beugungseffizienz)
+
+---
+
+## 0.0 Physical Setup
+
+To give a real simple sum up over all physical steps:
+
+Maxwell -> Helmholtz -> skalare Wellengleichung (TE) -> periodische Fourier-/Floquet-Entwicklung -> gekoppelte ODEs in y, lokale Schichtantwort -> Transfermatrix -> Streumatrix -> Reflexionsamplituden -> Beugungseffizienzen
+
+So we got basically three different types of parameters:
+- geometry $k^2(x,y)$
+- material: the local permittivity profile $\varepsilon(x,y)$ and permeability $\mu$ which is approximated als the ones in vacuum, so a not magnetic material
+- the parameters given in the prozess like angle of incidence $\theta$, wavelength $\lambda$
+
+
+### 0.1 Maxwell to Scalar Wavefunction
+
+Faraday's law of induction and Ampère's circuital law:
+$$\vec{\nabla} \times \vec{E} = -\frac{\partial \vec{B}}{\partial t}, \quad \vec{\nabla} \times \vec{H} = -\vec{i} + \frac{\partial \vec{D}}{\partial t}$$
+
+with $\vec{D} = \varepsilon_0 \varepsilon_r \vec{E}$ and $\vec{B} = \mu \vec{H}$ (assuming non-magnetic media where $\mu = \mu_0$ and $\vec i = \vec 0$), which can be formulated as:
+$$\vec{\nabla} \times \vec{E} = -\mu_0 \frac{\partial \vec{H}}{\partial t}, \quad \vec{\nabla} \times \vec{H} = \varepsilon_0 \varepsilon_r \frac{\partial \vec{E}}{\partial t}$$
+
+Separation of time and space assuming time-harmonic fields $\vec{E} e^{-i\omega t}$ and $\vec{H} e^{-i\omega t}$:
+$$\vec{\nabla} \times \vec{E} = i\omega\mu_0\vec{H}, \quad \vec{\nabla} \times \vec{H} = -i \omega \varepsilon_0\varepsilon_r\vec{E}$$
+
+To eliminate $\vec{H}$, take the curl of Faraday's law:
+$$\vec{\nabla} \times (\vec{\nabla} \times \vec{E}) = i\omega\mu_0 (\vec{\nabla} \times \vec{H})$$
+
+Substituting Ampère's law into the right-hand side yields:
+$$\vec{\nabla} \times (\vec{\nabla} \times \vec{E}) = i\omega\mu_0 \left( -i\omega\varepsilon_0\varepsilon_r\vec{E} \right) = \omega^2 \mu_0 \varepsilon_0 \varepsilon_r \vec{E}$$
+
+Using the identity $\vec{\nabla} \times (\vec{\nabla} \times \vec{E}) = \vec{\nabla}(\vec{\nabla} \vec{E}) - \Delta \vec{E}$ and setting $k_0^2 = \omega^2 \mu_0 \varepsilon_0$, we obtain the 3D vector wave equation:
+$$\vec{\nabla}(\vec{\nabla} \vec{E}) - \Delta \vec{E} = k_0^2 \varepsilon_r \vec{E}$$
+
+For Transverse Electric (TE) polarization in a 1D grating invariant along the $z$-axis ($\frac{\partial}{\partial z} = 0$), the electric field simplifies to $u(x,y) \equiv E_z(x,y)$ with $\vec{\nabla} \vec{E} = 0$. This reduces the system to the scalar wave equation:
+$$\left( \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2} + k_0^2 \varepsilon_r(x,y) \right) u(x,y) = 0, \quad k_0=\frac{2\pi}{\lambda}$$
+
+
+### 0.2 Fourier
+
+Due to the spatial periodicity of the material, $\varepsilon_r(x+d,y) = \varepsilon_r(x,y)$, the problem is invariant under translation $x \rightarrow x+d$. According to Bloch-Floquet theory ($\dot {x} =A(t)x$), all scattered fields must acquire the same phase shift upon translation by one period $d$. Given an incident tangential wavevector component $\alpha_{\text{inc}} = k_{\text{top}}\sin\theta$, the allowed tangential wavenumbers are discretized as:
+$$\alpha_n = k_{\text{top}}\sin\theta + n\frac{2\pi}{d}, \quad n \in \mathbb{Z}$$
+
+For the TE-Polarisation, the field $u(x,y)$ is expanded by separating the known $x$-dependence from the unknown transverse profiles $u_n(y)$:
+$$u(x,y) = \sum_{n=-N}^{N} u_n(y) e^{i\alpha_n x}$$
+
+Here, $u_n(y)$ represents the complex amplitude of the $n$-th Floquet harmonic at depth $y$.
+
+### 0.3 Coupled Mode Equation Derivation
+
+Substituting this series into the 2D scalar Helmholtz equation:
+
+$$\left( \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2} + k_0^2\varepsilon_r(x,y) \right) \left( \sum_{n=-N}^{N} u_n(y) e^{i\alpha_n x} \right) = 0$$
+
+- **Second derivative with respect to $x$:**
+  $$\frac{\partial^2}{\partial x^2} u(x,y) = -\sum_m \alpha_m^2 u_m(y) e^{i\alpha_m x}$$
+
+- **Second derivative with respect to $y$:**
+  $$\frac{\partial^2}{\partial y^2} u(x,y) = \sum_m u_m''(y) e^{i\alpha_m x}$$
+
+Combining these gives:
+
+$$\sum_m u_m''(y) e^{i\alpha_m x} - \sum_m \alpha_m^2 u_m(y) e^{i\alpha_m x} + k^2(x,y) u(x,y) = 0$$
+
+where $k^2(x,y) \equiv k_0^2 \varepsilon_r(x,y)$ is the periodic wavenumber profile. Due to spatial periodicity, $k^2(x,y)$ can also be expanded into a Fourier series:
+
+$$k^2(x,y) = \sum_p k_p^2(y) e^{i p K x}, \quad K = \frac{2\pi}{d}$$
+
+Inserting this expansion into the material product term gives:
+
+$$\sum_m u_m''(y) e^{i\alpha_m x} - \sum_m \alpha_m^2 u_m(y) e^{i\alpha_m x} + \sum_p k_p^2(y) e^{i p K x} \sum_{m} u_m(y) e^{i\alpha_m x} = 0$$
+
+$$\sum_m u_m''(y) e^{i\alpha_m x} - \sum_m \alpha_m^2 u_m(y) e^{i\alpha_m x} + \sum_p \sum_m k_p^2(y) u_m(y) e^{i (p K + \alpha_m) x} = 0$$
+
+$$\sum_m \left( u_m''(y) - \alpha_m^2 u_m(y) \right) e^{i\alpha_m x} + \sum_p \sum_m k_p^2(y) u_m(y) e^{i (p K + \alpha_m) x} = 0$$
+
+Using the relation for the allowed tangential wavenumbers $\alpha_m = k\sin\theta + m K$ ([Fourier](#02-fourier)), we observe that $p K + \alpha_m = \alpha_{m+p}$. Performing an index substitution by setting $n = m + p$ (or equivalently $p = n - m$), the second summation becomes:
+
+$$\sum_p \sum_m k_p^2(y) u_m(y) e^{i (p K + \alpha_m) x} = \sum_n \left( \sum_m k_{n-m}^2(y) u_m(y) \right) e^{i \alpha_n x}$$
+
+Substituting this back into the full differential equation gives:
+
+$$\sum_m \left( u_m''(y) - \alpha_m^2 u_m(y) \right) e^{i\alpha_m x} + \sum_n \left( \sum_m k_{n-m}^2(y) u_m(y) \right) e^{i \alpha_n x} = 0$$
+
+Renaming $m \to n$ in the first sum allows factoring out $e^{i\alpha_n x}$:
+
+$$\sum_n \left( u_n''(y) - \alpha_n^2 u_n(y) + \sum_m k_{n-m}^2(y) u_m(y) \right) e^{i \alpha_n x} = 0$$
+
+Since the set of spatial harmonics $\{ e^{i\alpha_n x} \}$ forms an orthogonal basis, this equality must hold independently for each harmonic mode $n$:
+
+$$u_n''(y) = \alpha_n^2 u_n(y) - \sum_m k_{n-m}^2(y) u_m(y)$$
+
+By introducing the Kronecker delta:
+
+$$\delta_{nm} = \begin{cases} 1 & \text{if } m = n \\ 0 & \text{if } m \neq n \end{cases}$$
+
+we can rewrite $\alpha_n^2 u_n(y)$ as a sum $\sum_m \alpha_n^2 \delta_{nm} u_m(y)$ and combine both terms:
+
+$$u_n''(y) = \sum_m \left( \alpha_n^2 \delta_{nm} u_m(y) \right) - \sum_m \left( k_{n-m}^2(y) u_m(y) \right)$$
+
+Factoring out $u_m(y)$ yields the final system of coupled differential equations:
+
+$$u_n''(y) = \sum_m \left[ \alpha_n^2 \delta_{nm} - k^2_{n-m}(y) \right] u_m(y)$$
+
+where $M_{nm}=\alpha_n^2 \delta_{nm} - k^2_{n-m}(y)$ and soone:
+
+$$u_n''(y) = M_{nm} u_m(y)$$
+
+
+
+
+
+
 
 ### 1.1 The grating equation — `computeAlphaAndBeta()`
 
