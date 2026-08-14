@@ -9,26 +9,30 @@ The method implemented here is a **differential (coupled-wave) method**: the str
 ---
 
 ## Table of Contents
+
 0. [Physical Setup](#00-physical-setup)
-1. [Maxwell to the Scalar Wave-Function](#1-maxwell-to-the-scalar-wave-function)
-2. [Die Gittergleichung und Randbedingungen](#3-die-gittergleichung-und-randbedingungen)
-[Floquet-Entwicklung und gekoppelte ODEs](#4-floquet-entwicklung-und-gekoppelte-odes)
-[Gittergeometrie und lokale Schichtantwort](#5-gittergeometrie-und-lokale-schichtantwort)
-[Transfermatrix und S-Matrix-Rekursion](#6-transfermatrix-und-s-matrix-rekursion)
-[Reflexionsamplituden und Beugungseffizienz](#7-reflexionsamplituden-und-beugungseffizienz)
+    1. [Maxwell to Scalar Wavefunction](#01-maxwell-to-scalar-wavefunction)
+    2. [Fourier & Floquet Expansion](#02-fourier-and-floquet-expansion)
+    3. [Coupled Mode Equation Derivation](#03-coupled-mode-equation-derivation)
+    4. [Physical Interpretation](#04-physical-interpretation)
 
 ---
 
 ## 0.0 Physical Setup
 
-To give a real simple sum up over all physical steps:
+Overview of the Theoretical Pipeline:
 
-Maxwell -> Helmholtz -> skalare Wellengleichung (TE) -> periodische Fourier-/Floquet-Entwicklung -> gekoppelte ODEs in y, lokale Schichtantwort -> Transfermatrix -> Streumatrix -> Reflexionsamplituden -> Beugungseffizienzen
+$$\text{Maxwell's Equations} \longrightarrow \text{Helmholtz Equation} \longrightarrow \text{Scalar Wave Equation (TE)}$$
+$$\downarrow$$
+$$\text{Periodic Fourier/Floquet Expansion} \longrightarrow \text{Coupled ODEs in } y \longrightarrow \text{Local Layer Response}$$
+$$\downarrow$$
+$$\text{Transfer Matrix} \longrightarrow \text{Scattering Matrix} \longrightarrow \text{Reflection Amplitudes} \longrightarrow \text{Diffraction Efficiencies}$$
 
-So we got basically three different types of parameters:
-- geometry $k^2(x,y)$
-- material: the local permittivity profile $\varepsilon(x,y)$ and permeability $\mu$ which is approximated als the ones in vacuum, so a not magnetic material
-- the parameters given in the prozess like angle of incidence $\theta$, wavelength $\lambda$
+
+Parameter Categorization:
+
+- Geometry, Grating, and Material Structure: Defined by the spatial permittivity distribution $\varepsilon_r(x,y)$ and non-magnetic permeability ($\mu = \mu_0$). This encompasses the grating period $d$, layer/coating thicknesses along $y$ and the physical profile/surface topology of the grating.
+- Incident Field Parameters: Free-space wavelength $\lambda$ and angle of incidence $\theta$
 
 
 ### 0.1 Maxwell to Scalar Wavefunction
@@ -55,7 +59,7 @@ For Transverse Electric (TE) polarization in a 1D grating invariant along the $z
 $$\left( \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2} + k_0^2 \varepsilon_r(x,y) \right) u(x,y) = 0, \quad k_0=\frac{2\pi}{\lambda}$$
 
 
-### 0.2 Fourier
+### 0.2 Fourier and Floquet Expansion
 
 Due to the spatial periodicity of the material, $\varepsilon_r(x+d,y) = \varepsilon_r(x,y)$, the problem is invariant under translation $x \rightarrow x+d$. According to Bloch-Floquet theory ($\dot {x} =A(t)x$), all scattered fields must acquire the same phase shift upon translation by one period $d$. Given an incident tangential wavevector component $\alpha_{\text{inc}} = k_{\text{top}}\sin\theta$, the allowed tangential wavenumbers are discretized as:
 $$\alpha_n = k_{\text{top}}\sin\theta + n\frac{2\pi}{d}, \quad n \in \mathbb{Z}$$
@@ -121,14 +125,20 @@ Factoring out $u_m(y)$ yields the final system of coupled differential equations
 
 $$u_n''(y) = \sum_m \left[ \alpha_n^2 \delta_{nm} - k^2_{n-m}(y) \right] u_m(y)$$
 
-where $M_{nm}=\alpha_n^2 \delta_{nm} - k^2_{n-m}(y)$ and soone:
+By defining the matrix operator $M_{nm}(y) \equiv \alpha_n^2 \delta_{nm} - k^2_{n-m}(y)$, this system can be expressed compactly in full vector-matrix notation, this simplifies to the linear system of second-order ordinary differential equations:
 
-$$u_n''(y) = M_{nm} u_m(y)$$
+$$\mathbf{u}''(y) = \mathbf{M}(y) \mathbf{u}(y)$$
+
+### 0.4 Physical Interpretation
+
+The value of $\alpha_n^2 \delta_{nm}$ is only related to the tangential wave number, due $k^2_{n-m}(y)$ only the material structure.
 
 
 
 
 
+
+-------
 
 
 ### 1.1 The grating equation — `computeAlphaAndBeta()`
