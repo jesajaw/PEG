@@ -10,24 +10,25 @@ The method implemented here is a **differential (coupled-wave) method**: the str
 
 ## Table of Contents
 
-0. [Physical Setup](#00-physical-setup)
+0. [Physical Setup](#0-physical-setup)
     1. [Maxwell to Scalar Wavefunction](#01-maxwell-to-scalar-wavefunction)
     2. [Fourier & Floquet Expansion](#02-fourier-and-floquet-expansion)
     3. [Coupled Mode Equation Derivation](#03-coupled-mode-equation-derivation)
     4. [Physical Interpretation](#04-physical-interpretation)
+    5. [Geometry Bridg](#05-geometry-bridg)
+    6. [Fourier Coefficients of a Piecewise-Constant Layer](#06-fourier-coefficients-of-a-piecewise-constant-layer)
 
 ---
 
-## 0.0 Physical Setup
+## 0. Physical Setup
 
 Overview of the Theoretical Pipeline:
 
-$$\text{Maxwell's Equations} \longrightarrow \text{Helmholtz Equation} \longrightarrow \text{Scalar Wave Equation (TE)}$$
+$$\text{Maxwell^{\prime}s Equations} \longrightarrow \text{Helmholtz Equation} \longrightarrow \text{Scalar Wave Equation (TE)}$$
 $$\downarrow$$
 $$\text{Periodic Fourier/Floquet Expansion} \longrightarrow \text{Coupled ODEs in } y \longrightarrow \text{Local Layer Response}$$
 $$\downarrow$$
 $$\text{Transfer Matrix} \longrightarrow \text{Scattering Matrix} \longrightarrow \text{Reflection Amplitudes} \longrightarrow \text{Diffraction Efficiencies}$$
-
 
 Parameter Categorization:
 
@@ -37,7 +38,7 @@ Parameter Categorization:
 
 ### 0.1 Maxwell to Scalar Wavefunction
 
-Faraday's law of induction and Ampère's circuital law:
+Faraday^{\prime}s law of induction and Ampère^{\prime}s circuital law:
 $$\vec{\nabla} \times \vec{E} = -\frac{\partial \vec{B}}{\partial t}, \quad \vec{\nabla} \times \vec{H} = -\vec{i} + \frac{\partial \vec{D}}{\partial t}$$
 
 with $\vec{D} = \varepsilon_0 \varepsilon_r \vec{E}$ and $\vec{B} = \mu \vec{H}$ (assuming non-magnetic media where $\mu = \mu_0$ and $\vec i = \vec 0$), which can be formulated as:
@@ -46,10 +47,10 @@ $$\vec{\nabla} \times \vec{E} = -\mu_0 \frac{\partial \vec{H}}{\partial t}, \qua
 Separation of time and space assuming time-harmonic fields $\vec{E} e^{-i\omega t}$ and $\vec{H} e^{-i\omega t}$:
 $$\vec{\nabla} \times \vec{E} = i\omega\mu_0\vec{H}, \quad \vec{\nabla} \times \vec{H} = -i \omega \varepsilon_0\varepsilon_r\vec{E}$$
 
-To eliminate $\vec{H}$, take the curl of Faraday's law:
+To eliminate $\vec{H}$, take the curl of Faraday^{\prime}s law:
 $$\vec{\nabla} \times (\vec{\nabla} \times \vec{E}) = i\omega\mu_0 (\vec{\nabla} \times \vec{H})$$
 
-Substituting Ampère's law into the right-hand side yields:
+Substituting Ampère^{\prime}s law into the right-hand side yields:
 $$\vec{\nabla} \times (\vec{\nabla} \times \vec{E}) = i\omega\mu_0 \left( -i\omega\varepsilon_0\varepsilon_r\vec{E} \right) = \omega^2 \mu_0 \varepsilon_0 \varepsilon_r \vec{E}$$
 
 Using the identity $\vec{\nabla} \times (\vec{\nabla} \times \vec{E}) = \vec{\nabla}(\vec{\nabla} \vec{E}) - \Delta \vec{E}$ and setting $k_0^2 = \omega^2 \mu_0 \varepsilon_0$, we obtain the 3D vector wave equation:
@@ -79,11 +80,11 @@ $$\left( \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2} + k_0
   $$\frac{\partial^2}{\partial x^2} u(x,y) = -\sum_m \alpha_m^2 u_m(y) e^{i\alpha_m x}$$
 
 - **Second derivative with respect to $y$:**
-  $$\frac{\partial^2}{\partial y^2} u(x,y) = \sum_m u_m''(y) e^{i\alpha_m x}$$
+  $$\frac{\partial^2}{\partial y^2} u(x,y) = \sum_m u_m^{\prime\prime}(y) e^{i\alpha_m x}$$
 
 Combining these gives:
 
-$$\sum_m u_m''(y) e^{i\alpha_m x} - \sum_m \alpha_m^2 u_m(y) e^{i\alpha_m x} + k^2(x,y) u(x,y) = 0$$
+$$\sum_m u_m^{\prime\prime}(y) e^{i\alpha_m x} - \sum_m \alpha_m^2 u_m(y) e^{i\alpha_m x} + k^2(x,y) u(x,y) = 0$$
 
 where $k^2(x,y) \equiv k_0^2 \varepsilon_r(x,y)$ is the periodic wavenumber profile. Due to spatial periodicity, $k^2(x,y)$ can also be expanded into a Fourier series:
 
@@ -91,11 +92,11 @@ $$k^2(x,y) = \sum_p k_p^2(y) e^{i p K x}, \quad K = \frac{2\pi}{d}$$
 
 Inserting this expansion into the material product term gives:
 
-$$\sum_m u_m''(y) e^{i\alpha_m x} - \sum_m \alpha_m^2 u_m(y) e^{i\alpha_m x} + \sum_p k_p^2(y) e^{i p K x} \sum_{m} u_m(y) e^{i\alpha_m x} = 0$$
+$$\sum_m u_m^{\prime\prime}(y) e^{i\alpha_m x} - \sum_m \alpha_m^2 u_m(y) e^{i\alpha_m x} + \sum_p k_p^2(y) e^{i p K x} \sum_{m} u_m(y) e^{i\alpha_m x} = 0$$
 
-$$\sum_m u_m''(y) e^{i\alpha_m x} - \sum_m \alpha_m^2 u_m(y) e^{i\alpha_m x} + \sum_p \sum_m k_p^2(y) u_m(y) e^{i (p K + \alpha_m) x} = 0$$
+$$\sum_m u_m^{\prime\prime}(y) e^{i\alpha_m x} - \sum_m \alpha_m^2 u_m(y) e^{i\alpha_m x} + \sum_p \sum_m k_p^2(y) u_m(y) e^{i (p K + \alpha_m) x} = 0$$
 
-$$\sum_m \left( u_m''(y) - \alpha_m^2 u_m(y) \right) e^{i\alpha_m x} + \sum_p \sum_m k_p^2(y) u_m(y) e^{i (p K + \alpha_m) x} = 0$$
+$$\sum_m \left( u_m^{\prime\prime}(y) - \alpha_m^2 u_m(y) \right) e^{i\alpha_m x} + \sum_p \sum_m k_p^2(y) u_m(y) e^{i (p K + \alpha_m) x} = 0$$
 
 Using the relation for the allowed tangential wavenumbers $\alpha_m = k\sin\theta + m K$ ([Fourier](#02-fourier)), we observe that $p K + \alpha_m = \alpha_{m+p}$. Performing an index substitution by setting $n = m + p$ (or equivalently $p = n - m$), the second summation becomes:
 
@@ -103,15 +104,15 @@ $$\sum_p \sum_m k_p^2(y) u_m(y) e^{i (p K + \alpha_m) x} = \sum_n \left( \sum_m 
 
 Substituting this back into the full differential equation gives:
 
-$$\sum_m \left( u_m''(y) - \alpha_m^2 u_m(y) \right) e^{i\alpha_m x} + \sum_n \left( \sum_m k_{n-m}^2(y) u_m(y) \right) e^{i \alpha_n x} = 0$$
+$$\sum_m \left( u_m^{\prime\prime}(y) - \alpha_m^2 u_m(y) \right) e^{i\alpha_m x} + \sum_n \left( \sum_m k_{n-m}^2(y) u_m(y) \right) e^{i \alpha_n x} = 0$$
 
 Renaming $m \to n$ in the first sum allows factoring out $e^{i\alpha_n x}$:
 
-$$\sum_n \left( u_n''(y) - \alpha_n^2 u_n(y) + \sum_m k_{n-m}^2(y) u_m(y) \right) e^{i \alpha_n x} = 0$$
+$$\sum_n \left( u_n^{\prime\prime}(y) - \alpha_n^2 u_n(y) + \sum_m k_{n-m}^2(y) u_m(y) \right) e^{i \alpha_n x} = 0$$
 
 Since the set of spatial harmonics $\{ e^{i\alpha_n x} \}$ forms an orthogonal basis, this equality must hold independently for each harmonic mode $n$:
 
-$$u_n''(y) = \alpha_n^2 u_n(y) - \sum_m k_{n-m}^2(y) u_m(y)$$
+$$u_n^{\prime\prime}(y) = \alpha_n^2 u_n(y) - \sum_m k_{n-m}^2(y) u_m(y)$$
 
 By introducing the Kronecker delta:
 
@@ -119,26 +120,236 @@ $$\delta_{nm} = \begin{cases} 1 & \text{if } m = n \\ 0 & \text{if } m \neq n \e
 
 we can rewrite $\alpha_n^2 u_n(y)$ as a sum $\sum_m \alpha_n^2 \delta_{nm} u_m(y)$ and combine both terms:
 
-$$u_n''(y) = \sum_m \left( \alpha_n^2 \delta_{nm} u_m(y) \right) - \sum_m \left( k_{n-m}^2(y) u_m(y) \right)$$
+$$u_n^{\prime\prime}(y) = \sum_m \left( \alpha_n^2 \delta_{nm} u_m(y) \right) - \sum_m \left( k_{n-m}^2(y) u_m(y) \right)$$
 
 Factoring out $u_m(y)$ yields the final system of coupled differential equations:
 
-$$u_n''(y) = \sum_m \left[ \alpha_n^2 \delta_{nm} - k^2_{n-m}(y) \right] u_m(y)$$
+$$u_n^{\prime\prime}(y) = \sum_m \left[ \alpha_n^2 \delta_{nm} - k^2_{n-m}(y) \right] u_m(y)$$
 
 By defining the matrix operator $M_{nm}(y) \equiv \alpha_n^2 \delta_{nm} - k^2_{n-m}(y)$, this system can be expressed compactly in full vector-matrix notation, this simplifies to the linear system of second-order ordinary differential equations:
 
-$$\mathbf{u}''(y) = \mathbf{M}(y) \mathbf{u}(y)$$
+$$\mathbf{u}^{\prime\prime}(y) = \mathbf{M}(y) \mathbf{u}(y)$$
 
 ### 0.4 Physical Interpretation
 
-The value of $\alpha_n^2 \delta_{nm}$ is only related to the tangential wave number, due $k^2_{n-m}(y)$ only the material structure.
+The coupling matrix
+$$M_{nm}(y) = \alpha_n^2\delta_{nm} - k^2_{n-m}(y)$$
+splits into two contributions with distinct physical origins:
+
+- **Diagonal term** $\alpha_n^2\delta_{nm}$ — depends only on the tangential wavenumber of the $n$-th Floquet mode. It is identical in every layer, independent of what material occupies that layer.
+- **Off-diagonal term** $-k^2_{n-m}(y)$ — depends only on the spatial material distribution at height $y$, through the Fourier coefficients of $\varepsilon_r(x,y)$.
+
+Hence $M_{nm}(y)$ represents the coupling between Floquet modes induced by the periodic permittivity profile.
+
+**Limiting case (no lateral structure).** If the layer has no lateral structuring, $k_p^2 = 0$ for all $p \neq 0$, and the coupled system decouples into independent equations
+$$u_n^{\prime\prime}(y) + \left(k_0^2 - \alpha_n^2\right) u_n(y) = 0,$$
+i.e. every Floquet order propagates as an independent plane wave in a homogeneous medium. This is precisely where the physical distinction between a homogeneous slab and a grating layer enters the formalism: **mode coupling exists if and only if the layer has lateral material contrast.**
+
+### 0.5 Geometry Bridge
+
+At a fixed depth $y$, slicing the grating horizontally yields a 1D cross section. Over one period $d$, $k^2(x,y)$ is typically piecewise constant in $x$, taking on the values of whichever materials are present at that height - e.g. vacuum, substrate, one or more coating layers, or several material transitions in sequence.
+
+The geometry therefore supplies, for each $y$, a function
+$$x \mapsto k^2(x,y)$$
+consisting of constant segments separated by jump discontinuities. Extracting this function is a purely geometric step: for a given $y$, one determines which material occupies each interval and at which $x$-positions the transitions between materials occur. This is the only place where the concrete grating profile enters the formalism - it produces the raw step function that subsequently becomes the input to the Fourier decomposition below. How this step function is obtained algorithmically depends on the profile representation and is deliberately left open here.
+
+### 0.6 Fourier Coefficients of a Piecewise-Constant Layer
+
+Once the step function $k^2(x,y)$ is known for a given $y$, it is not the profile itself that enters the coupled-mode system, but its Fourier decomposition. Let the jump positions be $x_p$ and the jump magnitudes
+$$\sigma_p = k^2_{right} - k^2_{left}$$
+at each transition. The Fourier coefficients are
+$$k_n^2(y) = \frac{1}{d}\int_0^d k^2(x,y)\,e^{-inKx}\,dx, \qquad K = \frac{2\pi}{d}.$$
+
+For $n \neq 0$, since the function is constant between jumps, the integral reduces via integration by parts to a sum over the jump locations alone:
+$$k_n^2(y) = -\frac{1}{2\pi i n} \sum_p \sigma_p\, e^{-inKx_p}.$$
+
+For $n = 0$, the coefficient is simply the average value over one period:
+$$k_0^2(y) = \frac{1}{d}\int_0^d k^2(x,y)\,dx.$$
+
+The key physical point: a change in coating thickness, profile shape, or material choice only ever enters the ODE system through this route — by changing, at each $y$, the step positions $x_p$ and jump sizes $\sigma_p$, and hence the resulting Fourier coefficients $k_n^2(y)$. No aspect of the physical layer geometry is used by the coupled-mode equations except through these coefficients.
+
+---
+
+## 1. Local Layer Response
+
+### 1.1 From a Second-Order System to a First-Order System
+
+Numerically - and for the general solution theory below - it is convenient to rewrite
+$$u^{\prime\prime} = Mu$$
+as a system of first order. Defining
+$$v = u^{\prime},$$
+the second-order system splits into two coupled first-order equations:
+$$u^{\prime} = v, \quad v^{\prime} = Mu.$$
+
+Together, these form a single first-order block system:
+$$\frac{d}{dy}\begin{pmatrix} u \\ v \end{pmatrix}
+= \begin{pmatrix} 0 & I \\ M(y) & 0 \end{pmatrix}
+\begin{pmatrix} u \\ v \end{pmatrix}.$$
+
+The state vector at depth $y$ is therefore
+$$w = \begin{pmatrix} u \\ u^{\prime} \end{pmatrix},$$
+combining both the field amplitudes and their derivatives for every Floquet order. This is the physical reason why the state carries $2(2N+1)$ complex degrees of freedom: $2N+1$ Floquet orders, each contributing one amplitude and one derivative.
+
+### 1.2 Dimension of the Solution Space
+
+There are $2N+1$ Floquet modes retained in the truncated expansion. Each mode obeys a differential equation that is second order in $y$. A second-order linear ODE has a two-dimensional solution space; consequently, the full coupled system possesses
+$$2(2N+1)$$
+linearly independent solutions. This is not a numerical convenience but a mathematical property of the differential equation itself — it holds regardless of how (or whether) the system is solved numerically.
+
+The full solution space at a given $y$ can therefore be spanned by a set of basis solutions,
+$$w^{(1)}(y),\ w^{(2)}(y),\ \dots,\ w^{(2(2N+1))}(y),$$
+commonly referred to as **trial solutions**. Any physically admissible field profile within the layer is a linear combination of these trial solutions,
+$$w(y) = \sum_{i=1}^{2(2N+1)} c_i\, w^{(i)}(y),$$
+for some set of coefficients $c_i$ fixed by the boundary conditions between layers - determining these coefficients is the subject of the next section.
+
+### 1.3 Homogeneous Media as a Physical Reference Case
+
+To understand the boundary conditions used later, consider first a homogeneous medium (no lateral structure). In this case only the zeroth Fourier coefficient of $k^2$ is nonzero, so the coupling matrix becomes diagonal ([Fourier Coefficients of a Piecewise-Constant Layer](#06-fourier-coefficients-of-a-piecewise-constant-layer)):
+$$M_{nm} = (\alpha_n^2 - k^2)\,\delta_{nm}.$$
+Each Floquet order then obeys an independent equation. Defining
+$$\beta_n^2 = k^2 - \alpha_n^2,$$
+this becomes
+$$u_n''(y) + \beta_n^2\, u_n(y) = 0,$$
+with the two independent solutions
+$$u_n(y) = A_n e^{i\beta_n y} + B_n e^{-i\beta_n y}, \qquad
+u_n'(y) = i\beta_n A_n e^{i\beta_n y} - i\beta_n B_n e^{-i\beta_n y}.$$
+This decomposition is the physical basis for the incoming and outgoing amplitudes used at the boundaries of the structure.
+
+### 1.4 Propagating and Evanescent Orders
+
+From $\beta_n^2 = k^2 - \alpha_n^2$, two regimes follow:
+
+**Propagating.** If $|\alpha_n| \le |k|$, then $\beta_n$ is real,
+$$\beta_n = \sqrt{k^2 - \alpha_n^2},$$
+and $e^{\pm i\beta_n y}$ describes genuine traveling waves.
+
+**Evanescent.** If $|\alpha_n| > |k|$, then $\beta_n = i\gamma_n$ with $\gamma_n > 0$, so
+$$e^{i\beta_n y} = e^{-\gamma_n y}, \qquad e^{-i\beta_n y} = e^{+\gamma_n y}.$$
+A physically admissible solution in a semi-infinite outer medium must not grow exponentially with distance from the structure. The branch of the square root must therefore be chosen so that the physically allowed direction decays — conventionally by requiring $\operatorname{Im}\beta_n \ge 0$.
+
+### 1.5 Two Distinct Sets of Asymptotic Parameters
+
+The grating is bounded above and below by two, generally different, homogeneous media. This gives two independent sets of propagation constants:
+$$\beta_n^{\text{top}} = \sqrt{k_{\text{top}}^2 - \alpha_n^2}, \qquad
+\beta_n^{\text{sub}} = \sqrt{k_{\text{sub}}^2 - \alpha_n^2}.$$
+These are not two solutions of the same layer — they are the modal parameters of the two asymptotic outer half-spaces, determined solely by the top and substrate refractive indices. No interior layer (e.g. a coating) enters these asymptotic boundary parameters; they depend only on the media the structure is embedded in.
+
+## 2. Boundary Conditions and Modal Amplitudes
+
+### 2.1 The Actual Boundary Conditions
+
+The differential equation alone does not determine the solution. In addition, the fields must satisfy the Maxwell boundary conditions at every interface. For TE polarization, this means continuity of the tangential electric field component and of the associated tangential magnetic field component (i.e. $u$ and, proportionally, $u'$).
+
+In the scalar formalism used here, this requirement means that the admissible solutions at the outer boundaries must be expressible as a superposition of incoming and outgoing modes consistent with the asymptotic media on each side — the boundary values cannot be chosen freely; they must match the physically allowed waves in the half-spaces above and below the structure.
+
+### 2.2 Modal Amplitudes from $u$ and $u'$
+
+In a homogeneous medium, evaluating the general solution and its derivative at a boundary gives
+$$u_n = A_n + B_n, \qquad u_n' = i\beta_n (A_n - B_n).$$
+Inverting this relation:
+$$A_n = \frac{1}{2}\left(u_n + \frac{u_n'}{i\beta_n}\right), \qquad
+B_n = \frac{1}{2}\left(u_n - \frac{u_n'}{i\beta_n}\right).$$
+
+This is a central step of the formalism:
+$$\boxed{(u_n, u_n') \quad \Longleftrightarrow \quad (A_n, B_n)}$$
+the two representations — field-and-derivative, and directional amplitude pairs — are fully equivalent. Physically, $A_n$ and $B_n$ correspond to the two opposite propagation directions of mode $n$; which one is "incoming" and which is "outgoing" depends on which outer boundary is considered and on the sign convention chosen for $y$.
+
+## 3. Transfer Matrix
+
+### 3.1 What a Single Layer Does Physically
+
+Consider a layer between $y = y_-$ and $y = y_+$. The coupled ODE propagates the full state
+$$\mathbf{w}(y_-) = \begin{pmatrix} \mathbf{u}(y_-) \\ \mathbf{u}'(y_-) \end{pmatrix}$$
+forward to $\mathbf{w}(y_+)$. Because the governing equation is linear, this propagation defines a linear map
+$$\mathbf{w}(y_+) = \mathcal{T}\,\mathbf{w}(y_-),$$
+the **transfer matrix** of the layer. Importantly, $\mathcal{T}$ is not "the physics of the grating" as a whole — it is only the linear map from one layer's state to the next.
+
+### 3.2 Why a Basis of Trial Solutions Generates the Transfer Matrix
+
+Choose a basis $\mathbf{e}_1, \dots, \mathbf{e}_{2Q}$ (with $Q = 2N+1$) of the state space. For each basis vector, the coupled ODE system is solved starting from that vector as initial condition and integrated to $y_+$. The resulting end states form the columns of a fundamental solution matrix $\Phi(y)$. The transfer matrix is then
+$$\mathcal{T} = \Phi(y_+)\,\Phi(y_-)^{-1}.$$
+This is the mathematical meaning behind solving the system separately for many independent trial solutions, rather than for a single physical solution directly.
+
+### 3.3 Block Structure of the Transfer Matrix
+
+Writing the state in terms of directional amplitudes,
+$$\begin{pmatrix} \mathbf{a}_+ \\ \mathbf{b}_+ \end{pmatrix} =
+\begin{pmatrix} T_{11} & T_{12} \\ T_{21} & T_{22} \end{pmatrix}
+\begin{pmatrix} \mathbf{a}_- \\ \mathbf{b}_- \end{pmatrix},$$
+where $(\mathbf{a}, \mathbf{b})$ denote the appropriate directional amplitude pairs on each side. The precise labeling of the blocks is a matter of convention; what matters physically is that a single layer establishes a linear relation between four sets of amplitudes, two on each side of the layer.
+
+### 3.4 Why Direct Multiplication of Transfer Matrices Is Numerically Problematic
+
+An evanescent mode can appear across a layer of thickness $h$ with factors as extreme as $e^{+\gamma h}$ and $e^{-\gamma h}$ simultaneously. A single transfer matrix can therefore contain both very large and very small numbers at once. For a stack of many layers,
+$$\mathcal{T}_{\text{total}} = \mathcal{T}_M \cdots \mathcal{T}_2\,\mathcal{T}_1,$$
+such extreme values compound multiplicatively. Even when the final physical result is moderate, intermediate values in this product can become numerically catastrophic (loss of precision or overflow). This is the physical and numerical motivation for splitting the structure into many thin layers and combining their responses through a scattering-matrix recursion instead of direct transfer-matrix multiplication — a point taken up in the next chapter.
 
 
+## 4. Scattering Matrix
+
+### 4.1 Physical Idea of the S-Matrix
+
+The transfer matrix answers: how are the fields/modes on the top and bottom side of a layer related?
+
+The scattering matrix instead answers: which outgoing waves result from the incoming waves?
+$$\begin{pmatrix} \mathbf{a}_{\text{top,out}} \\ \mathbf{a}_{\text{bot,out}} \end{pmatrix}
+= S \begin{pmatrix} \mathbf{a}_{\text{top,in}} \\ \mathbf{a}_{\text{bot,in}} \end{pmatrix}.$$
+
+This formulation is physically much better conditioned: growing evanescent solutions never need to be tracked as primary global unknowns, since only physically bounded incoming and outgoing amplitudes appear as variables.
+
+### 4.2 Recursion Over Layers
+
+Suppose a new layer is appended to an already-assembled stack. The new layer contributes a transfer relation; the already-assembled stack below it is represented by its own scattering matrix. The amplitudes at the shared interface between the new layer and the stack are not directly observable — they are internal to the combined structure and can be eliminated algebraically. This elimination is precisely what produces the recursive combination rule for scattering matrices, commonly known as the **Redheffer star product**.
+
+Given two scattering matrices,
+$$S_A = \begin{pmatrix} S_{11}^A & S_{12}^A \\ S_{21}^A & S_{22}^A \end{pmatrix}, \qquad
+S_B = \begin{pmatrix} S_{11}^B & S_{12}^B \\ S_{21}^B & S_{22}^B \end{pmatrix},$$
+representing two adjacent sub-structures (e.g. the stack assembled so far, and the newly added layer), the combined scattering matrix $S = S_A \star S_B$ is
+$$S_{11} = S_{11}^A + S_{12}^A\left(I - S_{11}^B S_{22}^A\right)^{-1} S_{11}^B S_{21}^A,$$
+$$S_{12} = S_{12}^A\left(I - S_{11}^B S_{22}^A\right)^{-1} S_{12}^B,$$
+$$S_{21} = S_{21}^B\left(I - S_{22}^A S_{11}^B\right)^{-1} S_{21}^A,$$
+$$S_{22} = S_{22}^B + S_{21}^B\left(I - S_{22}^A S_{11}^B\right)^{-1} S_{22}^A S_{12}^B.$$
+
+The essential physical point is independent of the exact algebraic form:
+$$\boxed{\text{internal waves at the shared interface are eliminated; only the external input/output amplitudes remain.}}$$
+
+The matrix inversions appearing above are, in practice, never carried out as explicit inversions but through numerically stable factorization methods — this is a numerical-stability concern, not a change to the underlying physics.
+
+## 5. Layering as a Numerical Discretization
+
+The real permittivity profile is, in general, continuous in $y$. The solver approximates it by many thin layers, each treated as locally uniform along $y$ so that the coupled ODE can be integrated with locally constant coefficients within that slice.
+
+In the limit
+$$\Delta y \to 0,$$
+the layered decomposition recovers the continuous differential equation exactly. Layering is therefore not an additional physical assumption about the material — it is a numerical discretization in the vertical direction. The physically motivated criterion for how finely to discretize is not primarily the location of material boundaries, but the maximum evanescent growth rate present in the structure and the numerical stability this requires (cf. §3.4).
+
+## 6. The Complete Physical Flow Through the Solver
+
+The full solver can now be summarized as a physical chain:
+
+1. **Incident wave.** Given $\lambda$ and $\theta$, compute $k_0 = 2\pi/\lambda$.
+2. **Tangential momentum.** The grating periodicity restricts the allowed tangential wavenumbers to $\alpha_n = k_{\text{top}}\sin\theta + nK$.
+3. **Local material distribution.** For each $y$, the geometry determines $\varepsilon_r(x,y)$.
+4. **Fourier decomposition.** This yields the coefficients $k_n^2(y)$.
+5. **Mode coupling.** The Fourier coefficients generate the coupled-mode system
+   $$u_n''(y) = \sum_m \left[\alpha_n^2\delta_{nm} - k_{n-m}^2(y)\right] u_m(y).$$
+6. **Vertical propagation.** This ODE system is integrated through the structure.
+7. **Layer response.** Each layer's integration yields a transfer relation between its two boundaries.
+8. **Assembly.** The layers are combined via scattering-matrix recursion (§4.2).
+9. **Outer boundary condition.** In the homogeneous medium above the structure, the solution is decomposed into physically outgoing diffraction orders.
+10. **Reflection amplitudes.** The resulting coefficients are the reflected diffraction amplitudes, obtained by evaluating the final scattering matrix for the physically prescribed incident condition (§6.1).
+
+### 6.1 Origin of the Single-Order Incident Condition
+
+There are not arbitrarily many independent inputs to consider. Physically, exactly one incident mode is prescribed: the zeroth diffraction order of the beam incident from above. In the outer region one therefore sets
+$$a_0 = 1, \qquad a_n = 0 \ \text{ for all } n \neq 0,$$
+i.e. the incident state is the standard basis vector $\mathbf{e}_0$ in mode space.
+
+Multiplying the scattering matrix by this basis vector selects exactly the corresponding column of $S$ — this is why the reflection amplitudes can be read off directly from a single column of the final scattering matrix, rather than requiring a full matrix–vector solve for a general incident condition. With modes indexed symmetrically from $-N$ to $+N$, the order $n=0$ corresponds to the middle position in that indexing, which is why this particular column is singled out.
+
+This is the missing physical link between "the scattering matrix has been assembled" and "the reflection amplitudes are read off from one specific column of it."
 
 
-
-
--------
 
 
 ### 1.1 The grating equation — `computeAlphaAndBeta()`
@@ -152,7 +363,7 @@ double alpha = k_2 * sin(theta_2) + 2 * M_PI * n / d;
 alpha_[i] = alpha;
 ```
 
-Physically: the incident wave contributes a fixed tangential wavevector `k·sin(theta)`; the grating's periodicity contributes an additional `2π·n/d` per order `n` (the "grating momentum kick"). This is the diffraction equation in wavevector form:
+Physically: the incident wave contributes a fixed tangential wavevector `k·sin(theta)`; the grating^{\prime}s periodicity contributes an additional `2π·n/d` per order `n` (the "grating momentum kick"). This is the diffraction equation in wavevector form:
 
 $$\alpha_n = k \sin\theta + n \cdot \frac{2\pi}{d}$$
 
@@ -206,7 +417,7 @@ if(numLayers_ < 1)
 
 Evanescent orders grow/decay as `exp(beta_n · y)` while propagating through the structure. A `double` carries about 15–16 significant decimal digits; if `beta_n · (total height)` gets too large, `exp(beta_n · height)` exceeds that dynamic range, and subsequent matrix operations lose essentially all precision comparing it against unity-sized numbers.
 
-The fix: don't integrate the whole height `a` in one shot. Split it into `numLayers_` thinner slices, chosen so that even the *most* evanescent order (largest `|beta_n|`, which occurs at the highest or lowest computed diffraction order — hence checking both `betaM_[0]` and `betaM_[2*N_]`) stays within a safe exponential range over a single layer:
+The fix: don^{\prime}t integrate the whole height `a` in one shot. Split it into `numLayers_` thinner slices, chosen so that even the *most* evanescent order (largest `|beta_n|`, which occurs at the highest or lowest computed diffraction order — hence checking both `betaM_[0]` and `betaM_[2*N_]`) stays within a safe exponential range over a single layer:
 
 $$\text{numLayers} = \max\left(\frac{|\beta_0^{(M)}| \cdot a}{\text{magicNumber}}, \; \frac{|\beta_{2N}^{(M)}| \cdot a}{\text{magicNumber}}\right)$$
 
@@ -224,290 +435,3 @@ for(int m=1; m<M_; ++m) {
 `y_` holds the layer boundaries, evenly spaced from `y=0` (substrate interface) to `y=a` (top of the structure, into vacuum). `M_ = numLayers_ + 2`, matching the convention that layer boundary `m` runs from 1 to `M_-1`.
 
 ---
-
-## 2. Inside a Layer: the Coupled-Wave ODE
-
-### 2.1 Field ansatz and the differential equation
-
-Inside the grating region, the local permittivity (via `k² = (2π/λ)² · v(x,y)²`) is not uniform — it varies periodically in `x`, and (for non-rectangular or coated profiles) may also vary with `y`. A single plane wave cannot satisfy the wave equation there. Instead, the field is expanded as a Fourier series in `x`, with **height-dependent coefficients**:
-
-$$u(x, y) = \sum_{n=-N}^{N} u_n(y)\, e^{i \alpha_n x}$$
-
-Substituting into the (scalar) wave equation and matching Fourier components gives a set of coupled second-order ODEs in `y` for the `u_n(y)`:
-
-$$u_n''(y) = \sum_{m=-N}^{N} \Big[ \alpha_n^2\, \delta_{nm} \;-\; k^2_{n-m}(y) \Big]\, u_m(y)$$
-
-where `k²_{n-m}(y)` is the `(n-m)`-th Fourier coefficient of the local permittivity profile `k²(x,y)` at height `y` (computed by `computeGratingExpansion()`, §3). This is exactly what `odeFunction()` implements:
-
-```cpp
-// w contains the last values of u_n{re, im} and u'_n{re, im}, in that order.
-// need to compute f = dw/dy = u'_n{re, im} followed by u''_n{re, im}
-...
-gsl_complex M_nm = gsl_complex_rect(0,0);
-if(n-m >= -N_ && n-m <= N_)
-    M_nm = gsl_complex_mul_real(localK2[n-m + N_], -1.0);	// -k^2_{n-m}
-if(n == m)
-    M_nm = gsl_complex_add_real(M_nm, alpha2);
-
-upp_n = gsl_complex_add(upp_n, gsl_complex_mul(M_nm, u_m));
-```
-
-**This is the physical heart of the whole method.** `k²_{n-m}(y)` is exactly where the grating's cross-sectional shape — including whether and how it's coated — enters the calculation. Change the shape, and this coupling matrix changes, and so does the solution. Everything else described in this document (T-matrix, S-matrix, alpha/beta) is generic machinery built around this one physical ingredient.
-
-### 2.2 State vector layout
-
-GSL's ODE solver works with a flat array of `double`, not complex vectors, so `u_n` and `u_n'` are packed into one array `w` of size `8N+4`:
-
-```
-w = [ u_{-N}.re, u_{-N}.im, ..., u_N.re, u_N.im,   u'_{-N}.re, u'_{-N}.im, ..., u'_N.re, u'_N.im ]
-    \_____________ fourNp2_ values _____________/ \_______________ fourNp2_ values _______________/
-```
-
-`odeFunction()`'s job ("compute dw/dy") then splits naturally in two:
-```cpp
-// fourNp2 divides the top and bottom of the arrays w, dwdy.  Top of w is u; bottom of w is u' = v.
-// Top of dwdy is u';  bottom of dwdy is u''.
-// total size is (2N+1)x2x2, ie: 8N+4.
-for(int i=0; i<fourNp2_; ++i) {
-    // working on computing u'_n [top of dwdy array]. Just copy from u' = [bottom half of w array]
-    dwdy[i] = w[i + fourNp2_];
-}
-```
-The top half of `dwdy` is simply a copy of the bottom half of `w` — by definition, `d(u_n)/dy = u_n'`. The bottom half of `dwdy` is the coupling sum from §2.1.
-
-### 2.3 The Jacobian, and its known limitation
-
-Implicit ODE methods (like the Adams-Moulton corrector used here — §2.4) need the Jacobian `∂f/∂w` to iterate efficiently. `odeJacobian()` builds it from exactly the same `M_nm` coupling matrix, laid out as a block structure — an identity block (since `∂u'_n/∂u'_n = 1`) plus the coupling block (`∂u''_n/∂u_m = M_nm`):
-
-```cpp
-// go through top rows of jac [i=0,fourNp2]. Set ident. matrix in upper right-hand block.
-for(int i=0; i<fourNp2_; ++i) {
-    dfdw[i*eightNp4_+fourNp2_+i] = 1.0;		// set at index dfdw(i, fourNp2+i).
-}
-...
-// set 4x4 matrix here: [M_re, -M_im; M_im, M_re] at (i,j), (i, j+1); (i+1, j), (i+1, j+1)
-dfdw[i*eightNp4_ + j] = GSL_REAL(M_nm);
-dfdw[i*eightNp4_ + j + 1] = -GSL_IMAG(M_nm);
-dfdw[(i+1)*eightNp4_ + j] = GSL_IMAG(M_nm);
-dfdw[(i+1)*eightNp4_ + j + 1] = GSL_REAL(M_nm);
-```
-
-The one place this is **not** exact: `dfdy` — the *explicit* `y`-dependence of the right-hand side, holding `u` fixed — is left at zero, with the code's own flag on it:
-
-```cpp
-/// \todo IMPORTANT! Leaving dfdy = 0 for now. This is only true in case of rectangular grating...
-```
-
-This is exact when `k²(x,y)` doesn't vary continuously with `y` within a layer — true for **rectangular** profiles (vertical walls: `xIntersection1()`/`xIntersection2()` don't depend on `y`), including a rectangular profile with an interpenetrating coating (only the *value* of `k²` jumps at specific `y`, never the *x*-positions). It is **not** exact for blazed, sinusoidal, trapezoidal, or custom profiles, where the wall position genuinely depends on `y`. In practice, an approximate Jacobian mainly affects the convergence speed/robustness of the implicit solver's inner iteration rather than the correctness of a converged result — but it remains a real, documented gap for non-rectangular shapes.
-
-### 2.4 Solving one layer — `integrateTrialSolutionAlongY()`
-
-```cpp
-// define ode solving system, with our function to evaluate dw/dy, the Jacobian, and 8*N_+4 components.
-gsl_odeiv2_system odeSys = {odeFunctionCB, odeJacobianCB, eightNp4_, this};
-
-// initial starting step in y: choose grating height / 200.
-double hStart = (yEnd - yStart)/200;
-
-// setup driver
-gsl_odeiv2_driver * d = gsl_odeiv2_driver_alloc_standard_new(&odeSys, gsl_odeiv2_step_msadams,
-    hStart, integrationTolerance_, integrationTolerance_, 0.5, 0.5);
-// Variable-coefficient linear multistep Adams method in Nordsieck form. Uses explicit
-// Adams-Bashforth (predictor) and implicit Adams-Moulton (corrector) methods in P(EC)^m
-// functional iteration mode.
-```
-
-GSL's variable-coefficient linear multistep Adams method (predictor-corrector), starting with an initial step of `(layer height)/200`. `integrationTolerance_` (from `PEMathOptions`) controls both the absolute and relative error targets. If the solver can't converge to that tolerance, or the geometry function returns an error mid-integration (invalid profile, `y` above the profile height), the caller gets back a `ConvergenceFailure`:
-
-```cpp
-if (status != GSL_SUCCESS) {
-    if(status == GSL_EBADFUNC)
-        std::cout << "ODE: Integration failure: Invalid Geometry. Check your grating geometry specification." << std::endl;
-    else if(status == GSL_FAILURE)
-        std::cout << "ODE: Integration failure: Can't achieve step tolerance required. Try changing the integration tolerance." << std::endl;
-    ...
-    return PEResult::ConvergenceFailure;
-}
-```
-
-### 2.5 Trial solutions and the T-matrix — `computeTMatrixBelowLayer()`
-
-A single layer, by itself, is a linear boundary-value problem. For `2N+1` orders, you need `2·(2N+1)` independent solutions to span the full solution space — one "trial solution" per basis vector `u_n(y_start) = δ_{n,p}` (§2.6 covers why: this becomes the columns of a transfer matrix). `setIntegrationStartingValues()` sets up exactly this delta-function initial condition, once per trial index `p`:
-
-```cpp
-// set u[j] = 1.  Multiplication by 2 is due to {re,im}.
-w[2*j] = 1.0;
-gsl_complex uprime = gsl_complex_mul_imag(m == 1 ? beta1_[j] : betaM_[j], secondRound ? 1 : -1);
-```
-(using `beta1_` instead of `betaM_` specifically for the bottom-most layer, `m == 1` — the substrate boundary condition from §1.1).
-
-Each trial solution is integrated **independently** — embarrassingly parallel, which is exactly what the surrounding `#pragma omp parallel for` parallelizes over:
-
-```cpp
-// We now need 2*(2N+1) trial solutions.  j will be the loop index over p, but ranging from [0,4*N+1].
-#pragma omp parallel for num_threads(numThreads_) schedule(dynamic) reduction(||:integrationFailureOccurred)
-for(int j=0; j<fourNp2_; ++j) {
-    double* w = wVectorForP(j);
-    setIntegrationStartingValues(w, j, m-1);
-    PEResult::Code status = integrateTrialSolutionAlongY(w, y_[m-1], y_[m]);
-    ...
-}
-```
-
-The results are assembled column-by-column into four `(2N+1)×(2N+1)` blocks `T11_, T12_, T21_, T22_` — together forming the transfer matrix relating field values at the bottom of the layer to field values at the top:
-
-```cpp
-// T12_ij = 0.5(u_ij - u'_ij / (i*betaM_n) )
-// T22_ij = 0.5(u_ij + u'_ij / (i*betaM_n) )
-gsl_matrix_complex_set(T12_, i, jj, gsl_complex_mul_real(gsl_complex_sub(*u_ij, temp), 0.5));
-gsl_matrix_complex_set(T22_, i, jj, gsl_complex_mul_real(gsl_complex_add(*u_ij, temp), 0.5));
-```
-
-### 2.6 Why not just multiply T-matrices? — the S-matrix recursion
-
-The straightforward way to combine many layers' T-matrices is to multiply them together. This is exactly the numerically unstable approach multilayer optics (and ellipsometry) is well known for: evanescent solutions grow exponentially in one direction and decay in the other, so naive multiplication mixes enormous and tiny numbers in the same matrix, and rounding error swamps the result.
-
-The code avoids this by recursing on the **S-matrix** (the scattering relationship between incoming and outgoing amplitudes) instead of the T-matrix, which stays numerically well-conditioned regardless of how many layers there are:
-
-```cpp
-// For the first layer, we have Zinv_ = T11_.
-// S12_ = T21_ Zinv_^{-1}
-// S22_ = Zinv_^{-1}
-...
-// (for subsequent layers m = 3 .. M_-1:)
-// Compute Zinv_ = T11_ + T12_ S12_.
-gsl_matrix_complex_memcpy(Zinv_, T11_);
-gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, one, T12_, S12_, one, Zinv_);
-// Invert Zinv_...
-// S12 = (T21 + T22 S12) Z
-// S22 = S22 Z
-```
-(`Zinv_`/`Z_` naming note, from the header: *"we don't actually compute any inverses [of Z directly]; Zinv_ is directly calculated from Zinv^{q+1} = T11^{q+1} + T12^{q+1} S12^{1}, and then we use LU decomp and multiplication to avoid loss of precision in computing Z = Zinv_^{-1}."*)
-
-Combined with the adaptive layering from §1.2, this S-matrix recursion is what lets the algorithm handle an arbitrary number of thin layers — however many a coating requires — without the result blowing up numerically.
-
----
-
-## 3. Grating Geometry Input — `computeGratingExpansion()`
-
-This is the bridge between the pure-geometry world of `PEG.cpp` and the pure-numerics world of §2.
-
-### 3.1 Where the coating (and everything else about the shape) actually enters
-
-```cpp
-// wave number in the coating layer:
-gsl_complex k_c = gsl_complex_mul(v_c_, k_M);
-...
-// Compute multistep function from grating:
-int numSteps = g_.computeK2StepsAtY(y, k2_M, k2_1, k2_c, stepsX, stepsK2);
-```
-
-`PEGrating::computeK2StepsAtY()` (in `PEG.cpp`) answers one question: *"at this specific height `y`, sweeping across one period in `x`, which materials do I cross, and where?"* It returns a **multi-step function**: a list of `x`-positions and the `k²` value immediately to the right of each. Depending on the coating thickness relative to the profile height, this dispatches to `computeK2StepsAtY_noCoating()` (2 steps: vacuum, substrate), `_interpenetratingCoating()` (2 or 4 steps depending on whether `y` is below/within/above the coating-thickness range), or `_thickCoating()` (1, 2, or 2 steps across its three `y`-regions). This dispatch, and therefore everything downstream of it, is where a change in coating thickness or material actually changes the physics.
-
-### 3.2 Fourier-decomposing the step function
-
-The ODE (§2.1) needs `k²_n(y)`, the Fourier coefficients of that step function — not the step function itself. For a piecewise-constant function with jumps `σ_p = k²_{p+1} - k²_p` at positions `x_p` (with wraparound, `σ_{last} = k²_0 - k²_{last}`), the Fourier coefficients have a closed form:
-
-$$k^2_0 = \frac{1}{d}\left(k^2_0 \cdot d \;-\; \sum_p \sigma_p\, x_p\right), \qquad\qquad k^2_n = \frac{-1}{2\pi n}\sum_p \sigma_p\, e^{i n K x_p} \quad (n \ne 0)$$
-
-with `K = 2π/d`. This is exactly:
-
-```cpp
-// compute sigma values at crossings:
-// sigma[p] = stepsK2[p+1] - stepsK2[p] for p<numSteps-1; sigma[numSteps-1]=sigma[0]-sigma[numSteps-1]
-...
-if(n == 0) {
-    gsl_complex f0 = gsl_complex_mul_real(stepsK2[0], d);
-    for(int p=0; p<numSteps; ++p)
-        f0 = gsl_complex_sub(f0, gsl_complex_mul_real(sigma[p], stepsX[p]));
-    k2[i] = gsl_complex_div_real(f0, d);
-}
-else {
-    gsl_complex fn = gsl_complex_rect(0,0);
-    for(int p=0; p<numSteps; ++p) {
-        double nKx = n*K*stepsX[p];
-        fn = gsl_complex_add(fn, gsl_complex_mul(sigma[p], gsl_complex_rect(sin(nKx), cos(nKx))));
-    }
-    k2[i] = gsl_complex_div_real(fn, -2*M_PI*n);
-}
-```
-
-There's a special-cased shortcut for `numSteps == 1` — a fully homogeneous layer, e.g. deep inside a thick coating: all `n ≠ 0` coefficients are exactly zero, and `k²_0` is just that one material's value directly, no sum needed:
-```cpp
-// Optimization for numSteps = 1: f_n = 0 (n!=0).   f_0 = stepsK2[0].
-if(numSteps == 1) {
-    for(int i=0; i<twoNp1_; ++i)
-        k2[i] = gsl_complex_rect(0,0);
-    k2[N_] = stepsK2[0];
-    return;
-}
-```
-
-`\warning assumes numSteps is in [1, PEG_MAX_PROFILE_CROSSINGS]` — this and the sibling stack-array buffers (`stepsX`, `stepsK2`, `sigma`, all sized `PEG_MAX_PROFILE_CROSSINGS = 60`) are the reason coating geometry currently supports at most a handful of material crossings per height slice; see the note on raw fixed-size buffers in the companion modernization notes for this file.
-
----
-
-## 4. Assembling the Result — `getEff()`
-
-`getEff()` is the orchestrator; here's its flow, matching the numbered comments already in the code:
-
-1. **Setup** — look up `v_1_` (always) and `v_c_` (only if `g_.coatingThickness() > 0`); fail with `PEResult::MissingRefractiveDataFailure` if either lookup comes back empty (`(0,0)`, the sentinel `PEGrating::refractiveIndex()` uses for "not found").
-2. **`computeAlphaAndBeta()` then `computeLayers()`** — §1.1, §1.2. (Comment in the code: *"Calculates how many vertical layers we need, and the division into slices at y_."*)
-3. **Recursive S-matrix build** — *"Recursive computation of S-matrix below each layer."* The first layer (`m=2`) is a special case (comment: *"Handle first layer separately, as a special case."* — `Zinv_ = T11_` directly, since there is no previous S-matrix to fold in yet); layers `m = 3 .. M_-1` use the general recursion from §2.6 (comment: *"First layer done. Handle subsequent layers"*).
-4. **`computeBMFromSMatrix()`** — *"Calculate B_n^M from center column of S matrix * exp(...)."* Extracts the outgoing reflected amplitudes `BM_n` from the finished S-matrix:
-```cpp
-BM_[i] = gsl_complex_mul(
-            gsl_matrix_complex_get(S12_, i, N_),
-            gsl_complex_exp(gsl_complex_mul_imag(gsl_complex_add(betaM_[i], betaM_[N_]), -a)));
-```
-(the `exp(...)` factor re-references the phase to a common origin at `y = 0`).
-
-Then, *"Now we have BM_. Compute efficiency and put into result structure"*:
-
-```cpp
-result.eff[i] =  gsl_complex_abs2(BM_[i])*GSL_REAL(betaM_[i])/GSL_REAL(betaM_[N_]);
-// is this a non-propagating order?  Then the real part of beta2_n will be exactly 0, so the
-// efficiency will come out as 0.
-```
-
-`|BM_n|²` is the *intensity* of order `n`. But different orders leave the structure at different angles, so intensity alone is not power — you need the "obliquity" projection factor `cos(angle_n)/cos(angle_0) = Re(β_n)/Re(β_0)`:
-
-$$\eta_n = |B_n|^2 \cdot \frac{\mathrm{Re}(\beta_n^{(M)})}{\mathrm{Re}(\beta_N^{(M)})}$$
-
-(`betaM_[N_]` is index `N_` in the zero-based array, i.e. order `n=0` — the specular/zeroth order — used as the reference angle.) For evanescent orders, `Re(β_n) = 0`, so `η_n` comes out to exactly zero automatically, with no special-casing needed — exactly the property the code's own comment above points out.
-
-If `rmsRoughnessNm > 0`, every order is finally scaled by `PEGrating::roughnessFactor()` — a Névot–Croce-style Debye–Waller-type correction, using the coating index if present, the substrate index otherwise:
-```cpp
-double roughnessFactor = g_.roughnessFactor(rmsRoughnessNm/1000., wl, g_.coatingThickness() > 0 ? v_c_ : v_1_, incidenceDeg);
-for(int i=0; i<twoNp1_; ++i)
-    result.eff[i] = roughnessFactor*result.eff.at(i);
-```
-The formula itself (`PEGrating::roughnessFactor()`) is documented in `PEG.h`, not repeated here.
-
-When `measureTiming_` is set, `getEff()` reports where the time actually went, in the same seven buckets it accumulates into throughout the function (`timing_[0]` allocation, `[1]` refractive-index lookup, `[2]` alpha/beta/layers, `[3]` numerical integration, `[4]` matrix operations, `[5]` computing `BM_`, `[6]` packaging efficiencies) — useful for judging where a slow calculation (e.g. many thin layers from a demanding coating) is actually spending its time.
-
----
-
-## 5. Threading Model
-
-- `numThreads_` OpenMP threads are used in three places: `computeAlphaAndBeta()`, the trial-solution loop inside `computeTMatrixBelowLayer()`, and `computeBMFromSMatrix()`.
-- Each thread needs its *own* `k2[]` scratch array, since `computeGratingExpansion()` gets called from inside the parallel trial-solution loop at a different `y` per solution. That's what `k2_` (one array per thread, allocated in the constructor: *"we need one k2_ array for each thread, since they will be used simultaneously"*) and `k2ForCurrentThread()` (*"Return based on OpenMP current thread"*) are for.
-- Similarly, each of the `4N+2` trial solutions gets its own non-overlapping slice of the shared `wVectors_` buffer via `wVectorForP(j) = wVectors_ + eightNp4_*j` — "Returns the wVector for a trial solution `p` at index `j`."
-
----
-
-## 6. Small Helpers
-
-- **`complex_sqrt_upperComplexPlane()`** — complex square root with the branch cut chosen so `Im(w) ≥ 0`, the physically correct choice for a wave that *decays* (rather than grows) going into an absorbing medium. This differs from the "principal" square-root branch, which instead guarantees `Re(w) ≥ 0`.
-- **`linalg_LU_complex_solve()`** — solves `AX = B` for a whole matrix `X` at once, given a pre-computed LU decomposition of `A`, by looping GSL's single-column solve (`gsl_linalg_complex_LU_solve`) over each column of `B`/`X`.
-- **`conditionNumber()`** — **incomplete**, per its own doc comment (`INCOMPLETE!`). It computes an LU decomposition and inverse of the input matrix but never actually computes a norm from them, and unconditionally returns `1` (with a leftover comment: *"how to get the norm of a complex matrix?"*). It does not appear to be called anywhere in the solver's own code path.
-
----
-
-## 7. Open Items (relevant to future work, including TM)
-
-- **`dfdy = 0` in `odeJacobian()`** is only exact for rectangular profiles (§2.3) — a documented, not-yet-resolved approximation for blazed/sinusoidal/trapezoidal/custom shapes.
-- **The entire derivation in §2.1 is the scalar wave equation — this is TE polarization specifically.** TM polarization needs the analogous equation formulated with a spatially-varying `1/ε(x,y)` rather than `k²(x,y)` (since it is `H`, not `E`, whose boundary conditions differ across a material interface) — a genuinely different coupled ODE, not a parameter tweak to the one derived here. This is the natural entry point for a TM implementation: a parallel `odeFunction`/`odeJacobian` pair, sharing the geometry/Fourier-expansion machinery in §3.
-- **`conditionNumber()`** is unused and incomplete (§6) — candidate for removal or completion, but not on the critical path of any calculation today.
-- /// \warning assumes numSteps is in [1, PEG_MAX_PROFILE_CROSSINGS]
-- /// \todo IMPORTANT! Leaving dfdy = 0 for now. This is only true in case of rectangular grating...
