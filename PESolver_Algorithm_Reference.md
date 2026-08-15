@@ -7,16 +7,54 @@ This document explains how `PESolver` computes the diffraction efficiency of a g
 The method implemented here is a **differential (coupled-wave) method**: the structure is treated as a stack of thin horizontal layers; within each layer, a coupled ordinary differential equation (ODE) system is integrated numerically along the vertical coordinate `y`; the per-layer results are combined into a numerically stable overall response via **S-matrix recursion**. This is closely related to the family of methods used in Rigorous Coupled-Wave Analysis (RCWA) and multilayer optics/ellipsometry.
 
 ---
-
 ## Table of Contents
 
-0. [Physical Setup](#0-physical-setup)
+0. [Physical Setup](#00-physical-setup)
     1. [Maxwell to Scalar Wavefunction](#01-maxwell-to-scalar-wavefunction)
     2. [Fourier & Floquet Expansion](#02-fourier-and-floquet-expansion)
     3. [Coupled Mode Equation Derivation](#03-coupled-mode-equation-derivation)
     4. [Physical Interpretation](#04-physical-interpretation)
-    5. [Geometry Bridg](#05-geometry-bridg)
+    5. [Geometry Bridge](#05-geometry-bridge)
     6. [Fourier Coefficients of a Piecewise-Constant Layer](#06-fourier-coefficients-of-a-piecewise-constant-layer)
+1. [Local Layer Response](#1-local-layer-response)
+    1. [From a Second-Order System to a First-Order System](#11-from-a-second-order-system-to-a-first-order-system)
+    2. [Dimension of the Solution Space](#12-dimension-of-the-solution-space)
+    3. [Homogeneous Media as a Physical Reference Case](#13-homogeneous-media-as-a-physical-reference-case)
+    4. [Propagating and Evanescent Orders](#14-propagating-and-evanescent-orders)
+    5. [Two Distinct Sets of Asymptotic Parameters](#15-two-distinct-sets-of-asymptotic-parameters)
+2. [Boundary Conditions and Modal Amplitudes](#2-boundary-conditions-and-modal-amplitudes)
+    1. [The Actual Boundary Conditions](#21-the-actual-boundary-conditions)
+    2. [Modal Amplitudes from u and u'](#22-modal-amplitudes-from-u-and-u)
+3. [Transfer Matrix](#3-transfer-matrix)
+    1. [What a Single Layer Does Physically](#31-what-a-single-layer-does-physically)
+    2. [Why a Basis of Trial Solutions Generates the Transfer Matrix](#32-why-a-basis-of-trial-solutions-generates-the-transfer-matrix)
+    3. [Block Structure of the Transfer Matrix](#33-block-structure-of-the-transfer-matrix)
+    4. [Why Direct Multiplication of Transfer Matrices Is Numerically Problematic](#34-why-direct-multiplication-of-transfer-matrices-is-numerically-problematic)
+4. [Scattering Matrix](#4-scattering-matrix)
+    1. [Physical Idea of the S-Matrix](#41-physical-idea-of-the-s-matrix)
+    2. [Recursion Over Layers](#42-recursion-over-layers)
+5. [Layering as a Numerical Discretization](#5-layering-as-a-numerical-discretization)
+6. [The Complete Physical Flow Through the Solver](#6-the-complete-physical-flow-through-the-solver)
+    1. [Origin of the Single-Order Incident Condition](#61-origin-of-the-single-order-incident-condition)
+7. [From Amplitude to Power: Diffraction Efficiency](#7-from-amplitude-to-power-diffraction-efficiency)
+    1. [Phase Referencing to a Common Origin](#71-phase-referencing-to-a-common-origin)
+    2. [From Field Amplitude to Power](#72-from-field-amplitude-to-power)
+    3. [Why Evanescent Orders Automatically Have Zero Efficiency](#73-why-evanescent-orders-automatically-have-zero-efficiency)
+8. [Truncation and Its Physical Meaning](#8-truncation-and-its-physical-meaning)
+    1. [Finite Mode Number N](#81-finite-mode-number-n)
+    2. [Relation Between Evanescent Decay and Discretization Scale](#82-relation-between-evanescent-decay-and-discretization-scale)
+9. [The Coating Causal Chain](#9-the-coating-causal-chain)
+10. [What This Formalism Does Not Do](#10-what-this-formalism-does-not-do)
+11. [The Central Conceptual Reduction](#11-the-central-conceptual-reduction)
+12. [Physical Consistency Checks](#12-physical-consistency-checks)
+    1. [Homogeneous-Grating Limit](#121-homogeneous-grating-limit)
+    2. [Energy Balance](#122-energy-balance)
+    3. [Complex Quantities and Absorption](#123-complex-quantities-and-absorption)
+    4. [y-Dependent Geometry](#124-y-dependent-geometry)
+13. [Why the Scattering Matrix Is More Physically Natural Than the Transfer Matrix](#13-why-the-scattering-matrix-is-more-physically-natural-than-the-transfer-matrix)
+14. [Full Equation Chain (Summary)](#14-full-equation-chain-summary)
+15. [Mental Model](#15-mental-model)
+16. [Conclusion](#16-conclusion)
 
 ---
 
@@ -350,88 +388,121 @@ Multiplying the scattering matrix by this basis vector selects exactly the corre
 This is the missing physical link between "the scattering matrix has been assembled" and "the reflection amplitudes are read off from one specific column of it."
 
 
+## 7. From Amplitude to Power: Diffraction Efficiency
 
+### 7.1 Phase Referencing to a Common Origin
 
-### 1.1 The grating equation — `computeAlphaAndBeta()`
+A solution of the form $e^{i\beta_n y}$ changes phase under a shift of the coordinate origin. Any amplitude extracted at an internal reference plane $y=a$ (rather than at $y=0$) is therefore not directly the physically meaningful amplitude referenced to the structure's global origin — it must be corrected by a phase factor.
 
-A grating with period `d` illuminated at incidence angle `theta` can only scatter light into a discrete set of directions, indexed by an integer diffraction order `n` (from `-N` to `N`). This is the grating equation.
+Two effects combine here. First, re-referencing the *outgoing* order $n$ from plane $a$ back to $y=0$ contributes a factor $e^{-i\beta_n a}$. Second, the incident condition itself ($a_0 = 1$) was physically imposed at plane $a$, meaning the incident wave has already accumulated a phase $e^{i\beta_0 a}$ getting there from $y=0$ — this phase must also be removed to reference the whole reflection process consistently to a common origin. Combined, this yields a correction of the form
+$$\exp\left[-i(\beta_n+\beta_0)a\right].$$
 
-Every wave in the problem — incident, or any diffracted order — has a wavevector with a **tangential** component (parallel to the surface, along `x`) and a **normal** component (perpendicular, along `y`). The code:
+For the diffraction efficiency itself, this absolute phase is ultimately irrelevant, since only $|B_n|^2$ enters — but it matters if reflection amplitudes (not just efficiencies) are to be compared meaningfully across different reference planes or against other formalisms.
 
-```cpp
-double alpha = k_2 * sin(theta_2) + 2 * M_PI * n / d;
-alpha_[i] = alpha;
-```
+### 7.2 From Field Amplitude to Power
 
-Physically: the incident wave contributes a fixed tangential wavevector `k·sin(theta)`; the grating^{\prime}s periodicity contributes an additional `2π·n/d` per order `n` (the "grating momentum kick"). This is the diffraction equation in wavevector form:
+The quantity $|B_n|^2$ is, by itself, only a squared field amplitude — not yet a power. The physically transported power is proportional to the outward normal component of the time-averaged Poynting vector,
+$$\mathbf{S} = \frac{1}{2}\operatorname{Re}\left(\mathbf{E}\times\mathbf{H}^*\right).$$
+For a plane wave of order $n$ propagating in the outer medium, the power flowing normal to the structure carries a factor proportional to $\operatorname{Re}\beta_n$. Normalizing the outgoing power in order $n$ to the incident power (order $0$) gives the diffraction efficiency
+$$\eta_n = |B_n|^2\,\frac{\operatorname{Re}\beta_n}{\operatorname{Re}\beta_0}.$$
 
-$$\alpha_n = k \sin\theta + n \cdot \frac{2\pi}{d}$$
+### 7.3 Why Evanescent Orders Automatically Have Zero Efficiency
 
-`alpha_n` is the same in *every* layer of the structure — it depends only on geometry and the incident wave, never on `y` or on the local material. That is why it is computed once, before the per-layer loop even starts.
+For an evanescent order, $\beta_n = i\gamma_n$ with real $\gamma_n>0$, so $\operatorname{Re}\beta_n = 0$ and therefore
+$$\boxed{\eta_n = 0.}$$
+This does not mean the evanescent mode is physically absent — it can be significant in the near field close to the structure — but it carries no net normal radiative power into the far field of the homogeneous outer half-space. This is why such modes must still be carried through the full internal calculation (they participate in mode coupling and boundary matching), yet contribute nothing to the far-field efficiency.
 
-The normal component `beta_n` follows from the dispersion relation `k² = alpha_n² + beta_n²` in whichever homogeneous medium is being asked about:
+## 8. Truncation and Its Physical Meaning
 
-```cpp
-// beta2_: rayleigh expansion above grating.
-double k22minusAn2 = k_2*k_2 - alpha*alpha;
-if(k22minusAn2 >= 0)
-    betaM_[i] = gsl_complex_rect(sqrt(k22minusAn2), 0);
-else
-    betaM_[i] = gsl_complex_rect(0, sqrt(-k22minusAn2));
-```
+### 8.1 Finite Mode Number $N$
 
-$$\beta_n^{(M)} = \begin{cases}\sqrt{k^2 - \alpha_n^2} & \text{if } k^2 \ge \alpha_n^2 \quad\text{(propagating order)} \\[4pt] i\sqrt{\alpha_n^2 - k^2} & \text{if } k^2 < \alpha_n^2 \quad\text{(evanescent order)}\end{cases}$$
+The exact theory involves $n \in \mathbb{Z}$, an infinite set of Floquet orders. Any practical solution truncates this to $n=-N,\dots,+N$:
+$$\boxed{\text{infinitely many Floquet orders} \ \longrightarrow\ 2N+1 \text{ numerical orders.}}$$
+The underlying physics is unchanged by this truncation; only the numerically tracked mode space is made finite. This introduces a convergence question distinct from the physical derivation itself: whether $N$ is large enough that the computed efficiencies are insensitive to further increasing it.
 
-There are **two** beta arrays, computed with two different values of `k`, because they serve as boundary conditions at the two ends of the structure:
+### 8.2 Relation Between Evanescent Decay and Discretization Scale
 
-- `betaM_` — computed with the vacuum wavenumber. This is the boundary condition at the *top* (where the outgoing diffracted orders live — "M" for the top medium in the layer numbering, see §1.2).
-- `beta1_` — computed with the substrate refractive index `v_1_`. This is the boundary condition at the *bottom*.
+An evanescent order carries factors $e^{\pm\gamma_n y}$. Across a layer of thickness $\Delta y$, this produces a magnitude factor $e^{|\gamma_n|\Delta y}$. If this factor becomes too large, very large and very small numbers coexist within the same numerical matrices (cf. §3.4), degrading accuracy. Keeping $|\beta_{\max}|\Delta y$ bounded is therefore the physical criterion that ties the required layer resolution to the evanescent decay rates present in the mode spectrum — the near-field character of high orders is directly linked to how finely the vertical direction must be discretized.
 
-```cpp
-// beta1_: rayleigh expansion inside grating
-gsl_complex k12minusAn2 = gsl_complex_sub_real(gsl_complex_mul(k_1, k_1), alpha*alpha);
-beta1_[i] = complex_sqrt_upperComplexPlane(k12minusAn2);
-```
+## 9. The Coating Causal Chain
 
-`complex_sqrt_upperComplexPlane()` (§6) picks the branch of the complex square root with `Im(w) ≥ 0` — physically, this enforces that waves *decay* (rather than grow) going deeper into an absorbing substrate.
+If a coating changes the local material distribution $\varepsilon_r(x,y)$, this changes $k_p^2(y)$, which changes the coupling matrix $M_{nm}(y)$, which changes the vertical mode profiles $u_n(y)$, which changes the layer transfer relations, which changes the assembled scattering matrix, which changes the reflection amplitudes $B_n$, and therefore the efficiencies $\eta_n$:
+$$\boxed{\text{coating geometry} \rightarrow \varepsilon_r(x,y) \rightarrow k_n^2(y) \rightarrow M(y) \rightarrow u_n(y) \rightarrow S \rightarrow B_n \rightarrow \eta_n.}$$
+This is the complete causal path by which any change to the layer geometry enters the diffraction efficiencies — there is no other route.
 
-Note that **no coating index (`v_c_`) appears anywhere in this function.** Coating only matters for the *local* material distribution inside the structure (§2.1, §3), not for these two asymptotic boundary conditions above and below everything.
+## 10. What This Formalism Does Not Do
 
-### 1.2 Layering for numerical stability — `computeLayers()`
+For clarity, it is worth stating explicitly what the method does *not* do:
 
-```cpp
-// How many layers do we need?
-double a = g_.totalHeight();
+- it does not evaluate a full 2D field on a real-space $(x,y)$ grid as its primary variable;
+- it does not trace an independent ray-optics path per diffraction order;
+- it does not treat diffraction as a sequence of independent Snell refractions;
+- it does not determine the diffraction orders only at the end of the calculation — they are built into the problem from the start via the Floquet basis.
 
-double magicNumber = 3;
-// should be ln(1e15). However, emperically this is not enough to maintain
-// stability (ex: REIXS LEG).  7 = ln(1e3) seems stable for all tests so far.
+Instead, the fundamental variable throughout is the field superposition
+$$u(x,y) = \sum_n u_n(y)\,e^{i\alpha_n x},$$
+so diffraction is present in the degrees of freedom from the very first step, not derived afterward.
 
-// How many layers to use? In order to keep size of exp(i betaM_{±N}) < 1e15 to avoid losing
-// precision in double values compared with unity-size numbers.
-numLayers_ = std::max( gsl_complex_abs(betaM_[0])*a/magicNumber, gsl_complex_abs(betaM_[2*N_])*a/magicNumber );
-if(numLayers_ < 1)
-    numLayers_ = 1;
-    // we need at least one layer, in addition to the substrate.
-```
+## 11. The Central Conceptual Reduction
 
-Evanescent orders grow/decay as `exp(beta_n · y)` while propagating through the structure. A `double` carries about 15–16 significant decimal digits; if `beta_n · (total height)` gets too large, `exp(beta_n · height)` exceeds that dynamic range, and subsequent matrix operations lose essentially all precision comparing it against unity-sized numbers.
+The physical reduction underlying the entire method is:
+$$\boxed{\text{2D electromagnetic problem} \ \Longrightarrow\ \text{1D system of coupled modes.}}$$
+The $x$-direction is not eliminated by ignoring it, but by encoding its periodicity exactly into the Fourier/Floquet basis. What remains is a single continuous variable, $y$. This reduction is the conceptual core of the whole formalism.
 
-The fix: don^{\prime}t integrate the whole height `a` in one shot. Split it into `numLayers_` thinner slices, chosen so that even the *most* evanescent order (largest `|beta_n|`, which occurs at the highest or lowest computed diffraction order — hence checking both `betaM_[0]` and `betaM_[2*N_]`) stays within a safe exponential range over a single layer:
+## 12. Physical Consistency Checks
 
-$$\text{numLayers} = \max\left(\frac{|\beta_0^{(M)}| \cdot a}{\text{magicNumber}}, \; \frac{|\beta_{2N}^{(M)}| \cdot a}{\text{magicNumber}}\right)$$
+### 12.1 Homogeneous-Grating Limit
 
-The comment here is worth calling out explicitly: the theoretically "correct" bound would be `magicNumber ≈ ln(10^15) ≈ 34.5`, but the code uses `3` — a much more conservative choice — because `34.5`, and even the less strict `ln(1000) ≈ 7`, turned out to be *insufficient* in a real test case (referenced in the comment as "REIXS LEG"). This heuristic is not a cosmetic detail: it is the mechanism that keeps the whole algorithm numerically stable regardless of how many "real" material regions (coating, profile, substrate) sit inside the structure. A thin coating barely changes `a`, so it barely changes `numLayers_` — the scheme adapts automatically rather than becoming unstable.
+A strong test of the full formalism is the limit $\varepsilon_r(x,y) = \text{const}$. Then $k_n^2 = 0$ for all $n\neq0$, all coupling vanishes, and the equations decouple into
+$$u_n'' + \beta_n^2 u_n = 0.$$
+Only the actually excited incident order remains active, and the system reduces to ordinary plane-wave propagation in a homogeneous medium. A correctly formulated solver must reproduce exactly this trivial physics in this limit.
 
-```cpp
-y_ = new double[M_];
-// To be consistent with the text, we number the lowest layer as 1.  y_[0] is
-// therefore unused, so that we can use y_m = y_[m], with lowest m=1, highest m=M-1.
+### 12.2 Energy Balance
 
-for(int m=1; m<M_; ++m) {
-    y_[m] = double(m-1)/numLayers_*a;
-}
-```
-`y_` holds the layer boundaries, evenly spaced from `y=0` (substrate interface) to `y=a` (top of the structure, into vacuum). `M_ = numLayers_ + 2`, matching the convention that layer boundary `m` runs from 1 to `M_-1`.
+For lossless materials, summing over all propagating reflected and transmitted orders should satisfy
+$$\boxed{\sum_n R_n + \sum_n T_n = 1}$$
+up to numerical error and normalization conventions. For absorbing materials,
+$$\sum_n R_n + \sum_n T_n < 1,$$
+since part of the energy is dissipated in the material. This energy check is one of the most important independent validation tests for any implementation of the method.
 
----
+### 12.3 Complex Quantities and Absorption
+
+If the material is absorbing, the refractive index $n = n' + in''$ is complex, and so is $k^2$. Consequently $k_n^2(y)$, $M(y)$, $\beta_n$, $u_n(y)$, and $B_n$ all become complex quantities. Their imaginary parts are not numerical artifacts — they physically encode phase shift and absorption.
+
+### 12.4 $y$-Dependent Geometry
+
+For a strictly rectangular profile, the lateral material distribution within a given layer is constant in $y$, so $\partial M/\partial y = 0$ within that layer. For a sloped or curved profile, the transition positions $x_p(y)$ instead vary continuously with $y$, so $k_n^2(y)$ — and hence $M(y)$ — becomes explicitly $y$-dependent within a layer, not just from layer to layer. Treating $M$ as piecewise constant in $y$ (i.e. neglecting $\partial M/\partial y$ within a layer) is exact only for rectangular profiles; for sloped or curved profiles it is an approximation whose accuracy improves as the layers are made thinner. This does not change the underlying physics — it only affects the accuracy of the derivative information available to the numerical integration.
+
+## 13. Why the Scattering Matrix Is More Physically Natural Than the Transfer Matrix
+
+The transfer matrix tracks a full internal state vector, including combinations of growing and decaying evanescent contributions. The scattering matrix instead directly tracks the relation between the physically and experimentally relevant quantities: incoming amplitudes in, outgoing amplitudes out. For an optical measurement, it is precisely the outgoing diffraction orders that are of interest. The scattering-matrix formulation is therefore not only numerically more stable (§3.4, §4.1) but also conceptually closer to the physically measured quantity.
+
+## 14. Full Equation Chain (Summary)
+
+$$\varepsilon_r(x,y)\ \rightarrow\ k^2(x,y)=k_0^2\varepsilon_r(x,y)\ \rightarrow\ \alpha_n = k_{\text{top}}\sin\theta + n\frac{2\pi}{d}$$
+$$u(x,y) = \sum_n u_n(y)\,e^{i\alpha_n x}, \qquad k^2(x,y) = \sum_p k_p^2(y)\,e^{ipKx}$$
+$$u_n''(y) = \sum_m\left[\alpha_n^2\delta_{nm} - k_{n-m}^2(y)\right]u_m(y), \qquad \beta_n^2 = k_{\text{medium}}^2 - \alpha_n^2$$
+$$\mathbf{w}(y_+) = \mathcal{T}_{\text{layer}}\,\mathbf{w}(y_-), \qquad \mathbf{a}_{\text{out}} = S\,\mathbf{a}_{\text{in}}, \qquad \mathbf{a}_{\text{in}} = \mathbf{e}_0$$
+$$B_n = (S\mathbf{e}_0)_n \quad \text{(up to the phase reference of §7.1)}, \qquad \eta_n = |B_n|^2\,\frac{\operatorname{Re}\beta_n}{\operatorname{Re}\beta_0}$$
+
+## 15. Mental Model
+
+The simplest complete picture of this formalism is:
+
+- The grating is a medium that couples different tangential Fourier/Floquet waves to one another.
+- Periodicity determines which waves are allowed at all: $\alpha_n = \alpha_0 + nK$.
+- The material structure determines how strongly they are coupled: $k_{n-m}^2(y)$.
+- Vertical propagation determines how these coupled amplitudes evolve with height: $u'' = M(y)\,u$.
+- The outer media determine which of these solutions are propagating or evanescent: $\beta_n^2 = k^2-\alpha_n^2$.
+- The scattering matrix determines which outgoing waves result from the one incident beam.
+- Their normal power flow yields the measured diffraction efficiency.
+
+## 16. Conclusion
+
+Physically, this method is not "an algorithm for computing diffraction efficiencies" but the numerical realization of a well-posed electromagnetic boundary-value problem:
+$$\boxed{\text{periodic Maxwell problem} \rightarrow \text{coupled Floquet modes} \rightarrow \text{vertical ODE} \rightarrow \text{global scattering matrix} \rightarrow \text{diffracted power.}}$$
+
+Geometry enters the physics exclusively through $\varepsilon_r(x,y) \rightarrow k_n^2(y)$; periodicity generates $\alpha_n = \alpha_0 + nK$; and the coupling of these modes produces diffraction. The two conceptual bridges that tie the whole derivation together are
+$$\boxed{\text{Maxwell} \rightarrow \text{scalar TE-Helmholtz} \rightarrow \text{Floquet} \rightarrow \text{coupled ODE}}$$
+and
+$$\boxed{\text{outer boundary condition} \rightarrow \text{scattering-matrix column} \rightarrow \text{Poynting flux}.}$$
