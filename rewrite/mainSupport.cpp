@@ -9,8 +9,11 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 
 
 #include "mainSupport.h"
-#include <stdlib.h>
-#include <string.h>
+//#include <stdlib.h>
+//#include <string.h>
+
+#include <cstdlib>
+#include <cstring>
 
 void CommandLineOptions::init() {
 	mode = InvalidMode;
@@ -270,6 +273,20 @@ bool CommandLineOptions::isValid() {
 	return true;
 }
 
+Result getEffCombined(const Result& teResult, const Result& tmResult) {
+	// teResult.eff.size() == tmResult.eff.size() is assumed here, since both must come from
+	// the same N (Fourier truncation index) / incidence / wavelength.
+	int N = int((teResult.eff.size()-1)/2);
+	Result combined(N);
+	combined.wavelength = teResult.wavelength;
+	combined.incidenceDeg = teResult.incidenceDeg;
+
+	for(size_t i=0, cc=teResult.eff.size(); i<cc; ++i)
+		combined.eff[i] = (teResult.eff[i] + tmResult.eff[i]) / 2.0;
+
+	return combined;
+}
+
 /// This helper function writes the header to the output file stream
 void writeOutputFileHeader(std::ostream& of, const CommandLineOptions& io) {
 	of << "# Input" << std::endl;
@@ -348,7 +365,6 @@ void writeOutputFileHeader(std::ostream& of, const CommandLineOptions& io) {
 }
 
 // This helper function appends a single efficiency result to the output file stream
-template<typename Result>
 void writeOutputFileResult(std::ostream& of, const Result& result, const CommandLineOptions& io) {
 	// x-column depends on mode: incidence angle in ConstantWavelength mode,
 	// otherwise wavelength (converted to eV if io.eV is set).
@@ -390,4 +406,25 @@ void writeOutputFileResult(std::ostream& of, const Result& result, const Command
 		of << std::endl;
 		break;
 	}
+}
+
+// This helper function appends the progress to the given output stream
+void writeOutputFileProgress(std::ostream& of, int completedSteps, int totalSteps, bool anySuccesses, bool anyFailures) {
+	of << "# Progress" << std::endl;
+	// not done yet:
+	if(completedSteps < totalSteps) {
+		of << "status=inProgress" << std::endl;
+	}
+	// or all done:
+	else {
+		if(anySuccesses && anyFailures)
+			of << "status=someFailed" << std::endl;
+		else if(anyFailures)
+			of << "status=allFailed" << std::endl;
+		else
+			of << "status=succeeded" << std::endl;
+	}
+	
+	of << "completedSteps=" << completedSteps << std::endl;
+	of << "totalSteps=" << totalSteps << std::endl;
 }

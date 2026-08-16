@@ -55,21 +55,21 @@ int main(int argc, char** argv) {
 	// Legal
 	if(rank == 0) {
 		if(io.showLegal) {
-			std::cout 
+			std::cout <<
 			"Copyright (C) 2026 Jesaja Weintritt (jesaja.weintritt@stud.eah-jena.de) \n"
 			"and 2012 Mark Boots (mark.boots@usask.ca).\n\n"
 
 			"This program was originally implemented as a part of the Parallel Efficiency of Gratings project (\"PEG\")\n"
 			"and got reworked in 2026. PEG is free software: you can redistribute it and/or modify it\n"
 			"under the terms of the GNU General Public License, version 3, as published by the Free Software Foundation.\n"
-			"See <http://www.gnu.org/licenses/> for details.\n\n"
+			"See http://www.gnu.org/licenses/gpl.html for details.\n\n"
 
 			"This reworked version contains substantial modifications by Jesaja Weintritt (2026) and has not been\n"
 			"independently verified against the original. It is distributed in the hope that it will be useful,\n"
 			"but WITHOUT ANY WARRANTY; use at your own risk and verify results independently.\n\n";
 		}
 		else {
-			std::cout 
+			std::cout <<
 			"PEG Copyright (C)\n"
 			"2026 Jesaja Weintritt (jesaja.weintritt@stud.eah-jena.de)\n"
 			"2012 Mark Boots (mark.boots@usask.ca)\n"
@@ -164,20 +164,19 @@ int main(int argc, char** argv) {
 	std::vector<double> mpiSendBuffer(pairSize);
 
 	// On Process 0: separate result histories per polarization / combination.
-	std::vector<TEResult> resultsTE;
-	std::vector<TMResult> resultsTM;
-	std::vector<TEResult> resultsCombined; // reuses TEResult's layout for the averaged spectrum
+	std::vector<Result> resultsTE;
+	std::vector<Result> resultsTM;
+	std::vector<Result> resultsCombined; // reuses Result's layout for the averaged spectrum
 
 	for(int i=0; i<totalSteps; i+=commandSize) {
-		...
-		TEResult resultTE = TEResult(TEResult::InactiveCalculation);
-		TMResult resultTM = TMResult(TMResult::InactiveCalculation);
+		Result resultTE = Result(Result::InactiveCalculation);
+		Result resultTM = Result(Result::InactiveCalculation);
 
 		if(i+rank < totalSteps){
 			if(io.computeTE || io.combineTETM)
-				resultTE = grating->getEffTE(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads);
+				resultTE = grating->getEffTE(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
 			if(io.computeTM || io.combineTETM)
-				resultTM = grating->getEffTM(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads);
+				resultTM = grating->getEffTM(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
 		}
 
 		// Pack both results into this rank's send buffer.
@@ -199,23 +198,23 @@ int main(int argc, char** argv) {
 		// On Process 0: collect results and output.
 		if(rank == 0) {
 			for(int j=0; j<commandSize; ++j) {
-				TEResult resultTEj;
-				TMResult resultTMj;
+				Result resultTEj;
+				Result resultTMj;
 				resultTEj.fromDoubleArray(mpiReceiveBuffer.data() + j*pairSize);
 				resultTMj.fromDoubleArray(mpiReceiveBuffer.data() + j*pairSize + resultSize);
 
 				// indicates non-calculation for inactive process on last round
-				if(resultTEj.status != TEResult::InactiveCalculation) {
+				if(resultTEj.status != Result::InactiveCalculation) {
 					if(io.computeTE) {
 						resultsTE.push_back(resultTEj);
-						if(resultTEj.status == TEResult::Success) anySuccesses = true; else anyFailures = true;
+						if(resultTEj.status == Result::Success) anySuccesses = true; else anyFailures = true;
 					}
 					if(io.computeTM) {
 						resultsTM.push_back(resultTMj);
-						if(resultTMj.status == TMResult::Success) anySuccesses = true; else anyFailures = true;
+						if(resultTMj.status == Result::Success) anySuccesses = true; else anyFailures = true;
 					}
-					if(io.combineTETM && resultTEj.status == TEResult::Success && resultTMj.status == TMResult::Success) {
-						TEResult combined = resultTEj;
+					if(io.combineTETM && resultTEj.status == Result::Success && resultTMj.status == Result::Success) {
+						Result combined = resultTEj;
 						for(std::size_t k = 0; k < combined.eff.size(); ++k)
 							combined.eff[k] = (resultTEj.eff[k] + resultTMj.eff[k]) / 2.0;
 						resultsCombined.push_back(combined);

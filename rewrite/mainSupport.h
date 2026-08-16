@@ -90,11 +90,18 @@ protected:
 	std::string firstErrorMessage_;
 };
 
+/// Combines an already-computed TE result and TM result into a single result, using the simple average (TE_eff + TM_eff) / 2 per diffraction order.
+/// Does not run any new calculation itself; \c teResult and \c tmResult must come from Grating::getEffTE() / Grating::getEffTM() for the same incidence/wavelength/N.
+/// \pre Callers must ensure both teResult.status and tmResult.status are Result::Success before calling this.
+Result getEffCombined(const Result& teResult, const Result& tmResult);
+
 /// This helper function writes the header to the output file stream
 void writeOutputFileHeader(std::ostream& outputFileStream, const CommandLineOptions& io);
 
 /// This helper function appends a single efficiency result to the output file stream
-template<typename Result>
 void writeOutputFileResult(std::ostream& outputFileStream, const Result& result, const CommandLineOptions& io);
+
+/// This helper function appends the progress description to the given output stream
+void writeOutputFileProgress(std::ostream& outputFileStream, int completedSteps, int totalSteps, bool anySuccesses, bool anyFailures);
 
 #endif

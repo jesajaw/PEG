@@ -9,6 +9,7 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 
 #include "PEG.h"
 #include "TESolver.h"
+//#include "TESolver.h"
 
 #include <gsl/gsl_complex_math.h>
 #include <fstream>
@@ -43,9 +44,25 @@ void Result::fromDoubleArray(const double* array) {
 	std::memcpy(&(eff[0]), array+4, eff.size()*sizeof(double));	
 }
 
-Result Grating::getEff(double incidenceDeg, double wl, double rmsRoughnessNm, const PEMathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
+Result Grating::getEff(double incidenceDeg, double wl, double rmsRoughnessNm, const MathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
 	TESolver s(*this, mo, numThreads, measureTiming);
 	return s.getEff(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
+}
+
+Result Grating::getEffTM(double incidenceDeg, double wl, double rmsRoughnessNm, const MathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
+	(void)incidenceDeg;
+	(void)wl;
+	(void)rmsRoughnessNm;
+	(void)mo;
+	(void)printDebugOutput;
+	(void)numThreads;
+	(void)measureTiming;
+
+	/// \todo TM solver (analogous to TESolver) is not implemented yet.
+	/// Once a TMSolver class exists, this should mirror getEffTE():
+	///   TMSolver s(*this, mo, numThreads, measureTiming);
+	///   return s.getEff(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
+	return Result(Result::OtherFailure);
 }
 
 gsl_complex Grating::refractiveIndex(double wl, const std::string& material) {
@@ -122,7 +139,7 @@ gsl_complex Grating::refractiveIndex(double wl, const std::string& material) {
 	double interpBeta = lowerBeta + interp*(upperBeta - lowerBeta);
 
 	return gsl_complex_rect(1-interpDelta, 0.9*interpBeta);
-	
+
 	/// \todo UNEXPLAINED: this 0.9 factor is not applied to the exact-match?
 	/// case above (see the `return gsl_complex_rect(1-delta[0], beta[0]);` line). Origin/justification
 	/// unknown; needs verification against the source data, or removal if it's a leftover correction.
@@ -316,7 +333,7 @@ int Grating::computeK2StepsAtY_thickCoating(double y, gsl_complex k2_vaccuum, gs
 	}
 }
 
-int PECustomProfileGrating::computeK2StepsAtY(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double *stepsX, gsl_complex *stepsK2) const
+int CustomProfileGrating::computeK2StepsAtY(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double *stepsX, gsl_complex *stepsK2) const
 {
 	// coatings are not supported.
 	(void)k2_coating;

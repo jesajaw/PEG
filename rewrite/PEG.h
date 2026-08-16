@@ -123,11 +123,12 @@ public:
 	static double roughnessFactor(double sigma, double wl, const std::string& material, double incidence);
 	static double roughnessFactor(double sigma, double wl, const gsl_complex& refractiveIndex, double incidence);
 
-	
-	
-	/// Calculates the grating efficiency at a given incidence angle \c incidenceDeg (degrees) and wavelength \c wl (um). \c numThreads is the number of threads to use for fine parallelization; ideally it should be <= the number of processor cores on your computer / on a single cluster node.
-	Result getEff(double incidenceDeg, double wl, double rmsRoughnessNm = 0, const MathOptions& mo = MathOptions(), bool printDebugOutput = false, int numThreads = 1, bool measureTiming = false) const;
+	/// Calculates the TE-polarized grating efficiency at a given incidence angle \c incidenceDeg (degrees) and wavelength \c wl (um). \c numThreads is the number of threads to use for fine parallelization; ideally it should be <= the number of processor cores on your computer / on a single cluster node.
+	Result getEffTE(double incidenceDeg, double wl, double rmsRoughnessNm = 0, const MathOptions& mo = MathOptions(), bool printDebugOutput = false, int numThreads = 1, bool measureTiming = false) const;
 
+	/// Calculates the TM-polarized grating efficiency at a given incidence angle \c incidenceDeg (degrees) and wavelength \c wl (um). \c numThreads is the number of threads to use for fine parallelization; ideally it should be <= the number of processor cores on your computer / on a single cluster node.
+	/// \todo TM solver is not yet implemented. Currently always returns Result::OtherFailure as a placeholder.
+	Result getEffTM(double incidenceDeg, double wl, double rmsRoughnessNm = 0, const MathOptions& mo = MathOptions(), bool printDebugOutput = false, int numThreads = 1, bool measureTiming = false) const;
 
 	// Detailed geometry
 	/////////////////////////

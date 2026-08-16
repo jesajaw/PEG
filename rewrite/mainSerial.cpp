@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 	}
 
 	if(io.showLegal) {
-		std::cout 
+		std::cout <<
 		"Copyright (C) 2026 Jesaja Weintritt (jesaja.weintritt@stud.eah-jena.de)\n"
 		"and 2012 Mark Boots (mark.boots@usask.ca).\n\n"
 
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 		"but WITHOUT ANY WARRANTY; use at your own risk and verify results independently.\n\n";
 	}
 	else {
-		std::cout 
+		std::cout <<
 		"PEG Copyright (C)\n"
 		"2026 Jesaja Weintritt (jesaja.weintritt@stud.eah-jena.de)\n"
 		"2012 Mark Boots (mark.boots@usask.ca)\n"
@@ -116,9 +116,9 @@ int main(int argc, char** argv) {
 	// output data stored here:
 	bool anyFailures = false;
 	bool anySuccesses = false;
-	std::vector<TEResult> resultsTE;
-	std::vector<TMResult> resultsTM;
-	std::vector<TEResult> resultsCombined; // reuses TEResult's layout for the averaged spectrum
+	std::vector<Result> resultsTE;
+	std::vector<Result> resultsTM;
+	std::vector<Result> resultsCombined; // reuses Result's layout for the averaged spectrum
 
 	// sequential loop over calculation steps
 	for(int i=0; i<totalSteps; ++i) {
@@ -154,8 +154,8 @@ int main(int argc, char** argv) {
 		}
 
 		// run the calculation(s), depending on which polarizations are requested.
-		TEResult resultTE = TEResult(TEResult::InactiveCalculation);
-		TMResult resultTM = TMResult(TMResult::InactiveCalculation);
+		Result resultTE = Result(Result::InactiveCalculation);
+		Result resultTM = Result(Result::InactiveCalculation);
 
 		if(io.computeTE || io.combineTETM)
 			resultTE = grating->getEffTE(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, io.printDebugOutput, io.threads, io.measureTiming);
@@ -164,14 +164,14 @@ int main(int argc, char** argv) {
 
 		if(io.computeTE) {
 			resultsTE.push_back(resultTE);
-			if(resultTE.status == TEResult::Success) anySuccesses = true; else anyFailures = true;
+			if(resultTE.status == Result::Success) anySuccesses = true; else anyFailures = true;
 		}
 		if(io.computeTM) {
 			resultsTM.push_back(resultTM);
-			if(resultTM.status == TMResult::Success) anySuccesses = true; else anyFailures = true;
+			if(resultTM.status == Result::Success) anySuccesses = true; else anyFailures = true;
 		}
-		if(io.combineTETM && resultTE.status == TEResult::Success && resultTM.status == TMResult::Success) {
-			TEResult combined = resultTE;
+		if(io.combineTETM && resultTE.status == Result::Success && resultTM.status == Result::Success) {
+			Result combined = resultTE;
 			for(std::size_t k = 0; k < combined.eff.size(); ++k)
 				combined.eff[k] = (resultTE.eff[k] + resultTM.eff[k]) / 2.0;
 			resultsCombined.push_back(combined);
