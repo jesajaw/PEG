@@ -9,7 +9,7 @@ The method implemented here is a **differential (coupled-wave) method**: the str
 ---
 ## Table of Contents
 
-0. [Physical Setup](#00-physical-setup)
+0. [Physical Setup](#0-physical-setup)
     1. [Maxwell to Scalar Wavefunction](#01-maxwell-to-scalar-wavefunction)
     2. [Fourier & Floquet Expansion](#02-fourier-and-floquet-expansion)
     3. [Coupled Mode Equation Derivation](#03-coupled-mode-equation-derivation)
@@ -62,7 +62,7 @@ The method implemented here is a **differential (coupled-wave) method**: the str
 
 Overview of the Theoretical Pipeline:
 
-$$\text{Maxwell^{\prime}s Equations} \longrightarrow \text{Helmholtz Equation} \longrightarrow \text{Scalar Wave Equation (TE)}$$
+$$\text{Maxwells Equations} \longrightarrow \text{Helmholtz Equation} \longrightarrow \text{Scalar Wave Equation (TE)}$$
 $$\downarrow$$
 $$\text{Periodic Fourier/Floquet Expansion} \longrightarrow \text{Coupled ODEs in } y \longrightarrow \text{Local Layer Response}$$
 $$\downarrow$$
