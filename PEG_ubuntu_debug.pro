@@ -3,7 +3,7 @@ QT     -= gui core
 
 TARGET = pegSerial
 
-QMAKE_CXXFLAGS += -march=native -O2 -c -Wall -fopenmp
+QMAKE_CXXFLAGS += -march=native -O2 -c -g -Wall -fopenmp
 QMAKE_LFLAGS += -fopenmp
 
 # Eigen and Boost.Odeint are header-only -- no LIBS or rpath needed.
