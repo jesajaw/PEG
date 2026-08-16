@@ -1,20 +1,10 @@
 /*
-Copyright 2012 Mark Boots (mark.boots@usask.ca).
+Copyright (C) 2026 Jesaja Weintritt (jesaja.weintritt@stud.eah-jena.de) and 2012 Mark Boots (mark.boots@usask.ca).
 
-This file is part of the Parallel Efficiency of Gratings project ("PEG").
+This program was originally implemented as a part of the Parallel Efficiency of Gratings project PEG and got reworked in 2026. PEG is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License, version 3, as published by the Free Software Foundation.
+See <http://www.gnu.org/licenses/> for details.
 
-PEG is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-PEG is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with PEG.  If not, see <http://www.gnu.org/licenses/>.
+This reworked version contains substantial modifications by Jesaja Weintritt (2026) and has not been independently verified against the original. It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; use at your own risk and verify results independently.
 */
 
 #ifndef PEG_H
@@ -40,14 +30,14 @@ along with PEG.  If not, see <http://www.gnu.org/licenses/>.
 // Common definitions for the PEG parallel grating efficiency library
 
 /// This type is returned by a single grating efficiency calculation. It contains a status code/error code to indicate the result of the calculation, a vector of inside order efficiencies, and a vector of outside order efficiencies. The first element in the output vectors is the 0 order, and is duplicated over both.
-class PEResult {
+class Result {
 public:
 	enum Code { Success, InvalidGratingFailure, ConvergenceFailure, InsufficientCoefficientsFailure, AlgebraFailure, MissingRefractiveDataFailure, OtherFailure, InactiveCalculation };
 	
 	/// Constructs an empty result with the given \c statusCode
-	PEResult(Code statusCode = OtherFailure) { status = statusCode; }
+	Result(Code statusCode = OtherFailure) { status = statusCode; }
 	/// Constructs a successful result, where the eff array has size \c 2*N+1.
-	PEResult(int N) : eff(2*N+1) {
+	Result(int N) : eff(2*N+1) {
 		status = Success;
 	}
 	
@@ -66,13 +56,15 @@ public:
 	void fromDoubleArray(const double* array);
 	
 	/// Prints the output efficiencies in a table, to standard output.
-	friend std::ostream& operator<<(std::ostream& os, const PEResult& result);
+	friend std::ostream& operator<<(std::ostream& os, const Result& result);
 };
 
-std::ostream& operator<<(std::ostream& os, const PEResult& result);
+//using Result = Result; useless?
+
+std::ostream& operator<<(std::ostream& os, const Result& result);
 
 /// Represents the numerical options to be used for a single grating calculation.
-class PEMathOptions {
+class MathOptions {
 public:
 	/// Fourier truncation index N. Should be a positive number; Fourier components from [-N, N].
 	int N;
@@ -80,7 +72,7 @@ public:
 	double integrationTolerance;
 	
 	/// Constructor
-	PEMathOptions(int FourierN = 15, double IntegrationTolerance = 1e-5) {
+	MathOptions(int FourierN = 15, double IntegrationTolerance = 1e-5) {
 		N = FourierN;
 		integrationTolerance = IntegrationTolerance;
 	}
@@ -88,16 +80,16 @@ public:
 
 
 /// Represents the parameters and geometry of a grating. Subclassed as required for different profiles.
-class PEGrating {
+class Grating {
 public:
 	
 	/// Specifies the grating profile, if one of the standard profiles, or CustomProfile
 	enum Profile { InvalidProfile, RectangularProfile, BlazedProfile, SinusoidalProfile, TrapezoidalProfile, CustomProfile };
 	
 	/// Default constructor; does not provide a valid grating. Use the constructors in the subclasses for a valid grating.
-	PEGrating() = default;
+	Grating() = default;
 	
-	virtual ~PEGrating() = default;
+	virtual ~Grating() = default;
 	
 	// Accessor Functions
 	////////////////////////
@@ -131,11 +123,12 @@ public:
 	static double roughnessFactor(double sigma, double wl, const std::string& material, double incidence);
 	static double roughnessFactor(double sigma, double wl, const gsl_complex& refractiveIndex, double incidence);
 
-	
-	
-	/// Calculates the grating efficiency at a given incidence angle \c incidenceDeg (degrees) and wavelength \c wl (um). \c numThreads is the number of threads to use for fine parallelization; ideally it should be <= the number of processor cores on your computer / on a single cluster node.
-	PEResult getEff(double incidenceDeg, double wl, double rmsRoughnessNm = 0, const PEMathOptions& mo = PEMathOptions(), bool printDebugOutput = false, int numThreads = 1, bool measureTiming = false) const;
+	/// Calculates the TE-polarized grating efficiency at a given incidence angle \c incidenceDeg (degrees) and wavelength \c wl (um). \c numThreads is the number of threads to use for fine parallelization; ideally it should be <= the number of processor cores on your computer / on a single cluster node.
+	Result getEffTE(double incidenceDeg, double wl, double rmsRoughnessNm = 0, const MathOptions& mo = MathOptions(), bool printDebugOutput = false, int numThreads = 1, bool measureTiming = false) const;
 
+	/// Calculates the TM-polarized grating efficiency at a given incidence angle \c incidenceDeg (degrees) and wavelength \c wl (um). \c numThreads is the number of threads to use for fine parallelization; ideally it should be <= the number of processor cores on your computer / on a single cluster node.
+	/// \todo TM solver is not yet implemented. Currently always returns Result::OtherFailure as a placeholder.
+	Result getEffTM(double incidenceDeg, double wl, double rmsRoughnessNm = 0, const MathOptions& mo = MathOptions(), bool printDebugOutput = false, int numThreads = 1, bool measureTiming = false) const;
 
 	// Detailed geometry
 	/////////////////////////
@@ -206,10 +199,10 @@ protected:
 };
 
 /// Rectangular grating subclass
-class PERectangularGrating : public PEGrating {
+class RectangularGrating : public Grating {
 public:
 	/// Constructs a grating with a rectangular profile. The required geometry parameters are the groove \c height in um, and the \c valleyWidth in um.  The \c valleyWidth is the width of the low part of the groove, and must obviously be less than the period.
-	PERectangularGrating(double period = 1.0, double height = 0.05, double valleyWidth = 0.5, const std::string& material = "Au", const std::string& coating = "Au", double coatingThickness = 0) {
+	RectangularGrating(double period = 1.0, double height = 0.05, double valleyWidth = 0.5, const std::string& material = "Au", const std::string& coating = "Au", double coatingThickness = 0) {
 		profile_ = RectangularProfile;
 		period_ = period;
 		geo_.resize(2);
@@ -230,10 +223,10 @@ public:
 };
 
 /// Blazed grating subclass
-class PEBlazedGrating : public PEGrating {
+class BlazedGrating : public Grating {
 public:
 	/// Constructs a grating with the blazed profile. The required geometry parameters are the blaze angle \c blazeAngleDeg, in deg., and the anti-blaze angle \c antiBlazeAngleDeg.
-	PEBlazedGrating(double period = 1.0, double blazeAngleDeg = 2.0, double antiBlazeAngleDeg = 30, const std::string& material = "Au", const std::string& coating = "Au", double coatingThickness = 0) {
+	BlazedGrating(double period = 1.0, double blazeAngleDeg = 2.0, double antiBlazeAngleDeg = 30, const std::string& material = "Au", const std::string& coating = "Au", double coatingThickness = 0) {
 		profile_ = BlazedProfile;
 		period_ = period;
 		geo_.resize(2);
@@ -254,10 +247,10 @@ public:
 };
 
 /// Sinusoidal grating subclass
-class PESinusoidalGrating : public PEGrating {
+class SinusoidalGrating : public Grating {
 public:
 	/// Constructs a grating with a perfect sinusoidal profile. The only required geometry parameter is the groove \c height, in um.
-	PESinusoidalGrating(double period = 1.0, double height = 0.05, const std::string& material = "Au", const std::string& coating = "Au", double coatingThickness = 0) {
+	SinusoidalGrating(double period = 1.0, double height = 0.05, const std::string& material = "Au", const std::string& coating = "Au", double coatingThickness = 0) {
 		profile_ = SinusoidalProfile;
 		period_ = period;
 		geo_.resize(1);
@@ -273,7 +266,7 @@ public:
 
 	/// Returns the x-coordinate of the first intersection with the surface at \c y.
 	/*! For sine profile, the surface is described by y = g(x) = depth/2 * ( 1 - cos(2pi x/d) ).
-  // geo(0) is the depth.
+  	// geo(0) is the depth.
 
 	This returns inverse of grating profile formula above; will always return x in first half of period.*/
 	virtual double xIntersection1(double y) const { return geo(0)/2/M_PI * acos(1 - 2*y/geo(0)); }
@@ -282,10 +275,10 @@ public:
 };
 
 /// Trapezoidal grating subclass
-class PETrapezoidalGrating : public PEGrating {
+class TrapezoidalGrating : public Grating {
 public:
 	/// Constructs a grating with a trapezoidal profile. The required geometry parameters are the \c height, in um, the \c valleyWidth, in um, the blaze angle \c blazeAngleDeg, in deg., and the anti-blaze angle \c antiBlazeAngleDeg.
-	PETrapezoidalGrating(double period = 1.0, double height = 0.05, double valleyWidth = 0.5, double blazeAngleDeg = 30.0, double antiBlazeAngleDeg = 30.0, const std::string& material = "Au", const std::string& coating = "Au", double coatingThickness = 0) {
+	TrapezoidalGrating(double period = 1.0, double height = 0.05, double valleyWidth = 0.5, double blazeAngleDeg = 30.0, double antiBlazeAngleDeg = 30.0, const std::string& material = "Au", const std::string& coating = "Au", double coatingThickness = 0) {
 		profile_ = TrapezoidalProfile;
 		period_ = period;
 		geo_.resize(4);
@@ -308,10 +301,10 @@ public:
 };
 
 /// Custom grating subclass: profile is defined pointwise with a series of (x,y) points.
-class PECustomProfileGrating : public PEGrating {
+class CustomProfileGrating : public Grating {
 public:
 	/// Constructs a grating with a custom profile. The required geometry parameters \c geometry are a maximum height, followed by a vector of points (x_i followed by y_i) which must go from (x_0, y_0) = (0,0) to (x_I, y_I) = (1,0).  The \c points are scaled so that (0,0)->(1,1) maps to (0,0)->(period,maxHeight).
-	PECustomProfileGrating(double period = 1.0, const std::vector<double>& geometry = std::vector<double>(), const std::string& material = "Au") {
+	CustomProfileGrating(double period = 1.0, const std::vector<double>& geometry = std::vector<double>(), const std::string& material = "Au") {
 		profile_ = CustomProfile;
 		period_ = period;
 		geo_ = geometry;
@@ -330,7 +323,7 @@ public:
 	}
 
 	/// Constructs a grating with a custom profile. The required geometry parameters are a \c maxHeight in um, followed by a vector of \c xPoints and \c yPoints from (x_0, y_0) = (0,0) to (x_I, y_I) = (1,0).  The \c points are scaled so that (0,0)->(1,1) maps to (0,0)->(period,maxHeight).
-	PECustomProfileGrating(double period, double maxHeight, const std::vector<double>& xPoints, const std::vector<double>& yPoints,const std::string& material = "Au") {
+	CustomProfileGrating(double period, double maxHeight, const std::vector<double>& xPoints, const std::vector<double>& yPoints,const std::string& material = "Au") {
 		profile_ = CustomProfile;
 		period_ = period;
 		maxHeight_ = -1;
