@@ -18,7 +18,7 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 #include <cstring>
 
 // This packs the current result into a plain double \c array, for easy communication using standard MPI types.  The array must have pre-allocated room for 2N+1 + 4 elements.
-void PEResult::toDoubleArray(double* array) const {
+void Result::toDoubleArray(double* array) const {
 	array[0] = double(status);
 	array[1] = wavelength;
 	array[2] = incidenceDeg;
@@ -26,13 +26,13 @@ void PEResult::toDoubleArray(double* array) const {
 		array[3] = 0;
 	}
 	else {
-		array[3] = double((eff.size()-1)/2);	// N
+		array[3] = double((eff.size()-1)/2);// N
 		std::memcpy(array+4, &(eff.at(0)), eff.size()*sizeof(double));
 	}
 }
 
 // This unpacks the result from a plain double \c array that was filled by toDoubleArray().
-void PEResult::fromDoubleArray(const double* array) {
+void Result::fromDoubleArray(const double* array) {
 	status = Code(int(array[0]));
 	wavelength = array[1];
 	incidenceDeg = array[2];
@@ -43,12 +43,12 @@ void PEResult::fromDoubleArray(const double* array) {
 	std::memcpy(&(eff[0]), array+4, eff.size()*sizeof(double));	
 }
 
-PEResult PEGrating::getEff(double incidenceDeg, double wl, double rmsRoughnessNm, const PEMathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
-	PESolver s(*this, mo, numThreads, measureTiming);
+Result Grating::getEff(double incidenceDeg, double wl, double rmsRoughnessNm, const PEMathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
+	TESolver s(*this, mo, numThreads, measureTiming);
 	return s.getEff(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
 }
 
-gsl_complex PEGrating::refractiveIndex(double wl, const std::string& material) {
+gsl_complex Grating::refractiveIndex(double wl, const std::string& material) {
 	// Override for testing:
 //	return gsl_complex_rect(0.993, 0.00754);	// Pt at 410 eV
 //	return gsl_complex_rect(1.4, -0.);	// plain glass in visible range.
@@ -122,19 +122,18 @@ gsl_complex PEGrating::refractiveIndex(double wl, const std::string& material) {
 	double interpBeta = lowerBeta + interp*(upperBeta - lowerBeta);
 
 	return gsl_complex_rect(1-interpDelta, 0.9*interpBeta);
-
-	/// \todo is this really needed? interpolation will be the case, if there´re no alpha/beta values for the searched wl... prob due data with a lack of steps?
+	
 	/// \todo UNEXPLAINED: this 0.9 factor is not applied to the exact-match?
 	/// case above (see the `return gsl_complex_rect(1-delta[0], beta[0]);` line). Origin/justification
 	/// unknown; needs verification against the source data, or removal if it's a leftover correction.
 }
 
 
-std::ostream& operator<<(std::ostream& os, const PEResult& result) {
+std::ostream& operator<<(std::ostream& os, const Result& result) {
 	int N = (result.eff.size()-1)/2;
 	
 	switch(result.status) {
-	case PEResult::Success:
+	case Result::Success:
 		os << "Inside Orders" << std::endl; 
 		for(int i=0,cc=N; i<=cc; ++i) {
 			os << i << "\t" << result.eff.at(N-i) << std::endl;
@@ -144,25 +143,25 @@ std::ostream& operator<<(std::ostream& os, const PEResult& result) {
 			os << i << "\t" << result.eff.at(N+i) << std::endl;
 		}
 		break;
-	case PEResult::InvalidGratingFailure:
+	case Result::InvalidGratingFailure:
 		os << "Error: Invalid Grating" << std::endl;
 		break;
-	case PEResult::ConvergenceFailure:
+	case Result::ConvergenceFailure:
 		os << "Error: Integration Convergence Failure" << std::endl;
 		break;
-	case PEResult::InsufficientCoefficientsFailure:
+	case Result::InsufficientCoefficientsFailure:
 		os << "Error: Insufficient Coefficients" << std::endl;
 		break;
-	case PEResult::AlgebraFailure:
+	case Result::AlgebraFailure:
 		os << "Error: Linear Algebra Error" << std::endl;
 		break;
-	case PEResult::OtherFailure:
+	case Result::OtherFailure:
 		os << "Error: Unknown other Failure" << std::endl;
 		break;
-	case PEResult::MissingRefractiveDataFailure:
+	case Result::MissingRefractiveDataFailure:
 		os << "Error: Missing refractive index data for this material at this wavelength." << std::endl;
 		break;
-	case PEResult::InactiveCalculation:
+	case Result::InactiveCalculation:
 		os << "Notice: Inactive Calculation" << std::endl;
 		break;
 	}
@@ -170,7 +169,7 @@ std::ostream& operator<<(std::ostream& os, const PEResult& result) {
 	return os;
 }
 
-int PEGrating::computeK2StepsAtY(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double *stepsX, gsl_complex *stepsK2) const
+int Grating::computeK2StepsAtY(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double *stepsX, gsl_complex *stepsK2) const
 {
 	if(coatingThickness_ <= 0)
 		return computeK2StepsAtY_noCoating(y, k2_vaccuum, k2_substrate, k2_coating, stepsX, stepsK2);
@@ -180,7 +179,7 @@ int PEGrating::computeK2StepsAtY(double y, gsl_complex k2_vaccuum, gsl_complex k
 		return computeK2StepsAtY_thickCoating(y, k2_vaccuum, k2_substrate, k2_coating, stepsX, stepsK2);
 }
 
-int PEGrating::computeK2StepsAtY_noCoating(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double *stepsX, gsl_complex *stepsK2) const {
+int Grating::computeK2StepsAtY_noCoating(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double *stepsX, gsl_complex *stepsK2) const {
 
 	(void)k2_coating;	// unused.
 
@@ -217,7 +216,7 @@ int PEGrating::computeK2StepsAtY_noCoating(double y, gsl_complex k2_vaccuum, gsl
 	return 2;
 }
 
-int PEGrating::computeK2StepsAtY_interpenetratingCoating(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double *stepsX, gsl_complex *stepsK2) const {
+int Grating::computeK2StepsAtY_interpenetratingCoating(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double *stepsX, gsl_complex *stepsK2) const {
 
 	double d = period();
 
@@ -272,7 +271,7 @@ int PEGrating::computeK2StepsAtY_interpenetratingCoating(double y, gsl_complex k
 	}
 }
 
-int PEGrating::computeK2StepsAtY_thickCoating(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double *stepsX, gsl_complex *stepsK2) const {
+int Grating::computeK2StepsAtY_thickCoating(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double *stepsX, gsl_complex *stepsK2) const {
 
 	double d = period();
 
@@ -366,7 +365,7 @@ int PECustomProfileGrating::computeK2StepsAtY(double y, gsl_complex k2_vaccuum, 
 	return numCrossings;
 }
 
-double PEGrating::roughnessFactor(double sigma, double wl, const gsl_complex &v, double incidence) {
+double Grating::roughnessFactor(double sigma, double wl, const gsl_complex &v, double incidence) {
 	// convert to radians:
 	double sinTheta = sin(incidence * M_PI / 180.0);
 
@@ -376,7 +375,7 @@ double PEGrating::roughnessFactor(double sigma, double wl, const gsl_complex &v,
 	return exp(-pow(4*M_PI*sigma/wl, 2)*sinTheta*GSL_REAL(c));
 }
 
-double PEGrating::roughnessFactor(double sigma, double wl, const std::string &material, double incidence)
+double Grating::roughnessFactor(double sigma, double wl, const std::string &material, double incidence)
 {
 	gsl_complex v = refractiveIndex(wl, material);
 

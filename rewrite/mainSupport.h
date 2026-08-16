@@ -8,10 +8,11 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 */
 
 
-#ifndef PEMAINSUPPORT_H
-#define PEMAINSUPPORT_H
+#ifndef PEGMAINSUPPORT_H
+#define PEGMAINSUPPORT_H
 
 #include "PEG.h"
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -24,7 +25,7 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 /// This file contains common support routines for both the parallel and sequential versions of the PEG command-line app, related to input and output handling.
 
 /// This structure specifies the operating input, and is able to parse it from command-line options \c argc, \c argv.
-class PECommandLineOptions {
+class CommandLineOptions {
 public:
 	enum Mode {InvalidMode, ConstantIncidence, ConstantIncludedAngle, ConstantWavelength};
 	
@@ -32,13 +33,13 @@ public:
 	////////////////////////////////
 	Mode mode;
 
-	double min, max,increment,incidenceAngle,includedAngle,wavelength;
+	double min, max, increment, incidenceAngle, includedAngle, wavelength;
 	int toOrder;
 
 	int N;
 	double integrationTolerance;
 
-	PEGrating::Profile profile;
+	Grating::Profile profile;
 	double period;
 	std::vector<double> geometry;
 	std::string material, coating;
@@ -55,15 +56,20 @@ public:
 
 	double rmsRoughnessNm;
 
+	// Polarization calculation options
+	bool computeTE;
+	bool computeTM;
+	bool combineTETM;
+
 	////////////////////////////////
 	
 	/// Default constructor initializes all input variables to recognizable values. Doubles are set to DBL_MAX, and integers are set to INT_MAX.
-	PECommandLineOptions() {
+	CommandLineOptions() {
 		init();
 	}
 	
 	/// This constructor parses immediately from the command-line input arguments. Check for validity after with isValid().
-	PECommandLineOptions(int argc, char** argv) {
+	CommandLineOptions(int argc, char** argv) {
 		init();
 		parseFromCommandLine(argc, argv);
 	}
@@ -84,14 +90,11 @@ protected:
 	std::string firstErrorMessage_;
 };
 
-
 /// This helper function writes the header to the output file stream
-void writeOutputFileHeader(std::ostream& outputFileStream, const PECommandLineOptions& io);
+void writeOutputFileHeader(std::ostream& outputFileStream, const CommandLineOptions& io);
 
 /// This helper function appends a single efficiency result to the output file stream
-void writeOutputFileResult(std::ostream& outputFileStream, const PEResult& result, const PECommandLineOptions& io);
-
-/// This helper function appends the progress description to the given output stream
-void writeOutputFileProgress(std::ostream& outputFileStream, int completedSteps, int totalSteps, bool anySuccesses, bool anyFailures);
+template<typename Result>
+void writeOutputFileResult(std::ostream& outputFileStream, const Result& result, const CommandLineOptions& io);
 
 #endif

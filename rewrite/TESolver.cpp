@@ -8,7 +8,7 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 */
 
 
-#include "PESolver.h"
+#include "TESolver.h"
 
 #include <math.h>
 #include <gsl/gsl_complex_math.h>
@@ -93,7 +93,7 @@ PESolver::~PESolver() {
 }
 
 /// \todo Imp.
-PEResult PESolver::getEff(double incidenceDeg, double wl, double rmsRoughnessNm, bool printDebugOutput) {
+Result PESolver::getEff(double incidenceDeg, double wl, double rmsRoughnessNm, bool printDebugOutput) {
 
 	time_ = omp_get_wtime();
 	
@@ -105,12 +105,12 @@ PEResult PESolver::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 	// get material refractive index at wavelength
 	v_1_ = g_.substrateRefractiveIndex(wl_);
 	if(GSL_REAL(v_1_) == 0.0 && GSL_IMAG(v_1_) == 0.0) {
-		return PEResult::MissingRefractiveDataFailure;
+		return Result::MissingRefractiveDataFailure;
 	}
 	if(g_.coatingThickness() > 0) {
 		v_c_ = g_.coatingRefractiveIndex(wl_);
 		if(GSL_REAL(v_c_) == 0.0 && GSL_IMAG(v_c_) == 0.0) {
-			return PEResult::MissingRefractiveDataFailure;
+			return Result::MissingRefractiveDataFailure;
 		}
 	}
 
@@ -158,8 +158,8 @@ PEResult PESolver::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 	gsl_complex zero = gsl_complex_rect(0,0);
 
 	// Handle first layer separately, as a special case.
-	PEResult::Code status = computeTMatrixBelowLayer(2, printDebugOutput);
-	if(status != PEResult::Success)
+	Result::Code status = computeTMatrixBelowLayer(2, printDebugOutput);
+	if(status != Result::Success)
 		return status;
 
 	timing_[3] = time_;
@@ -173,13 +173,13 @@ PEResult PESolver::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 	gsl_matrix_complex_memcpy(Zinv_, T11_);
 	int signnum;
 	if(gsl_linalg_complex_LU_decomp(Zinv_, permutation_, &signnum) != GSL_SUCCESS)
-		return PEResult(PEResult::AlgebraFailure);
+		return Result(Result::AlgebraFailure);
 	// S22_ = Zinv_^{-1}, ie, Z.
 	if(gsl_linalg_complex_LU_invert(Zinv_, permutation_, S22_) != GSL_SUCCESS)
-		return PEResult(PEResult::AlgebraFailure);
+		return Result(Result::AlgebraFailure);
 	// S12_ = T21_ Zinv_^{-1} = T21_ S22_.
 	if(gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, one, T21_, S22_, zero, S12_) != GSL_SUCCESS)
-		return PEResult(PEResult::AlgebraFailure);
+		return Result(Result::AlgebraFailure);
 
 	timing_[4] = time_;
 	time_ = omp_get_wtime();
@@ -192,7 +192,7 @@ PEResult PESolver::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 		time_ = omp_get_wtime();
 
 		status = computeTMatrixBelowLayer(m, printDebugOutput);
-		if(status != PEResult::Success) return status;
+		if(status != Result::Success) return status;
 
 		timing_[3] += omp_get_wtime() - time_;
 
@@ -203,19 +203,19 @@ PEResult PESolver::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 		gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, one, T12_, S12_, one, Zinv_);
 
 		// Invert Zinv_...
-		if(gsl_linalg_complex_LU_decomp(Zinv_, permutation_, &signnum) != GSL_SUCCESS) return PEResult(PEResult::AlgebraFailure);
-		if(gsl_linalg_complex_LU_invert(Zinv_, permutation_, Z_) != GSL_SUCCESS) return PEResult(PEResult::AlgebraFailure);
+		if(gsl_linalg_complex_LU_decomp(Zinv_, permutation_, &signnum) != GSL_SUCCESS) return Result(Result::AlgebraFailure);
+		if(gsl_linalg_complex_LU_invert(Zinv_, permutation_, Z_) != GSL_SUCCESS) return Result(Result::AlgebraFailure);
 
 		// S12 = (T21 + T22 S12) Z
 		gsl_matrix_complex_memcpy(workMatrix_, T21_);
 		if(gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, one, T22_, S12_, one, workMatrix_) != GSL_SUCCESS)
-			return PEResult(PEResult::AlgebraFailure);
+			return Result(Result::AlgebraFailure);
 		if(gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, one, workMatrix_, Z_, zero, S12_) != GSL_SUCCESS)
-			return PEResult(PEResult::AlgebraFailure);
+			return Result(Result::AlgebraFailure);
 		// S22 = S22 Z
 		gsl_matrix_complex_memcpy(workMatrix_, S22_);
 		if(gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, one, workMatrix_, Z_, zero, S22_) != GSL_SUCCESS)
-			return PEResult(PEResult::AlgebraFailure);
+			return Result(Result::AlgebraFailure);
 
 		timing_[4] += omp_get_wtime() - time_;
 	}
@@ -240,7 +240,7 @@ PEResult PESolver::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 	// 8. Now we have BM_. Compute efficiency and put into result structure.
 	////////////////////////////////////////
 	
-	PEResult result(N_);
+	Result result(N_);
 	result.wavelength = wl_;
 	result.incidenceDeg = incidenceDeg;
 	
@@ -310,7 +310,7 @@ gsl_complex PESolver::complex_sqrt_upperComplexPlane(gsl_complex z) {
 	return w;
 }
 
-PEResult::Code PESolver::computeGratingExpansion(double y, gsl_complex* k2) const {
+Result::Code PESolver::computeGratingExpansion(double y, gsl_complex* k2) const {
 	
 	// wave number in free space: k_2 = v_2 * w / c.  v_2 = 1 in empty space, so k_2 = 2pi / wl.
 	gsl_complex k_M = gsl_complex_rect(2 * M_PI / wl_, 0);
@@ -330,16 +330,16 @@ PEResult::Code PESolver::computeGratingExpansion(double y, gsl_complex* k2) cons
 	// Compute multistep function from grating:
 	int numSteps = g_.computeK2StepsAtY(y, k2_M, k2_1, k2_c, stepsX, stepsK2);
 	if(numSteps < 1)
-		return PEResult::InvalidGratingFailure;
+		return Result::InvalidGratingFailure;
 
 	computeGratingExpansion(stepsX, stepsK2, numSteps, k2);
 	
-	return PEResult::Success;
+	return Result::Success;
 }
 
 ///\todo Now unused:
 /*
-PEResult::Code PESolver::integrateTrialSolutionAlongY(gsl_vector_complex* u, gsl_vector_complex* uprime, double yStart, double yEnd) {
+Result::Code PESolver::integrateTrialSolutionAlongY(gsl_vector_complex* u, gsl_vector_complex* uprime, double yStart, double yEnd) {
 
 	// fill starting conditions from u, uprime
 	double* w = new double[eightNp4_];
@@ -355,7 +355,7 @@ PEResult::Code PESolver::integrateTrialSolutionAlongY(gsl_vector_complex* u, gsl
 	}
 	
 	// integrate it:
-	PEResult::Code status = integrateTrialSolutionAlongY(w, yStart, yEnd);
+	Result::Code status = integrateTrialSolutionAlongY(w, yStart, yEnd);
 	
 	// copy results back into u, uprime
 	for(int i=0; i<twoNp1_; ++i) {
@@ -368,7 +368,7 @@ PEResult::Code PESolver::integrateTrialSolutionAlongY(gsl_vector_complex* u, gsl
 }
 */
 
-PEResult::Code PESolver::integrateTrialSolutionAlongY(double *w, double yStart, double yEnd) {
+Result::Code PESolver::integrateTrialSolutionAlongY(double *w, double yStart, double yEnd) {
 	// define ode solving system, with our function to evaluate dw/dy, the Jacobian, and 8*N_+4 components.
 	gsl_odeiv2_system odeSys = {odeFunctionCB, odeJacobianCB, eightNp4_, this};
 
@@ -393,10 +393,10 @@ PEResult::Code PESolver::integrateTrialSolutionAlongY(double *w, double yStart, 
 			std::cout << "ODE: Integration failure: Can't achieve step tolerance required. Try changing the integration tolerance." << std::endl;
 		else
 			std::cout << "ODE: Integration failure: Code: " << status << std::endl;
-		return PEResult::ConvergenceFailure;
+		return Result::ConvergenceFailure;
 	}
 
-	return PEResult::Success;
+	return Result::Success;
 }
 
 int PESolver::odeFunction(double y, const double w[], double dwdy[]) {
@@ -406,7 +406,7 @@ int PESolver::odeFunction(double y, const double w[], double dwdy[]) {
 	
 	// get k2_n at this y value.
 	gsl_complex* localK2 = k2ForCurrentThread();
-	if(computeGratingExpansion(y, localK2) != PEResult::Success) {
+	if(computeGratingExpansion(y, localK2) != Result::Success) {
 		std::cout << "ODE: Function Error: Cannot compute grating expansion at y = " << y << std::endl;
 		return GSL_EBADFUNC;	// can't calculate here. Invalid profile? y above the profile height?
 	}
@@ -470,7 +470,7 @@ int PESolver::odeJacobian(double y, const double w[], double *dfdw, double dfdy[
 
 	// get k2_n at this y value.
 	gsl_complex* localK2 = k2ForCurrentThread();
-	if(computeGratingExpansion(y, localK2) != PEResult::Success) {
+	if(computeGratingExpansion(y, localK2) != Result::Success) {
 		std::cout << "ODE: Jacobian Error: Cannot compute grating expansion at y = " << y << std::endl;
 		return GSL_EBADFUNC;	// can't calculate here. Invalid profile? y above the profile height?
 	}
@@ -671,7 +671,7 @@ void PESolver::computeBMFromSMatrix()
 	}
 }
 
-PEResult::Code PESolver::computeTMatrixBelowLayer(int m, bool printDebugOutput)
+Result::Code PESolver::computeTMatrixBelowLayer(int m, bool printDebugOutput)
 {
 	bool integrationFailureOccurred = false;
 
@@ -703,7 +703,7 @@ PEResult::Code PESolver::computeTMatrixBelowLayer(int m, bool printDebugOutput)
 		//////////////////////////
 
 		// Integrate from y_[m-1] to y_[m].
-		PEResult::Code status = integrateTrialSolutionAlongY(w, y_[m-1], y_[m]);
+		Result::Code status = integrateTrialSolutionAlongY(w, y_[m-1], y_[m]);
 
 		////////////////////////////
 		if(printDebugOutput && omp_get_thread_num() == 0) {
@@ -722,7 +722,7 @@ PEResult::Code PESolver::computeTMatrixBelowLayer(int m, bool printDebugOutput)
 		//////////////////////////
 
 
-		if(status != PEResult::Success)
+		if(status != Result::Success)
 			integrationFailureOccurred = true;
 		else {
 			// Fill T-matrix at this column. If j >= 2*N+1, we're dealing with the right-side blocks T12_, T22_.
@@ -759,9 +759,9 @@ PEResult::Code PESolver::computeTMatrixBelowLayer(int m, bool printDebugOutput)
 	}
 
 	if(integrationFailureOccurred)
-		return PEResult::ConvergenceFailure;
+		return Result::ConvergenceFailure;
 	else
-		return PEResult::Success;
+		return Result::Success;
 }
 
 // computes the fourier expansion of the multistep function given by values stepsK2 at x-axis locations stepsX, and stores in k2.

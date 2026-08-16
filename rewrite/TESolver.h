@@ -30,7 +30,7 @@ public:
 	PESolver& operator=(const PESolver&) = delete;
 	
 	/// Calculates the efficiency at incidence angle \c incidenceDeg and wavelength \c wl.  Side effects: sets the refractive index member variable v_1_; modifies the contents of u_, uprime_, alpha_, beta_, etc.
-	PEResult getEff(double incidenceDeg, double wl, double rmsRoughnessNm = 0, bool printDebugOutput = false);
+	Result getEff(double incidenceDeg, double wl, double rmsRoughnessNm = 0, bool printDebugOutput = false);
 
 
 	// Solving implementation functions
@@ -43,10 +43,10 @@ public:
 	void computeLayers();
 
 	/// Computes the blocks of the T matrix (T11_, T12_, T21_, T22_) for the layer below \c y_[m].  Since \c m = 1 is the top of the substrate, \c m can range from [2, M-1].
-	PEResult::Code computeTMatrixBelowLayer(int m, bool printDebugOutput = false);
+	Result::Code computeTMatrixBelowLayer(int m, bool printDebugOutput = false);
 
-	/// Calculates the grating fourier expansion for k^2_m at a given \c y value and wavelength \c wl, and stores in \c k2.  \c k2 must have space for 4*N_ + 1 coefficients, since we will be computing from n = -2N_ to 2N.   Reads member variables N_, wavelength wl_, grating refractive index \c v_1_, and grating geometry from \c g_.  Returns PEResult::Success, or PEResult::InvalidGratingFailure if the profile is not supported or \c y is larger than the groove height.
-	PEResult::Code computeGratingExpansion(double y, gsl_complex* k2) const;
+	/// Calculates the grating fourier expansion for k^2_m at a given \c y value and wavelength \c wl, and stores in \c k2.  \c k2 must have space for 4*N_ + 1 coefficients, since we will be computing from n = -2N_ to 2N.   Reads member variables N_, wavelength wl_, grating refractive index \c v_1_, and grating geometry from \c g_.  Returns Result::Success, or Result::InvalidGratingFailure if the profile is not supported or \c y is larger than the groove height.
+	Result::Code computeGratingExpansion(double y, gsl_complex* k2) const;
 
 	/// Computes the Fourier components of the grating expansion k^2_m into \c k2, based on an array of x crossing (step) values \c stepsX and corresponding k^2 values \c stepsK2 immediately to the left of those x values. \c numSteps is the number of steps [usually two or four, if there are interpenetrating coatings)].  Valid only up to PEG_MAX_PROFILE_CROSSINGS (60) to avoid allocating memory, since this function is called repeatedly.
 	void computeGratingExpansion(const double* stepsX, const gsl_complex* stepsK2, int numSteps, gsl_complex* k2) const;
@@ -56,10 +56,10 @@ public:
 	void setIntegrationStartingValues(double* w, int p, int m);
 
 	/// Integrates the electric field Fourier component vectors contained in \c w from y = \c yStart to y = \c yEnd, using the differential equation and ______ method.  Array \c w should contain vector \c u followed by \c uprime, with each entry in {re,im} order. Calls computeGratingExpansion() at each y value, so reads member variables N_, v_1_, and g_.  Modifies k2 (for thread) at each step.  Results are returned in-place.
-	PEResult::Code integrateTrialSolutionAlongY(double* w, double yStart, double yEnd);
+	Result::Code integrateTrialSolutionAlongY(double* w, double yStart, double yEnd);
 
 ///\todo DEPRECATED. This is an overloaded function. Integrates the electric field Fourier component vectors \c u and \c uprime from y=0 to y=a, using the differential equation and ______ method.  Calls computeGratingExpansion() at each y value, so reads member variables N_, v_1_, and g_.  Modifies k2 (for thread) at each step.  Results are returned in-place.
-///PEResult::Code integrateTrialSolutionAlongY(gsl_vector_complex* u, gsl_vector_complex* uprime, double yStart, double yEnd);
+///Result::Code integrateTrialSolutionAlongY(gsl_vector_complex* u, gsl_vector_complex* uprime, double yStart, double yEnd);
 
 	/// The function callback for the integration process.  Must be static so we have an address for it, so \c peSolver will be a pointer to a solver (this).
 	static int odeFunctionCB(double y, const double w[], double f[], void* peSolver) {

@@ -254,6 +254,7 @@ bool CommandLineOptions::isValid() {
 		if(profile == Grating::CustomProfile && coatingThickness != 0) throw "The custom profile does not yet support coatings.";
 		
 		if(N == INT_MAX) throw "The truncation index --N must be provided.";
+		if(N < 0) throw "The truncation index --N must not be negative.";
 		if(threads < 1) throw "The number of --threads to use for fine parallelization must be a positive number, at least 1.";
 
 		if(rmsRoughnessNm < 0) throw "The RMS roughness must be in nm, larger than or equal to 0.";
@@ -268,7 +269,6 @@ bool CommandLineOptions::isValid() {
 	firstErrorMessage_ = "No errors.";
 	return true;
 }
-
 
 /// This helper function writes the header to the output file stream
 void writeOutputFileHeader(std::ostream& of, const CommandLineOptions& io) {
@@ -349,7 +349,7 @@ void writeOutputFileHeader(std::ostream& of, const CommandLineOptions& io) {
 
 // This helper function appends a single efficiency result to the output file stream
 template<typename Result>
-void writeOutputFileResult(std::ostream& of, const ResultT& result, const CommandLineOptions& io) {
+void writeOutputFileResult(std::ostream& of, const Result& result, const CommandLineOptions& io) {
 	// x-column depends on mode: incidence angle in ConstantWavelength mode,
 	// otherwise wavelength (converted to eV if io.eV is set).
 	if(io.mode == CommandLineOptions::ConstantWavelength) {

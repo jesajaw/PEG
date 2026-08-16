@@ -8,7 +8,7 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 */
 
 #include "PEG.h"
-#include "MainSupport.h"
+#include "mainSupport.h"
 
 #include <iostream>
 #include <fstream>
