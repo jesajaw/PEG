@@ -11,11 +11,9 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 #include "TESolver.h"
 //#include "TESolver.h"
 
-#include <gsl/gsl_complex_math.h>
 #include <fstream>
 #include <iostream>
 #include <algorithm>
-#include <vector>
 #include <cstring>
 
 // This packs the current result into a plain double \c array, for easy communication using standard MPI types.  The array must have pre-allocated room for 2N+1 + 4 elements.
@@ -44,7 +42,7 @@ void Result::fromDoubleArray(const double* array) {
 	std::memcpy(&(eff[0]), array+4, eff.size()*sizeof(double));	
 }
 
-Result Grating::getEff(double incidenceDeg, double wl, double rmsRoughnessNm, const MathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
+Result Grating::getEffTE(double incidenceDeg, double wl, double rmsRoughnessNm, const MathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
 	TESolver s(*this, mo, numThreads, measureTiming);
 	return s.getEff(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
 }
@@ -65,11 +63,11 @@ Result Grating::getEffTM(double incidenceDeg, double wl, double rmsRoughnessNm, 
 	return Result(Result::OtherFailure);
 }
 
-gsl_complex Grating::refractiveIndex(double wl, const std::string& material) {
+std::complex<double> Grating::refractiveIndex(double wl, const std::string& material) {
 	// Override for testing:
-//	return gsl_complex_rect(0.993, 0.00754);	// Pt at 410 eV
-//	return gsl_complex_rect(1.4, -0.);	// plain glass in visible range.
-//	return gsl_complex_rect(0.993, 0);
+//	return std::complex<double>(0.993, 0.00754);	// Pt at 410 eV
+//	return std::complex<double>(1.4, -0.);	// plain glass in visible range.
+//	return std::complex<double>(0.993, 0);
 
 	// Attempt to open the material database file.
 	std::string fileName = std::string(PEG_MATERIALS_DB_PATH) + std::string("/") + material + std::string(".idx");
@@ -77,7 +75,7 @@ gsl_complex Grating::refractiveIndex(double wl, const std::string& material) {
 	std::ifstream matFile;
 	matFile.open(fileName.c_str());
 	if(matFile.fail())
-		return gsl_complex_rect(0,0);
+		return std::complex<double>(0,0);
 
 	std::vector<double> wl_nm, delta, beta;
 	wl_nm.reserve(3120);	// my standard files have 3111 lines. This avoids vector re-sizing for performance.
@@ -94,7 +92,7 @@ gsl_complex Grating::refractiveIndex(double wl, const std::string& material) {
 	matFile.close();
 
 	if(wl_nm.empty())
-		return gsl_complex_rect(0,0);	// the database is empty.
+		return std::complex<double>(0,0);	// the database is empty.
 
 	// Need to convert wavelength from um to nm, since our data files are in the format:
 	//   wl(nm)	delta	beta
@@ -110,15 +108,16 @@ gsl_complex Grating::refractiveIndex(double wl, const std::string& material) {
 
 	// Not found? This wl is larger than any we have in the database.
 	if(larger == wl_nm.end())
-		return gsl_complex_rect(0,0);
+		return std::complex<double>(0,0);
 
 	// Did this return the first entry?
 	if(larger == wl_nm.begin()) {
 		// if equal to wl, then we've found it at the first entry.
 		if(*larger == wl)
-			return gsl_complex_rect(1-delta[0], beta[0]);
+			return std::complex<double>(1-delta[0], beta[0]);
 		else
-			return gsl_complex_rect(0,0); // otherwise, it's too low a wavelength for us to have in the database.
+			// otherwise, it's too low a wavelength for us to have in the database.
+			return std::complex<double>(0,0);
 	}
 
 
@@ -138,11 +137,10 @@ gsl_complex Grating::refractiveIndex(double wl, const std::string& material) {
 	double lowerBeta = beta[lowerIndex];
 	double interpBeta = lowerBeta + interp*(upperBeta - lowerBeta);
 
-	return gsl_complex_rect(1-interpDelta, 0.9*interpBeta);
+	return std::complex<double>(1-interpDelta, 0.9*interpBeta);
 
 	/// \todo UNEXPLAINED: this 0.9 factor is not applied to the exact-match?
-	/// case above (see the `return gsl_complex_rect(1-delta[0], beta[0]);` line). Origin/justification
-	/// unknown; needs verification against the source data, or removal if it's a leftover correction.
+	/// Origin/justification unknown; needs verification against the source data, or removal if it's a leftover correction.
 }
 
 
@@ -186,7 +184,7 @@ std::ostream& operator<<(std::ostream& os, const Result& result) {
 	return os;
 }
 
-int Grating::computeK2StepsAtY(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double *stepsX, gsl_complex *stepsK2) const
+int Grating::computeK2StepsAtY(double y, std::complex<double> k2_vaccuum, std::complex<double> k2_substrate, std::complex<double> k2_coating, double *stepsX, std::complex<double> *stepsK2) const
 {
 	if(coatingThickness_ <= 0)
 		return computeK2StepsAtY_noCoating(y, k2_vaccuum, k2_substrate, k2_coating, stepsX, stepsK2);
@@ -196,7 +194,7 @@ int Grating::computeK2StepsAtY(double y, gsl_complex k2_vaccuum, gsl_complex k2_
 		return computeK2StepsAtY_thickCoating(y, k2_vaccuum, k2_substrate, k2_coating, stepsX, stepsK2);
 }
 
-int Grating::computeK2StepsAtY_noCoating(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double *stepsX, gsl_complex *stepsK2) const {
+int Grating::computeK2StepsAtY_noCoating(double y, std::complex<double> k2_vaccuum, std::complex<double> k2_substrate, std::complex<double> k2_coating, double *stepsX, std::complex<double> *stepsK2) const {
 
 	(void)k2_coating;	// unused.
 
@@ -233,7 +231,7 @@ int Grating::computeK2StepsAtY_noCoating(double y, gsl_complex k2_vaccuum, gsl_c
 	return 2;
 }
 
-int Grating::computeK2StepsAtY_interpenetratingCoating(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double *stepsX, gsl_complex *stepsK2) const {
+int Grating::computeK2StepsAtY_interpenetratingCoating(double y, std::complex<double> k2_vaccuum, std::complex<double> k2_substrate, std::complex<double> k2_coating, double *stepsX, std::complex<double> *stepsK2) const {
 
 	double d = period();
 
@@ -288,7 +286,7 @@ int Grating::computeK2StepsAtY_interpenetratingCoating(double y, gsl_complex k2_
 	}
 }
 
-int Grating::computeK2StepsAtY_thickCoating(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double *stepsX, gsl_complex *stepsK2) const {
+int Grating::computeK2StepsAtY_thickCoating(double y, std::complex<double> k2_vaccuum, std::complex<double> k2_substrate, std::complex<double> k2_coating, double *stepsX, std::complex<double> *stepsK2) const {
 
 	double d = period();
 
@@ -333,7 +331,7 @@ int Grating::computeK2StepsAtY_thickCoating(double y, gsl_complex k2_vaccuum, gs
 	}
 }
 
-int CustomProfileGrating::computeK2StepsAtY(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double *stepsX, gsl_complex *stepsK2) const
+int CustomProfileGrating::computeK2StepsAtY(double y, std::complex<double> k2_vaccuum, std::complex<double> k2_substrate, std::complex<double> k2_coating, double *stepsX, std::complex<double> *stepsK2) const
 {
 	// coatings are not supported.
 	(void)k2_coating;
@@ -382,19 +380,18 @@ int CustomProfileGrating::computeK2StepsAtY(double y, gsl_complex k2_vaccuum, gs
 	return numCrossings;
 }
 
-double Grating::roughnessFactor(double sigma, double wl, const gsl_complex &v, double incidence) {
+double Grating::roughnessFactor(double sigma, double wl, const std::complex<double> &v, double incidence) {
 	// convert to radians:
 	double sinTheta = sin(incidence * M_PI / 180.0);
 
 	// calculate complex factor
-	gsl_complex c = gsl_complex_sqrt(gsl_complex_sub(gsl_complex_mul(v,v), gsl_complex_rect(sinTheta*sinTheta,0)));
-
-	return exp(-pow(4*M_PI*sigma/wl, 2)*sinTheta*GSL_REAL(c));
+	std::complex<double> c = std::sqrt(v*v - std::complex<double>(sinTheta*sinTheta, 0));
+	return exp(-pow(4*M_PI*sigma/wl, 2)*sinTheta*c.real());
 }
 
 double Grating::roughnessFactor(double sigma, double wl, const std::string &material, double incidence)
 {
-	gsl_complex v = refractiveIndex(wl, material);
+	std::complex<double> v = refractiveIndex(wl, material);
 
 	return roughnessFactor(sigma, wl, v, incidence);
 }

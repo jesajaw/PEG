@@ -10,8 +10,7 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 #ifndef PEG_H
 #define PEG_H
 
-#define HAVE_INLINE
-#include <gsl/gsl_complex.h>
+#include <complex>
 
 #include <string>
 #include <vector>
@@ -110,18 +109,19 @@ public:
 	std::string coatingMaterial() const { return coatingMaterial_; }
 	/// Returns the coating thickness, or 0 if there is o coating.
 	double coatingThickness() const { return coatingThickness_; }
-	
-	/// Returns the complex refractive index of the substrate at a given wavelength \c wl in um.  Returns gsl_complex_rect(0,0) if the substrate material's database was not found.
-	gsl_complex substrateRefractiveIndex(double wl) const { return refractiveIndex(wl, substrateMaterial_); }
-	/// Returns the complex refractive index of the coating at a given wavelength \c wl in um.  Returns gsl_complex_rect(0,0) if the coating material's database was not found.
-	gsl_complex coatingRefractiveIndex(double wl) const { return refractiveIndex(wl, coatingMaterial_); }
 
-	/// Looks up the complex refractive index of \c material at a given wavelength \c wl in um.  Returns gsl_complex_rect(0,0) if the  material's database was not found.
+	/// Returns the complex refractive index of the substrate at a given wavelength \c wl in um.  Returns std::complex<double>(0,0) if the substrate material's database was not found.
+	std::complex<double> substrateRefractiveIndex(double wl) const { return refractiveIndex(wl, substrateMaterial_); }
+	std::complex<double> coatingRefractiveIndex(double wl) const { return refractiveIndex(wl, coatingMaterial_); }
+	/// Returns the complex refractive index of the coating at a given wavelength \c wl in um.  Returns std::complex<double>(0,0) if the coating material's database was not found.
+	static std::complex<double> refractiveIndex(double wl, const std::string& material);
+
+	/// Looks up the complex refractive index of \c material at a given wavelength \c wl in um.  Returns std::complex<double>(0,0) if the material's database was not found.
 	static gsl_complex refractiveIndex(double wl, const std::string& material);
 
 	/// Returns the roughness correction using the Sinha factor (Reference: http://dx.doi.org/10.1103/PhysRevB.38.2297  (Equation 4.34)).  The RMS roughness \c sigma is in um. (Actual roughnesses are typically in the order of a couple nm, however.) The incidence angle \c incidence is in deg, measured from surface normal.
 	static double roughnessFactor(double sigma, double wl, const std::string& material, double incidence);
-	static double roughnessFactor(double sigma, double wl, const gsl_complex& refractiveIndex, double incidence);
+	static double roughnessFactor(double sigma, double wl, const std::complex<double>& refractiveIndex, double incidence);
 
 	/// Calculates the TE-polarized grating efficiency at a given incidence angle \c incidenceDeg (degrees) and wavelength \c wl (um). \c numThreads is the number of threads to use for fine parallelization; ideally it should be <= the number of processor cores on your computer / on a single cluster node.
 	Result getEffTE(double incidenceDeg, double wl, double rmsRoughnessNm = 0, const MathOptions& mo = MathOptions(), bool printDebugOutput = false, int numThreads = 1, bool measureTiming = false) const;
@@ -144,7 +144,8 @@ public:
 
 	The base class implementation handles simple profile shapes (those with a single local maximum), with or without an interpenetrating or thick coating. For this to work, the subclass must implement xIntersection1() and xIntersection2().
 	*/
-	virtual int computeK2StepsAtY(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double* stepsX, gsl_complex* stepsK2) const;
+
+	virtual int computeK2StepsAtY(double y, std::complex<double> k2_vaccuum, std::complex<double> k2_substrate, std::complex<double> k2_coating, double* stepsX, std::complex<double>* stepsK2) const;
 
 
 	// Computational Geometry. The following geometry functions describe the basic, bare profile, assuming there is no coating.
@@ -189,13 +190,17 @@ protected:
 
 	// Helper functions:
 	/////////////////////////////
-
+	
 	/// Implements computeK2StepsAtY() for no coating.
-	int computeK2StepsAtY_noCoating(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double* stepsX, gsl_complex* stepsK2) const;
+	int computeK2StepsAtY_noCoating(double y, std::complex<double> k2_vaccuum, std::complex<double> k2_substrate, std::complex<double> k2_coating, double* stepsX, std::complex<double>* stepsK2) const;
+
 	/// Implements computeK2StepsAtY() for an interpenetrating coating.
-	int computeK2StepsAtY_interpenetratingCoating(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double* stepsX, gsl_complex* stepsK2) const;
+	int computeK2StepsAtY_interpenetratingCoating(double y, std::complex<double> k2_vaccuum, std::complex<double> k2_substrate, std::complex<double> k2_coating, double* stepsX, std::complex<double>* stepsK2) const;
+
 	/// Implements computeK2StepsAtY() for a thick (non-interpenetrating) coating.
-	int computeK2StepsAtY_thickCoating(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double* stepsX, gsl_complex* stepsK2) const;
+	int computeK2StepsAtY_thickCoating(double y, std::complex<double> k2_vaccuum, std::complex<double> k2_substrate, std::complex<double> k2_coating, double* stepsX, std::complex<double>* stepsK2) const;
+
+CustomProfileGrating-Override:
 };
 
 /// Rectangular grating subclass
@@ -347,7 +352,7 @@ public:
 	virtual double profileHeight() const { return maxHeight_; }
 
 	/// Implements computing the K2 step values (intersections) for the custom profile at height \c y. \note Coatings are not supported!
-	virtual int computeK2StepsAtY(double y, gsl_complex k2_vaccuum, gsl_complex k2_substrate, gsl_complex k2_coating, double* stepsX, gsl_complex* stepsK2) const;
+	virtual int computeK2StepsAtY(double y, std::complex<double> k2_vaccuum, std::complex<double> k2_substrate, std::complex<double> k2_coating, double* stepsX, std::complex<double>* stepsK2) const;
 
 protected:
 	double maxHeight_;
