@@ -1,4 +1,3 @@
-# nachher:
 QT     -= gui core
 
 TARGET = pegSerial
