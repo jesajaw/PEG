@@ -5,7 +5,7 @@
 
 CC=mpic++
 CFLAGS=-c -g -Wall -fopenmp
-LDFLAGS=-fopenmp -lgsl -lgslcblas
+LDFLAGS=-fopenmp
 SOURCES=mainSerial.cpp mainMPI.cpp PEG.cpp TESolver.cpp mainSupport.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 
