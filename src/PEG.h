@@ -199,8 +199,6 @@ protected:
 
 	/// Implements computeK2StepsAtY() for a thick (non-interpenetrating) coating.
 	int computeK2StepsAtY_thickCoating(double y, std::complex<double> k2_vaccuum, std::complex<double> k2_substrate, std::complex<double> k2_coating, double* stepsX, std::complex<double>* stepsK2) const;
-
-CustomProfileGrating-Override:
 };
 
 /// Rectangular grating subclass
