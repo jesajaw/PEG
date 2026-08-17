@@ -117,7 +117,7 @@ public:
 	static std::complex<double> refractiveIndex(double wl, const std::string& material);
 
 	/// Looks up the complex refractive index of \c material at a given wavelength \c wl in um.  Returns std::complex<double>(0,0) if the material's database was not found.
-	static gsl_complex refractiveIndex(double wl, const std::string& material);
+	static std::complex<double> refractiveIndex(double wl, const std::string& material);
 
 	/// Returns the roughness correction using the Sinha factor (Reference: http://dx.doi.org/10.1103/PhysRevB.38.2297  (Equation 4.34)).  The RMS roughness \c sigma is in um. (Actual roughnesses are typically in the order of a couple nm, however.) The incidence angle \c incidence is in deg, measured from surface normal.
 	static double roughnessFactor(double sigma, double wl, const std::string& material, double incidence);
