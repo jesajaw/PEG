@@ -44,7 +44,7 @@ void Result::fromDoubleArray(const double* array) {
 
 Result Grating::getEffTE(double incidenceDeg, double wl, double rmsRoughnessNm, const MathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
 	TESolver s(*this, mo, numThreads, measureTiming);
-	return s.getEff(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
+	return s.getEffTE(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
 }
 
 Result Grating::getEffTM(double incidenceDeg, double wl, double rmsRoughnessNm, const MathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
