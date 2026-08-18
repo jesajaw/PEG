@@ -1,12 +1,12 @@
 About
-========
+---
 
 PEG ("Parallel Efficiency of Gratings") is a tool for calculating the efficiency of diffraction gratings, particularly those used in the Soft X-ray regime.  Developed by the Materials Research Group in the Department of Physics at the University of Saskatchewan (http://beamteam.usask.ca), it was used to characterize the optical components for the REIXS XES beamline at the Canadian Light Source. It implements the _differential theory_ developed by Neviere, Vincent, and Petit [1], and is updated for stability using the _S-matrix formulation_ of Li [2].
 
 This repository is a 2026 rework of the original PEG project by Jesaja Weintritt. The core physics and algorithm (differential theory + S-matrix formulation) are unchanged, but the codebase has been substantially modernized: the GSL dependency has been replaced with Eigen and Boost.Odeint (see Dependencies below), naming and class structure were cleaned up, and support for Transverse Magnetic (TM) polarization is being added alongside the existing Transverse Electric (TE) solver (see Limitations below). This reworked version has not been independently verified against the original; see License.
 
 Features
-========
+---
 
 - Standard grating shape profiles: rectangular, blazed (triangular), trapezoidal, sinusoidal
 - Custom grating shape profiles: any point-wise defined profile.
@@ -19,7 +19,7 @@ Features
 	- coarse parallelization of many efficiency points, using MPI on grid computers.
 
 Limitations
-========
+---
 
 - Transverse Electric (TE) polarization is fully supported (`--computeTE`).
 - Transverse Magnetic (TM) polarization is not yet implemented. The `--computeTM` and `--combineTETM` command-line options already exist, but currently every TM calculation returns a failure result (`Grating::getEffTM()` is a placeholder) — a real TM solver is under active development.
@@ -27,12 +27,12 @@ Limitations
 - The custom (point-wise) grating profile does not yet support coatings.
 
 Dependencies
-========
+---
 
 PEG no longer depends on the GNU Scientific Library (GSL). Linear algebra is provided by [Eigen](https://eigen.tuxfamily.org/), and ODE integration by [Boost.Odeint](https://www.boost.org/doc/libs/release/libs/numeric/odeint/). Both are header-only, so no separate library build or linking step is required — just make sure the headers are reachable on your include path.
 
 Building
-========
+---
 
 The 'qmake' build tool from the Qt Framework can be used to generate Makefiles based on PEG_mac.pro or PEG_ubuntu.pro.  (The Qt library is not required to build PEG.)  Edit one of these files to define the include paths for Eigen (and Boost, if not already on your system include path) for your system.
 
@@ -48,18 +48,18 @@ The pegSerial application can take advantage of fine-grained parallelization to 
 There is also an application to exploit coarse-grained parallelization over an arbitrary number of nodes in a cluster or grid computer, using MPI. This speeds up the calculation of many efficiency data points.  To build the pegMPI program, create a makefile based on src/Makefile.example.
 
 Running
-========
+---
 
 Single-computer version 'pegSerial':
 
 ```
-> ./pegSerial --mode constantIncidence --min 100 --max 900 --increment 5 --eV --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile blazedResults.txt --progressFile progress.txt
+./pegSerial --mode constantIncidence --min 100 --max 900 --increment 5 --eV --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile blazedResults.txt --progressFile progress.txt
 ```
 
 Cluster-version:
 
 ```
-> mpiexec -n <number of nodes> ./pegMPI --mode constantIncidence --min 100 --max 900 --increment 5 --eV  --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile blazedResults.txt --progressFile progress.txt
+mpiexec -n <number of nodes> ./pegMPI --mode constantIncidence --min 100 --max 900 --increment 5 --eV  --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile blazedResults.txt --progressFile progress.txt
 ```
 
 Command-line options:
@@ -142,7 +142,7 @@ Optional:
 ```
 
 Example Output
-========
+---
 
 ```
 # Input
@@ -174,7 +174,7 @@ The Output table lists reflected efficiencies at each (wavelength/eV/incidence a
 sin(beta) = sin(alpha) + n \lambda / d
 
 License
-========
+---
 Copyright (C) 2026 Jesaja Weintritt (jesaja.weintritt@stud.eah-jena.de) and 2012 Mark Boots (mark.boots@usask.ca).
 
 PEG is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License, version 3. http://www.gnu.org/licenses/gpl.html
@@ -185,7 +185,7 @@ As a modification of GPLv3-licensed software, this reworked version remains boun
 
 
 References
-========
+---
 
 1. M Nevière et al, Nouvelle Revue d'Optique 5 65 (1974) http://dx.doi.org/10.1088/0335-7368/5/2/301
 

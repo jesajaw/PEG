@@ -4,8 +4,8 @@
 #LIBPATH=/home/user/lib
 
 CC=mpic++
-CFLAGS=-c -g -Wall -fopenmp
-LDFLAGS=-fopenmp
+CFLAGS=-c -g -Wall -fopenmp $(if $(INCLUDEPATH),-I$(INCLUDEPATH))
+LDFLAGS=-fopenmp $(if $(LIBPATH),-L$(LIBPATH))
 SOURCES=mainSerial.cpp mainMPI.cpp PEG.cpp TESolver.cpp mainSupport.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 
@@ -16,3 +16,6 @@ pegSerial: mainSerial.o mainSupport.o PEG.o TESolver.o
 
 pegMPI: mainMPI.o mainSupport.o PEG.o TESolver.o
 	$(CC) $(LDFLAGS) mainMPI.o mainSupport.o PEG.o TESolver.o -o ../$@
+
+.cpp.o:
+	$(CC) $(CFLAGS) $< -o $@
