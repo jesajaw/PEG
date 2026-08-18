@@ -102,7 +102,8 @@ int main(int argc, char** argv) {
 		grating = std::make_unique<TrapezoidalGrating>(io.period, io.geometry[0], io.geometry[1], io.geometry[2], io.geometry[3], io.material, io.coating, io.coatingThickness);
 		break;
 	case Grating::CustomProfile:
-		grating = std::make_unique<CustomProfileGrating>(io.period, io.geometry, io.material, io.coating, io.coatingThickness);
+		///\todo , io.coating, io.coatingThickness
+		grating = std::make_unique<CustomProfileGrating>(io.period, io.geometry, io.material);
 		break;
 	default:
 		// this should never happen; input validation assures one of the valid grating types.
