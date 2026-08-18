@@ -3,6 +3,8 @@ About
 
 PEG ("Parallel Efficiency of Gratings") is a tool for calculating the efficiency of diffraction gratings, particularly those used in the Soft X-ray regime.  Developed by the Materials Research Group in the Department of Physics at the University of Saskatchewan (http://beamteam.usask.ca), it was used to characterize the optical components for the REIXS XES beamline at the Canadian Light Source. It implements the _differential theory_ developed by Neviere, Vincent, and Petit [1], and is updated for stability using the _S-matrix formulation_ of Li [2].
 
+This repository is a 2026 rework of the original PEG project by Jesaja Weintritt. The core physics and algorithm (differential theory + S-matrix formulation) are unchanged, but the codebase has been substantially modernized: the GSL dependency has been replaced with Eigen and Boost.Odeint (see Dependencies below), naming and class structure were cleaned up, and support for Transverse Magnetic (TM) polarization is being added alongside the existing Transverse Electric (TE) solver (see Limitations below). This reworked version has not been independently verified against the original; see License.
+
 Features
 ========
 
@@ -19,18 +21,20 @@ Features
 Limitations
 ========
 
-- Only the Transverse Electric (TE) polarization is computed. For Soft X-ray gratings used at grazing incidence, the TE and TM polarization efficiency is nearly identical.
-	- TODO: Calculate Transverse Magnetic (TM) polarization efficiency.
+- Transverse Electric (TE) polarization is fully supported (`--computeTE`).
+- Transverse Magnetic (TM) polarization is not yet implemented. The `--computeTM` and `--combineTETM` command-line options already exist, but currently every TM calculation returns a failure result (`Grating::getEffTM()` is a placeholder) — a real TM solver is under active development.
+	- For Soft X-ray gratings used at grazing incidence, the TE and TM polarization efficiency is nearly identical, so TE-only results remain a good approximation until TM support lands.
+- The custom (point-wise) grating profile does not yet support coatings.
 
 Dependencies
 ========
 
-PEG requires the GNU Scientific Library (GSL), available at http://www.gnu.org/software/gsl/.
+PEG no longer depends on the GNU Scientific Library (GSL). Linear algebra is provided by [Eigen](https://eigen.tuxfamily.org/), and ODE integration by [Boost.Odeint](https://www.boost.org/doc/libs/release/libs/numeric/odeint/). Both are header-only, so no separate library build or linking step is required — just make sure the headers are reachable on your include path.
 
 Building
 ========
 
-The 'qmake' build tool from the Qt Framework can be used to generate Makefiles based on PEG_mac.pro or PEG_ubuntu.pro.  (The Qt library is not required to build PEG.)  Edit one of these files to define the library paths for your system.
+The 'qmake' build tool from the Qt Framework can be used to generate Makefiles based on PEG_mac.pro or PEG_ubuntu.pro.  (The Qt library is not required to build PEG.)  Edit one of these files to define the include paths for Eigen (and Boost, if not already on your system include path) for your system.
 
 This will build the single-machine command-line program 'pegSerial':
 
@@ -105,7 +109,7 @@ Optional:
 	If provided, the current status of the calculation will be written in this file; it can be monitored to determine the progress of long calculations.  This provides an interface for other processes to monitor the status of this calculation (for example, a web-based or GUI front-end, etc.).
 	
 --eV
-	If this flag is included, all wavelength inputs (--min, --max, --increment, and --wavelength) will instead be interpreted as photon energies in electron volts (eV).
+	If this flag is included, all wavelength inputs (--min, --max, --increment, --wavelength) will instead be interpreted as photon energies in electron volts (eV).
 
 --coatingThickness <thickness in um>
 	If provided, creates a layer of --coatingMaterial on top of the basic grating profile, by translating the profile vertically by coatingThickness um. Used to model overcoated, oxidized, or dielectric gratings.
@@ -121,6 +125,20 @@ Optional:
 
 --integrationTolerance <tolerance>
 	If provided, specifies the error tolerance (eps) required at each step of the numerical integration process. Default if not provided is 1e-5.
+
+--computeTE
+	If included, computes and outputs the TE-polarized efficiency (section "# TE" in the output file).
+
+--computeTM
+	If included, computes and outputs the TM-polarized efficiency (section "# TM" in the output file). Note: TM support is not yet implemented — results will currently report a failure status for every point.
+
+--combineTETM
+	If included, computes both TE and TM internally and outputs their simple average, (TE_eff + TM_eff)/2 per order (section "# (TE+TM)/2" in the output file). Only points where both the TE and TM calculation succeeded are included. Since TM is not yet implemented, this currently produces no output.
+
+	At least one of --computeTE, --computeTM, or --combineTETM must be specified.
+
+--showLegal
+	If included, prints the full copyright and license notice (including the disclaimer about modifications) instead of the short version.
 ```
 
 Example Output
@@ -157,7 +175,13 @@ sin(beta) = sin(alpha) + n \lambda / d
 
 License
 ========
+Copyright (C) 2026 Jesaja Weintritt (jesaja.weintritt@stud.eah-jena.de) and 2012 Mark Boots (mark.boots@usask.ca).
+
 PEG is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License, version 3. http://www.gnu.org/licenses/gpl.html
+
+This reworked version (2026) contains substantial modifications and has not been independently verified against the original. It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; use at your own risk and verify results independently. Run any PEG executable with `--showLegal` to see the full notice.
+
+As a modification of GPLv3-licensed software, this reworked version remains bound by the same copyleft terms, independent of the underlying numerical libraries used (previously GSL, now Eigen and Boost.Odeint).
 
 
 References
@@ -169,3 +193,6 @@ References
 http://dx.doi.org/10.1364/JOSAA.13.001024
 
 3. B.L. Henke, E.M. Gullikson, and J.C. Davis. X-ray interactions: photoabsorption, scattering, transmission, and reflection at E=50-30000 eV, Z=1-92, Atomic Data and Nuclear Data Tables Vol. 54 (no.2), 181-342 (July 1993).
+
+4. S.K. Sinha, E.B. Sirota, S. Garoff, and H.B. Stanley. X-ray and neutron scattering from rough surfaces. Physical Review B, Vol. 38, Issue 4, 2297 (1988), Equation 4.34. http://dx.doi.org/10.1103/PhysRevB.38.2297
+	Used for the optional RMS-roughness correction factor (`--rmsRoughnessNm`).
