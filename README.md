@@ -31,6 +31,11 @@ Dependencies
 
 PEG no longer depends on the GNU Scientific Library (GSL). Linear algebra is provided by [Eigen](https://eigen.tuxfamily.org/), and ODE integration by [Boost.Odeint](https://www.boost.org/doc/libs/release/libs/numeric/odeint/). Both are header-only, so no separate library build or linking step is required — just make sure the headers are reachable on your include path.
 
+```
+sudo apt update
+sudo apt install libeigen3-dev libboost-dev
+```
+
 Building
 ---
 
@@ -46,6 +51,14 @@ make
 The pegSerial application can take advantage of fine-grained parallelization to use more than one thread (for example, as many threads as CPU cores on your machine). This speeds up the calculation of a single efficiency data point.
 
 There is also an application to exploit coarse-grained parallelization over an arbitrary number of nodes in a cluster or grid computer, using MPI. This speeds up the calculation of many efficiency data points.  To build the pegMPI program, create a makefile based on src/Makefile.example.
+
+```
+cp src/Makefile.example src/Makefile
+# uncomment/edit INCLUDEPATH and LIBPATH in src/Makefile if Eigen, Boost, or MPI
+# headers/libs aren't already on your system's default include/library path
+cd src
+make pegMPI
+```
 
 Running
 ---
