@@ -5,7 +5,7 @@ TARGET = pegSerial
 QMAKE_CXXFLAGS += -march=native -O2 -c -Wall -fopenmp
 QMAKE_LFLAGS += -fopenmp
 
-#INCLUDEPATH += /usr/include/eigen3
+INCLUDEPATH += /usr/include/eigen3
 
 HEADERS += src/PEG.h \
 	src/TESolver.h \

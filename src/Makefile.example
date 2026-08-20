@@ -1,7 +1,7 @@
 # Library paths: Uncomment as required:
 #####################
-#INCLUDEPATH=/home/user/include
-#LIBPATH=/home/user/lib
+INCLUDEPATH=/home/user/include
+LIBPATH=/home/user/lib
 
 CC=mpic++
 CFLAGS=-c -g -Wall -fopenmp $(if $(INCLUDEPATH),-I$(INCLUDEPATH))

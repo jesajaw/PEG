@@ -52,10 +52,14 @@ The pegSerial application can take advantage of fine-grained parallelization to 
 
 There is also an application to exploit coarse-grained parallelization over an arbitrary number of nodes in a cluster or grid computer, using MPI. This speeds up the calculation of many efficiency data points.  To build the pegMPI program, create a makefile based on src/Makefile.example.
 
+
+For this, you need to install MPI:
+```
+sudo apt install build-essential openmpi-bin libopenmpi-dev
+```
+
 ```
 cp src/Makefile.example src/Makefile
-# uncomment/edit INCLUDEPATH and LIBPATH in src/Makefile if Eigen, Boost, or MPI
-# headers/libs aren't already on your system's default include/library path
 cd src
 make pegMPI
 ```
@@ -66,13 +70,13 @@ Running
 Single-computer version 'pegSerial':
 
 ```
-./pegSerial --mode constantIncidence --min 100 --max 900 --increment 5 --eV --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile blazedResults.txt --progressFile progress.txt
+./pegSerial --mode constantIncidence --min 100 --max 900 --increment 5 --eV --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile blazedResults.txt --progressFile progress.txt --computeTE
 ```
 
 Cluster-version:
 
 ```
-mpiexec -n <number of nodes> ./pegMPI --mode constantIncidence --min 100 --max 900 --increment 5 --eV  --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile blazedResults.txt --progressFile progress.txt
+mpiexec -n <number of nodes> ./pegMPI --mode constantIncidence --min 100 --max 900 --increment 5 --eV  --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile blazedResults.txt --progressFile progress.txt --computeTE
 ```
 
 Command-line options:
