@@ -288,7 +288,7 @@ and $e^{\pm i\beta_n y}$ describes genuine traveling waves.
 
 **Evanescent.** If $|\alpha_n| > |k|$, then $\beta_n = i\gamma_n$ with $\gamma_n > 0$, so
 $$e^{i\beta_n y} = e^{-\gamma_n y}, \qquad e^{-i\beta_n y} = e^{+\gamma_n y}.$$
-A physically admissible solution in a semi-infinite outer medium must not grow exponentially with distance from the structure. The branch of the square root must therefore be chosen so that the physically allowed direction decays — conventionally by requiring $\operatorname{Im}\beta_n \ge 0$.
+A physically admissible solution in a semi-infinite outer medium must not grow exponentially with distance from the structure. The branch of the square root must therefore be chosen so that the physically allowed direction decays — conventionally by requiring $Im \beta_n \ge 0$.
 
 ### 1.5 Two Distinct Sets of Asymptotic Parameters
 
@@ -438,13 +438,13 @@ For the diffraction efficiency itself, this absolute phase is ultimately irrelev
 ### 7.2 From Field Amplitude to Power
 
 The quantity $|B_n|^2$ is, by itself, only a squared field amplitude — not yet a power. The physically transported power is proportional to the outward normal component of the time-averaged Poynting vector,
-$$\mathbf{S} = \frac{1}{2}\operatorname{Re}\left(\mathbf{E}\times\mathbf{H}^*\right).$$
-For a plane wave of order $n$ propagating in the outer medium, the power flowing normal to the structure carries a factor proportional to $\operatorname{Re}\beta_n$. Normalizing the outgoing power in order $n$ to the incident power (order $0$) gives the diffraction efficiency
-$$\eta_n = |B_n|^2\,\frac{\operatorname{Re}\beta_n}{\operatorname{Re}\beta_0}.$$
+$$\mathbf{S} = \frac{1}{2}Re \left(\mathbf{E}\times\mathbf{H}^*\right).$$
+For a plane wave of order $n$ propagating in the outer medium, the power flowing normal to the structure carries a factor proportional to $Re \beta_n$. Normalizing the outgoing power in order $n$ to the incident power (order $0$) gives the diffraction efficiency
+$$\eta_n = |B_n|^2\,\frac{Re \beta_n}{Re \beta_0}.$$
 
 ### 7.3 Why Evanescent Orders Automatically Have Zero Efficiency
 
-For an evanescent order, $\beta_n = i\gamma_n$ with real $\gamma_n>0$, so $\operatorname{Re}\beta_n = 0$ and therefore
+For an evanescent order, $\beta_n = i\gamma_n$ with real $\gamma_n>0$, so $Re \beta_n = 0$ and therefore
 $$\boxed{\eta_n = 0.}$$
 This does not mean the evanescent mode is physically absent — it can be significant in the near field close to the structure — but it carries no net normal radiative power into the far field of the homogeneous outer half-space. This is why such modes must still be carried through the full internal calculation (they participate in mode coupling and boundary matching), yet contribute nothing to the far-field efficiency.
 
@@ -508,7 +508,7 @@ $$\varepsilon_r(x,y)\ \rightarrow\ k^2(x,y)=k_0^2\varepsilon_r(x,y)\ \rightarrow
 $$u(x,y) = \sum_n u_n(y)\,e^{i\alpha_n x}, \qquad k^2(x,y) = \sum_p k_p^2(y)\,e^{ipKx}$$
 $$u_n''(y) = \sum_m\left[\alpha_n^2\delta_{nm} - k_{n-m}^2(y)\right]u_m(y), \qquad \beta_n^2 = k_{\text{medium}}^2 - \alpha_n^2$$
 $$\mathbf{w}(y_+) = \mathcal{T}_{\text{layer}}\,\mathbf{w}(y_-), \qquad \mathbf{a}_{\text{out}} = S\,\mathbf{a}_{\text{in}}, \qquad \mathbf{a}_{\text{in}} = \mathbf{e}_0$$
-$$B_n = (S\mathbf{e}_0)_n \quad \text{(up to the phase reference of §7.1)}, \qquad \eta_n = |B_n|^2\,\frac{\operatorname{Re}\beta_n}{\operatorname{Re}\beta_0}$$
+$$B_n = (S\mathbf{e}_0)_n \quad \text{(up to the phase reference of §7.1)}, \qquad \eta_n = |B_n|^2\,\frac{Re \beta_n}{Re \beta_0}$$
 
 ---
 
@@ -1058,7 +1058,7 @@ This is why the square-root branch cannot be chosen arbitrarily.
 
 A common radiation-condition convention is
 
-$$ \boxed{ \operatorname{Im}\beta_n\ge0. } $$
+$$ \boxed{ Im \beta_n\ge0. } $$
 
 
 ### 14.10 First-Order Form of the Coupled ODE
@@ -1400,11 +1400,11 @@ the curl contains the factors $\alpha_n$ and $\beta_n$.
 
 The normal Poynting flux is proportional to
 
-$$ \operatorname{Re} \left( \beta_n \right) |B_n|^2. $$
+$$ Re  \left( \beta_n \right) |B_n|^2. $$
 
 Consequently, after normalization to the incident order,
 
-$$ \boxed{ \eta_n = |B_n|^2 \frac{\operatorname{Re}\beta_n} {\operatorname{Re}\beta_0}. } $$
+$$ \boxed{ \eta_n = |B_n|^2 \frac{Re \beta_n} {Re \beta_0}. } $$
 
 For a lossless propagating order, $\beta_n$ is real, so this reduces to
 
@@ -1422,11 +1422,11 @@ $$ \beta_n=i\gamma_n, \qquad \gamma_n>0. $$
 
 Therefore,
 
-$$ \operatorname{Re}\beta_n=0. $$
+$$ Re \beta_n=0. $$
 
 The efficiency expression gives
 
-$$ \eta_n = |B_n|^2 \frac{0}{\operatorname{Re}\beta_0} = 0. $$
+$$ \eta_n = |B_n|^2 \frac{0}{Re \beta_0} = 0. $$
 
 Thus
 
@@ -1742,7 +1742,7 @@ $$ \boxed{ \mathbf B = S_{\mathrm{total}}\mathbf e_0 } $$
 
 $$ \Downarrow $$
 
-$$ \boxed{ \eta_n = |B_n|^2 \frac{\operatorname{Re}\beta_n} {\operatorname{Re}\beta_0} } $$
+$$ \boxed{ \eta_n = |B_n|^2 \frac{Re \beta_n} {Re \beta_0} } $$
 
 This is the mathematical chain implemented by the solver.
 
@@ -1784,7 +1784,7 @@ $$ \boxed{ \mathbf B=S_{\mathrm{total}}\mathbf e_0 } $$
 
 and finally
 
-$$ \boxed{ \eta_n = |B_n|^2 \frac{\operatorname{Re}\beta_n} {\operatorname{Re}\beta_0}. } $$
+$$ \boxed{ \eta_n = |B_n|^2 \frac{Re \beta_n} {Re \beta_0}. } $$
 
 Thus every numerical quantity in the final diffraction efficiency can be traced back through an explicit mathematical chain to the original spatial permittivity distribution.
 
