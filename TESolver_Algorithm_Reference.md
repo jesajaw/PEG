@@ -102,24 +102,24 @@ Parameter Categorization:
 ### 0.1 Maxwell to Scalar Wavefunction
 
 Faradays law of induction and Ampères circuital law:
-$$\vec{\nabla} \times \vec{E} = -\frac{\partial \vec{B}}{\partial t}, \quad \vec{\nabla} \times \vec{H} = -\vec{i} + \frac{\partial \vec{D}}{\partial t}$$
+$$\vec{\vec\nabla} \times \vec{E} = -\frac{\partial \vec{B}}{\partial t}, \quad \vec{\vec\nabla} \times \vec{H} = -\vec{i} + \frac{\partial \vec{D}}{\partial t}$$
 
 with $\vec{D} = \varepsilon_0 \varepsilon_r \vec{E}$ and $\vec{B} = \mu \vec{H}$ (assuming non-magnetic media where $\mu = \mu_0$ and $\vec i = \vec 0$), which can be formulated as:
-$$\vec{\nabla} \times \vec{E} = -\mu_0 \frac{\partial \vec{H}}{\partial t}, \quad \vec{\nabla} \times \vec{H} = \varepsilon_0 \varepsilon_r \frac{\partial \vec{E}}{\partial t}$$
+$$\vec{\vec\nabla} \times \vec{E} = -\mu_0 \frac{\partial \vec{H}}{\partial t}, \quad \vec{\vec\nabla} \times \vec{H} = \varepsilon_0 \varepsilon_r \frac{\partial \vec{E}}{\partial t}$$
 
 Separation of time and space assuming time-harmonic fields $\vec{E} e^{-i\omega t}$ and $\vec{H} e^{-i\omega t}$:
-$$\vec{\nabla} \times \vec{E} = i\omega\mu_0\vec{H}, \quad \vec{\nabla} \times \vec{H} = -i \omega \varepsilon_0\varepsilon_r\vec{E}$$
+$$\vec{\vec\nabla} \times \vec{E} = i\omega\mu_0\vec{H}, \quad \vec{\vec\nabla} \times \vec{H} = -i \omega \varepsilon_0\varepsilon_r\vec{E}$$
 
 To eliminate $\vec{H}$, take the curl of Faradays law:
-$$\vec{\nabla} \times (\vec{\nabla} \times \vec{E}) = i\omega\mu_0 (\vec{\nabla} \times \vec{H})$$
+$$\vec{\vec\nabla} \times (\vec{\vec\nabla} \times \vec{E}) = i\omega\mu_0 (\vec{\vec\nabla} \times \vec{H})$$
 
 Substituting Ampères law into the right-hand side yields:
-$$\vec{\nabla} \times (\vec{\nabla} \times \vec{E}) = i\omega\mu_0 \left( -i\omega\varepsilon_0\varepsilon_r\vec{E} \right) = \omega^2 \mu_0 \varepsilon_0 \varepsilon_r \vec{E}$$
+$$\vec{\vec\nabla} \times (\vec{\vec\nabla} \times \vec{E}) = i\omega\mu_0 \left( -i\omega\varepsilon_0\varepsilon_r\vec{E} \right) = \omega^2 \mu_0 \varepsilon_0 \varepsilon_r \vec{E}$$
 
-Using the identity $\vec{\nabla} \times (\vec{\nabla} \times \vec{E}) = \vec{\nabla}(\vec{\nabla} \vec{E}) - \Delta \vec{E}$ and setting $k_0^2 = \omega^2 \mu_0 \varepsilon_0$, we obtain the 3D vector wave equation:
-$$\vec{\nabla}(\vec{\nabla} \vec{E}) - \Delta \vec{E} = k_0^2 \varepsilon_r \vec{E}$$
+Using the identity $\vec{\vec\nabla} \times (\vec{\vec\nabla} \times \vec{E}) = \vec{\vec\nabla}(\vec{\vec\nabla} \vec{E}) - \Delta \vec{E}$ and setting $k_0^2 = \omega^2 \mu_0 \varepsilon_0$, we obtain the 3D vector wave equation:
+$$\vec{\vec\nabla}(\vec{\vec\nabla} \vec{E}) - \Delta \vec{E} = k_0^2 \varepsilon_r \vec{E}$$
 
-For Transverse Electric (TE) polarization in a 1D grating invariant along the $z$-axis ($\frac{\partial}{\partial z} = 0$), the electric field simplifies to $u(x,y) \equiv E_z(x,y)$ with $\vec{\nabla} \vec{E} = 0$. This reduces the system to the scalar wave equation:
+For Transverse Electric (TE) polarization in a 1D grating invariant along the $z$-axis ($\frac{\partial}{\partial z} = 0$), the electric field simplifies to $u(x,y) \equiv E_z(x,y)$ with $\vec{\vec\nabla} \vec{E} = 0$. This reduces the system to the scalar wave equation:
 $$\left( \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2} + k_0^2 \varepsilon_r(x,y) \right) u(x,y) = 0, \quad k_0=\frac{2\pi}{\lambda}$$
 
 
@@ -532,15 +532,15 @@ This section fills in those intermediate steps so that the derivation can be fol
 
 We start from Maxwell's equations in a linear, isotropic, non-magnetic medium without free currents:
 
-$$ \nabla\times\mathbf E = -\frac{\partial\mathbf B}{\partial t}, \qquad \nabla\times\mathbf H = \frac{\partial\mathbf D}{\partial t}, $$
+$$ \vec\nabla\times\vec E = -\frac{\partial\vec B}{\partial t}, \qquad \vec\nabla\times\vec H = \frac{\partial\vec D}{\partial t}, $$
 
 with
 
-$$ \mathbf D=\varepsilon_0\varepsilon_r\mathbf E, \qquad \mathbf B=\mu_0\mathbf H. $$
+$$ \vec D=\varepsilon_0\varepsilon_r\vec E, \qquad \vec B=\mu_0\vec H. $$
 
 Assume time-harmonic fields of the form
 
-$$ \mathbf E(\mathbf r,t) = \mathbf E(\mathbf r)e^{-i\omega t}, \qquad \mathbf H(\mathbf r,t) = \mathbf H(\mathbf r)e^{-i\omega t}. $$
+$$ \vec E(\mathbf r,t) = \vec E(\mathbf r)e^{-i\omega t}, \qquad \vec H(\mathbf r,t) = \vec H(\mathbf r)e^{-i\omega t}. $$
 
 Then
 
@@ -548,19 +548,19 @@ $$ \frac{\partial}{\partial t} \rightarrow -i\omega. $$
 
 Therefore,
 
-$$ \nabla\times\mathbf E = i\omega\mu_0\mathbf H $$
+$$ \vec\nabla\times\vec E = i\omega\mu_0\vec H $$
 
 and
 
-$$ \nabla\times\mathbf H = -i\omega\varepsilon_0\varepsilon_r\mathbf E. $$
+$$ \vec\nabla\times\vec H = -i\omega\varepsilon_0\varepsilon_r\vec E. $$
 
 Take the curl of Faraday's law:
 
-$$ \nabla\times(\nabla\times\mathbf E) = i\omega\mu_0 (\nabla\times\mathbf H). $$
+$$ \vec\nabla\times(\vec\nabla\times\vec E) = i\omega\mu_0 (\vec\nabla\times\vec H). $$
 
 Substituting Ampère's law gives
 
-$$ \nabla\times(\nabla\times\mathbf E) = i\omega\mu_0 \left( -i\omega\varepsilon_0\varepsilon_r\mathbf E \right). $$
+$$ \vec\nabla\times(\vec\nabla\times\vec E) = i\omega\mu_0 \left( -i\omega\varepsilon_0\varepsilon_r\vec E \right). $$
 
 Since
 
@@ -568,7 +568,7 @@ $$ i(-i)=1, $$
 
 we obtain
 
-$$ \nabla\times(\nabla\times\mathbf E) = \omega^2\mu_0\varepsilon_0\varepsilon_r\mathbf E. $$
+$$ \vec\nabla\times(\vec\nabla\times\vec E) = \omega^2\mu_0\varepsilon_0\varepsilon_r\vec E. $$
 
 Define the vacuum wavenumber
 
@@ -576,15 +576,15 @@ $$ k_0 = \omega\sqrt{\mu_0\varepsilon_0} = \frac{\omega}{c} = \frac{2\pi}{\lambd
 
 Hence
 
-$$ \nabla\times(\nabla\times\mathbf E) = k_0^2\varepsilon_r\mathbf E. $$
+$$ \vec\nabla\times(\vec\nabla\times\vec E) = k_0^2\varepsilon_r\vec E. $$
 
 Now use the vector identity
 
-$$ \boxed{ \nabla\times(\nabla\times\mathbf E) = \nabla(\nabla\cdot\mathbf E) - \nabla^2\mathbf E }. $$
+$$ \boxed{ \vec\nabla\times(\vec\nabla\times\vec E) = \vec\nabla(\vec\nabla\cdot\vec E) - \vec\nabla^2\vec E }. $$
 
 Thus,
 
-$$ \nabla(\nabla\cdot\mathbf E) - \nabla^2\mathbf E = k_0^2\varepsilon_r\mathbf E. $$
+$$ \vec\nabla(\vec\nabla\cdot\vec E) - \vec\nabla^2\vec E = k_0^2\varepsilon_r\vec E. $$
 
 #### TE specialization
 
@@ -594,15 +594,15 @@ $$ \frac{\partial}{\partial z}=0. $$
 
 For TE polarization we choose
 
-$$ \mathbf E = \begin{pmatrix} 0\\ 0\\ u(x,y) \end{pmatrix}. $$
+$$ \vec E = \begin{pmatrix} 0\\ 0\\ u(x,y) \end{pmatrix}. $$
 
 Consequently,
 
-$$ \nabla\cdot\mathbf E = \frac{\partial E_z}{\partial z} = 0. $$
+$$ \vec\nabla\cdot\vec E = \frac{\partial E_z}{\partial z} = 0. $$
 
 The vector equation therefore reduces to
 
-$$ -\nabla^2\mathbf E = k_0^2\varepsilon_r\mathbf E. $$
+$$ -\vec\nabla^2\vec E = k_0^2\varepsilon_r\vec E. $$
 
 Only the $z$ component is non-zero, so
 
@@ -1340,9 +1340,9 @@ The incident field is a single plane wave.
 
 Therefore the incoming amplitude vector has the form
 
-$$ \mathbf a_{\mathrm{in}} = \mathbf e_0, $$
+$$ \mathbf a_{\mathrm{in}} = \vec E_0, $$
 
-where $\mathbf e_0$ is the unit vector corresponding to diffraction order $n=0$.
+where $\vec E_0$ is the unit vector corresponding to diffraction order $n=0$.
 
 For orders indexed by
 
@@ -1356,7 +1356,7 @@ in one-based indexing.
 
 Thus,
 
-$$ \mathbf e_0 = \begin{pmatrix} 0\\ \vdots\\ 0\\ 1\\ 0\\ \vdots\\ 0 \end{pmatrix}. $$
+$$ \vec E_0 = \begin{pmatrix} 0\\ \vdots\\ 0\\ 1\\ 0\\ \vdots\\ 0 \end{pmatrix}. $$
 
 If
 
@@ -1364,11 +1364,11 @@ $$ \mathbf b_{\mathrm{out}} = S\mathbf a_{\mathrm{in}}, $$
 
 then
 
-$$ \mathbf b_{\mathrm{out}} = S\mathbf e_0. $$
+$$ \mathbf b_{\mathrm{out}} = S\vec E_0. $$
 
 Multiplication by a basis vector selects a matrix column:
 
-$$ \boxed{ S\mathbf e_0 = S_{(:,\,0)}. } $$
+$$ \boxed{ S\vec E_0 = S_{(:,\,0)}. } $$
 
 Therefore the reflected diffraction amplitudes are obtained directly from the corresponding column of the final scattering matrix.
 
@@ -1386,15 +1386,15 @@ For TE polarization, Maxwell's equation gives the corresponding magnetic field.
 
 From
 
-$$ \nabla\times\mathbf E = i\omega\mu_0\mathbf H, $$
+$$ \vec\nabla\times\vec E = i\omega\mu_0\vec H, $$
 
 we obtain
 
-$$ \mathbf H = \frac{1}{i\omega\mu_0} \nabla\times\mathbf E. $$
+$$ \vec H = \frac{1}{i\omega\mu_0} \vec\nabla\times\vec E. $$
 
 For
 
-$$ \mathbf E= \hat{\mathbf z} B_ne^{i\alpha_nx+i\beta_ny}, $$
+$$ \vec E= \hat{\mathbf z} B_ne^{i\alpha_nx+i\beta_ny}, $$
 
 the curl contains the factors $\alpha_n$ and $\beta_n$.
 
@@ -1690,7 +1690,7 @@ $$ \text{Maxwell} $$
 
 $$ \Downarrow $$
 
-$$ \nabla\times(\nabla\times\mathbf E) = k_0^2\varepsilon_r\mathbf E $$
+$$ \vec\nabla\times(\vec\nabla\times\vec E) = k_0^2\varepsilon_r\vec E $$
 
 $$ \Downarrow $$
 
@@ -1734,11 +1734,11 @@ $$ \boxed{ S_{\mathrm{total}} = S_1\star S_2\star\cdots\star S_M } $$
 
 $$ \Downarrow $$
 
-$$ \boxed{ \mathbf a_{\mathrm{in}}=\mathbf e_0 } $$
+$$ \boxed{ \mathbf a_{\mathrm{in}}=\vec E_0 } $$
 
 $$ \Downarrow $$
 
-$$ \boxed{ \mathbf B = S_{\mathrm{total}}\mathbf e_0 } $$
+$$ \boxed{ \vec B = S_{\mathrm{total}}\vec E_0 } $$
 
 $$ \Downarrow $$
 
@@ -1778,9 +1778,9 @@ which is converted into and combined through scattering matrices
 
 $$ \boxed{ S_{\mathrm{total}} } $$
 
-which, for the incident state $\mathbf e_0$, gives
+which, for the incident state $\vec E_0$, gives
 
-$$ \boxed{ \mathbf B=S_{\mathrm{total}}\mathbf e_0 } $$
+$$ \boxed{ \vec B=S_{\mathrm{total}}\vec E_0 } $$
 
 and finally
 
