@@ -12,6 +12,3 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 #define TMSOLVER_H
 
 #include "PEG.h"
-#include <gsl/gsl_complex.h>
-#include <gsl/gsl_matrix_complex_double.h>
-#include <gsl/gsl_linalg.h>

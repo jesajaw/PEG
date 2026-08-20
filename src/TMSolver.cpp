@@ -11,11 +11,6 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 #include "TMSolver.h"
 
 #include <math.h>
-#include <gsl/gsl_complex_math.h>
-#include <gsl/gsl_odeiv2.h>
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_cblas.h>
-#include <gsl/gsl_blas.h>
 #include <omp.h>
 #include <string.h>
 
