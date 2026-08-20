@@ -177,6 +177,7 @@ status=succeeded     (inProgress, someFailed, allFailed, succeeded)
 completedSteps=41
 totalSteps=41
 # Output
+# TE
 100[tab]<e-5>,<e-4>,<e-3>,<e-2>,<e-1>,<e0>,<e1>,<e2>,<e3>,<e4>,<e5>
 105[tab]<e-5>,<e-4>,<e-3>,<e-2>,<e-1>,<e0>,<e1>,<e2>,<e3>,<e4>,<e5>
 110[tab]<e-5>,<e-4>,<e-3>,<e-2>,<e-1>,<e0>,<e1>,<e2>,<e3>,<e4>,<e5>
@@ -185,7 +186,7 @@ totalSteps=41
 
 The Output table lists reflected efficiencies at each (wavelength/eV/incidence angle) sequentially from the -N order to the +N order.  (Efficiencies are 0 if the orders are evanescent instead of propagating.)  Note that we use the sign convention where _inside diffraction orders_ are negative (n < 0), corresponding to the grating equation:
 
-sin(beta) = sin(alpha) + n \lambda / d
+$$ \sin(\beta) = \sin(\alpha) + n \lambda / d$$
 
 License
 ---

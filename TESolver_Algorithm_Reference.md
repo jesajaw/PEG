@@ -532,200 +532,85 @@ This section fills in those intermediate steps so that the derivation can be fol
 
 We start from Maxwell's equations in a linear, isotropic, non-magnetic medium without free currents:
 
-$$
-\nabla\times\mathbf E
-=
--\frac{\partial\mathbf B}{\partial t},
-\qquad
-\nabla\times\mathbf H
-=
-\frac{\partial\mathbf D}{\partial t},
-$$
+$$ \nabla\times\mathbf E = -\frac{\partial\mathbf B}{\partial t}, \qquad \nabla\times\mathbf H = \frac{\partial\mathbf D}{\partial t}, $$
 
 with
 
-$$
-\mathbf D=\varepsilon_0\varepsilon_r\mathbf E,
-\qquad
-\mathbf B=\mu_0\mathbf H.
-$$
+$$ \mathbf D=\varepsilon_0\varepsilon_r\mathbf E, \qquad \mathbf B=\mu_0\mathbf H. $$
 
 Assume time-harmonic fields of the form
 
-$$
-\mathbf E(\mathbf r,t)
-=
-\mathbf E(\mathbf r)e^{-i\omega t},
-\qquad
-\mathbf H(\mathbf r,t)
-=
-\mathbf H(\mathbf r)e^{-i\omega t}.
-$$
+$$ \mathbf E(\mathbf r,t) = \mathbf E(\mathbf r)e^{-i\omega t}, \qquad \mathbf H(\mathbf r,t) = \mathbf H(\mathbf r)e^{-i\omega t}. $$
 
 Then
 
-$$
-\frac{\partial}{\partial t}
-\rightarrow
--i\omega.
-$$
+$$ \frac{\partial}{\partial t} \rightarrow -i\omega. $$
 
 Therefore,
 
-$$
-\nabla\times\mathbf E
-=
-i\omega\mu_0\mathbf H
-$$
+$$ \nabla\times\mathbf E = i\omega\mu_0\mathbf H $$
 
 and
 
-$$
-\nabla\times\mathbf H
-=
--i\omega\varepsilon_0\varepsilon_r\mathbf E.
-$$
+$$ \nabla\times\mathbf H = -i\omega\varepsilon_0\varepsilon_r\mathbf E. $$
 
 Take the curl of Faraday's law:
 
-$$
-\nabla\times(\nabla\times\mathbf E)
-=
-i\omega\mu_0
-(\nabla\times\mathbf H).
-$$
+$$ \nabla\times(\nabla\times\mathbf E) = i\omega\mu_0 (\nabla\times\mathbf H). $$
 
 Substituting Ampère's law gives
 
-$$
-\nabla\times(\nabla\times\mathbf E)
-=
-i\omega\mu_0
-\left(
--i\omega\varepsilon_0\varepsilon_r\mathbf E
-\right).
-$$
+$$ \nabla\times(\nabla\times\mathbf E) = i\omega\mu_0 \left( -i\omega\varepsilon_0\varepsilon_r\mathbf E \right). $$
 
 Since
 
-$$
-i(-i)=1,
-$$
+$$ i(-i)=1, $$
 
 we obtain
 
-$$
-\nabla\times(\nabla\times\mathbf E)
-=
-\omega^2\mu_0\varepsilon_0\varepsilon_r\mathbf E.
-$$
+$$ \nabla\times(\nabla\times\mathbf E) = \omega^2\mu_0\varepsilon_0\varepsilon_r\mathbf E. $$
 
 Define the vacuum wavenumber
 
-$$
-k_0
-=
-\omega\sqrt{\mu_0\varepsilon_0}
-=
-\frac{\omega}{c}
-=
-\frac{2\pi}{\lambda}.
-$$
+$$ k_0 = \omega\sqrt{\mu_0\varepsilon_0} = \frac{\omega}{c} = \frac{2\pi}{\lambda}. $$
 
 Hence
 
-$$
-\nabla\times(\nabla\times\mathbf E)
-=
-k_0^2\varepsilon_r\mathbf E.
-$$
+$$ \nabla\times(\nabla\times\mathbf E) = k_0^2\varepsilon_r\mathbf E. $$
 
 Now use the vector identity
 
-$$
-\boxed{
-\nabla\times(\nabla\times\mathbf E)
-=
-\nabla(\nabla\cdot\mathbf E)
--
-\nabla^2\mathbf E
-}.
-$$
+$$ \boxed{ \nabla\times(\nabla\times\mathbf E) = \nabla(\nabla\cdot\mathbf E) - \nabla^2\mathbf E }. $$
 
 Thus,
 
-$$
-\nabla(\nabla\cdot\mathbf E)
--
-\nabla^2\mathbf E
-=
-k_0^2\varepsilon_r\mathbf E.
-$$
+$$ \nabla(\nabla\cdot\mathbf E) - \nabla^2\mathbf E = k_0^2\varepsilon_r\mathbf E. $$
 
 #### TE specialization
 
 For the 1D grating considered here, the structure is invariant in the $z$ direction:
 
-$$
-\frac{\partial}{\partial z}=0.
-$$
+$$ \frac{\partial}{\partial z}=0. $$
 
 For TE polarization we choose
 
-$$
-\mathbf E
-=
-\begin{pmatrix}
-0\\
-0\\
-u(x,y)
-\end{pmatrix}.
-$$
+$$ \mathbf E = \begin{pmatrix} 0\\ 0\\ u(x,y) \end{pmatrix}. $$
 
 Consequently,
 
-$$
-\nabla\cdot\mathbf E
-=
-\frac{\partial E_z}{\partial z}
-=
-0.
-$$
+$$ \nabla\cdot\mathbf E = \frac{\partial E_z}{\partial z} = 0. $$
 
 The vector equation therefore reduces to
 
-$$
--\nabla^2\mathbf E
-=
-k_0^2\varepsilon_r\mathbf E.
-$$
+$$ -\nabla^2\mathbf E = k_0^2\varepsilon_r\mathbf E. $$
 
 Only the $z$ component is non-zero, so
 
-$$
--
-\left(
-\frac{\partial^2u}{\partial x^2}
-+
-\frac{\partial^2u}{\partial y^2}
-\right)
-=
-k_0^2\varepsilon_r u.
-$$
+$$ - \left( \frac{\partial^2u}{\partial x^2} + \frac{\partial^2u}{\partial y^2} \right) = k_0^2\varepsilon_r u. $$
 
 Rearranging,
 
-$$
-\boxed{
-\frac{\partial^2u}{\partial x^2}
-+
-\frac{\partial^2u}{\partial y^2}
-+
-k_0^2\varepsilon_r(x,y)u
-=
-0.
-}
-$$
+$$ \boxed{ \frac{\partial^2u}{\partial x^2} + \frac{\partial^2u}{\partial y^2} + k_0^2\varepsilon_r(x,y)u = 0. } $$
 
 This is the scalar Helmholtz equation used by the solver.
 
@@ -735,87 +620,43 @@ This is the scalar Helmholtz equation used by the solver.
 
 The grating satisfies
 
-$$
-\varepsilon_r(x+d,y)
-=
-\varepsilon_r(x,y).
-$$
+$$ \varepsilon_r(x+d,y) = \varepsilon_r(x,y). $$
 
 Define the grating wavevector
 
-$$
-K=\frac{2\pi}{d}.
-$$
+$$ K=\frac{2\pi}{d}. $$
 
 Bloch-Floquet theory states that a solution of a periodic problem can be written as
 
-$$
-u(x,y)
-=
-e^{i\alpha_0x}p(x,y),
-$$
+$$ u(x,y) = e^{i\alpha_0x}p(x,y), $$
 
 where $p$ has the same period as the structure:
 
-$$
-p(x+d,y)=p(x,y).
-$$
+$$ p(x+d,y)=p(x,y). $$
 
 Because $p$ is periodic, it has the Fourier expansion
 
-$$
-p(x,y)
-=
-\sum_{n=-\infty}^{\infty}
-u_n(y)e^{inKx}.
-$$
+$$ p(x,y) = \sum_{n=-\infty}^{\infty} u_n(y)e^{inKx}. $$
 
 Therefore,
 
-$$
-u(x,y)
-=
-\sum_n
-u_n(y)e^{i(\alpha_0+nK)x}.
-$$
+$$ u(x,y) = \sum_n u_n(y)e^{i(\alpha_0+nK)x}. $$
 
 Define
 
-$$
-\boxed{
-\alpha_n=\alpha_0+nK.
-}
-$$
+$$ \boxed{ \alpha_n=\alpha_0+nK. } $$
 
 Then
 
-$$
-\boxed{
-u(x,y)
-=
-\sum_nu_n(y)e^{i\alpha_nx}.
-}
-$$
+$$ \boxed{ u(x,y) = \sum_nu_n(y)e^{i\alpha_nx}. } $$
 
 For an incident plane wave in the upper medium,
 
-$$
-\alpha_0
-=
-k_{\mathrm{top}}\sin\theta.
-$$
+$$ \alpha_0 = k_{\mathrm{top}}\sin\theta. $$
 
 Consequently,
 
-$$
-\boxed{
-\alpha_n
-=
-k_{\mathrm{top}}\sin\theta
-+
-n\frac{2\pi}{d}.
-}
-$$
+$$ \boxed{ \alpha_n = k_{\mathrm{top}}\sin\theta + n\frac{2\pi}{d}. } $$
 
 The important point is that the infinite set of diffraction orders is a direct consequence of the periodicity. It is not introduced by the numerical method.
 
@@ -825,62 +666,27 @@ The important point is that the infinite set of diffraction orders is a direct c
 
 Because the permittivity is periodic in $x$, the quantity
 
-$$
-k^2(x,y)
-=
-k_0^2\varepsilon_r(x,y)
-$$
+$$ k^2(x,y) = k_0^2\varepsilon_r(x,y) $$
 
 is also periodic:
 
-$$
-k^2(x+d,y)=k^2(x,y).
-$$
+$$ k^2(x+d,y)=k^2(x,y). $$
 
 It therefore has a Fourier expansion
 
-$$
-\boxed{
-k^2(x,y)
-=
-\sum_{p=-\infty}^{\infty}
-k_p^2(y)e^{ipKx}.
-}
-$$
+$$ \boxed{ k^2(x,y) = \sum_{p=-\infty}^{\infty} k_p^2(y)e^{ipKx}. } $$
 
 The Fourier coefficients are obtained from the standard orthogonality relation:
 
-$$
-\boxed{
-k_p^2(y)
-=
-\frac{1}{d}
-\int_0^d
-k^2(x,y)e^{-ipKx}\,dx.
-}
-$$
+$$ \boxed{ k_p^2(y) = \frac{1}{d} \int_0^d k^2(x,y)e^{-ipKx}\,dx. } $$
 
 The normalization follows from
 
-$$
-\frac{1}{d}
-\int_0^d
-e^{i(n-p)Kx}\,dx
-=
-\delta_{np}.
-$$
+$$ \frac{1}{d} \int_0^d e^{i(n-p)Kx}\,dx = \delta_{np}. $$
 
 Indeed,
 
-$$
-\int_0^d
-e^{i(n-p)Kx}\,dx
-=
-\begin{cases}
-d,&n=p,\\
-0,&n\neq p.
-\end{cases}
-$$
+$$ \int_0^d e^{i(n-p)Kx}\,dx = \begin{cases} d,&n=p,\\ 0,&n\neq p. \end{cases} $$
 
 Therefore Fourier projection uniquely extracts each coefficient.
 
@@ -890,234 +696,101 @@ Therefore Fourier projection uniquely extracts each coefficient.
 
 Start from
 
-$$
-\left(
-\partial_x^2+\partial_y^2+k^2(x,y)
-\right)u(x,y)=0.
-$$
+$$ \left( \partial_x^2+\partial_y^2+k^2(x,y) \right)u(x,y)=0. $$
 
 Insert
 
-$$
-u(x,y)
-=
-\sum_m u_m(y)e^{i\alpha_mx}.
-$$
+$$ u(x,y) = \sum_m u_m(y)e^{i\alpha_mx}. $$
 
 #### $x$ derivative
 
 Since
 
-$$
-\frac{\partial}{\partial x}
-e^{i\alpha_mx}
-=
-i\alpha_me^{i\alpha_mx},
-$$
+$$ \frac{\partial}{\partial x} e^{i\alpha_mx} = i\alpha_me^{i\alpha_mx}, $$
 
 we have
 
-$$
-\frac{\partial^2}{\partial x^2}
-e^{i\alpha_mx}
-=
--\alpha_m^2e^{i\alpha_mx}.
-$$
+$$ \frac{\partial^2}{\partial x^2} e^{i\alpha_mx} = -\alpha_m^2e^{i\alpha_mx}. $$
 
 Therefore,
 
-$$
-\partial_x^2u
-=
--\sum_m
-\alpha_m^2u_m(y)e^{i\alpha_mx}.
-$$
+$$ \partial_x^2u = -\sum_m \alpha_m^2u_m(y)e^{i\alpha_mx}. $$
 
 #### $y$ derivative
 
 Because $\alpha_m$ does not depend on $y$,
 
-$$
-\partial_y^2u
-=
-\sum_m
-u_m''(y)e^{i\alpha_mx}.
-$$
+$$ \partial_y^2u = \sum_m u_m''(y)e^{i\alpha_mx}. $$
 
 #### Material product
 
 Using
 
-$$
-k^2(x,y)
-=
-\sum_p k_p^2(y)e^{ipKx},
-$$
+$$ k^2(x,y) = \sum_p k_p^2(y)e^{ipKx}, $$
 
 we obtain
 
-$$
-k^2u
-=
-\left(
-\sum_p k_p^2e^{ipKx}
-\right)
-\left(
-\sum_m u_me^{i\alpha_mx}
-\right).
-$$
+$$ k^2u = \left( \sum_p k_p^2e^{ipKx} \right) \left( \sum_m u_me^{i\alpha_mx} \right). $$
 
 Multiplying the two sums,
 
-$$
-k^2u
-=
-\sum_p\sum_m
-k_p^2u_m
-e^{i(pK+\alpha_m)x}.
-$$
+$$ k^2u = \sum_p\sum_m k_p^2u_m e^{i(pK+\alpha_m)x}. $$
 
 Now use
 
-$$
-\alpha_m=\alpha_0+mK.
-$$
+$$ \alpha_m=\alpha_0+mK. $$
 
 Then
 
-$$
-pK+\alpha_m
-=
-pK+\alpha_0+mK
-=
-\alpha_0+(m+p)K
-=
-\alpha_{m+p}.
-$$
+$$ pK+\alpha_m = pK+\alpha_0+mK = \alpha_0+(m+p)K = \alpha_{m+p}. $$
 
 Introduce
 
-$$
-n=m+p.
-$$
+$$ n=m+p. $$
 
 Then
 
-$$
-p=n-m
-$$
+$$ p=n-m $$
 
 and therefore
 
-$$
-k^2u
-=
-\sum_n
-\left(
-\sum_m
-k_{n-m}^2u_m
-\right)
-e^{i\alpha_nx}.
-$$
+$$ k^2u = \sum_n \left( \sum_m k_{n-m}^2u_m \right) e^{i\alpha_nx}. $$
 
 Putting all terms into the Helmholtz equation gives
 
-$$
-\sum_n
-\left[
-u_n''
--
-\alpha_n^2u_n
-+
-\sum_m k_{n-m}^2u_m
-\right]
-e^{i\alpha_nx}
-=
-0.
-$$
+$$ \sum_n \left[ u_n'' - \alpha_n^2u_n + \sum_m k_{n-m}^2u_m \right] e^{i\alpha_nx} = 0. $$
 
 Because the functions
 
-$$
-e^{i\alpha_nx}
-$$
+$$ e^{i\alpha_nx} $$
 
 are linearly independent, every coefficient must vanish:
 
-$$
-u_n''
--
-\alpha_n^2u_n
-+
-\sum_mk_{n-m}^2u_m
-=
-0.
-$$
+$$ u_n'' - \alpha_n^2u_n + \sum_mk_{n-m}^2u_m = 0. $$
 
 Therefore,
 
-$$
-\boxed{
-u_n''
-=
-\alpha_n^2u_n
--
-\sum_mk_{n-m}^2u_m.
-}
-$$
+$$ \boxed{ u_n'' = \alpha_n^2u_n - \sum_mk_{n-m}^2u_m. } $$
 
 Introduce the Kronecker delta,
 
-$$
-\delta_{nm}
-=
-\begin{cases}
-1,&n=m,\\
-0,&n\neq m.
-\end{cases}
-$$
+$$ \delta_{nm} = \begin{cases} 1,&n=m,\\ 0,&n\neq m. \end{cases} $$
 
 Since
 
-$$
-\alpha_n^2u_n
-=
-\sum_m
-\alpha_n^2\delta_{nm}u_m,
-$$
+$$ \alpha_n^2u_n = \sum_m \alpha_n^2\delta_{nm}u_m, $$
 
 we obtain
 
-$$
-u_n''
-=
-\sum_m
-\left[
-\alpha_n^2\delta_{nm}
--
-k_{n-m}^2
-\right]u_m.
-$$
+$$ u_n'' = \sum_m \left[ \alpha_n^2\delta_{nm} - k_{n-m}^2 \right]u_m. $$
 
 Define
 
-$$
-\boxed{
-M_{nm}(y)
-=
-\alpha_n^2\delta_{nm}
--
-k_{n-m}^2(y).
-}
-$$
+$$ \boxed{ M_{nm}(y) = \alpha_n^2\delta_{nm} - k_{n-m}^2(y). } $$
 
 Then the complete coupled system becomes
 
-$$
-\boxed{
-\mathbf u''(y)=M(y)\mathbf u(y).
-}
-$$
+$$ \boxed{ \mathbf u''(y)=M(y)\mathbf u(y). } $$
 
 
 
@@ -1125,63 +798,39 @@ $$
 
 The coupling term is
 
-$$
-k_{n-m}^2.
-$$
+$$ k_{n-m}^2. $$
 
 Suppose $n=m$. Then
 
-$$
-k_{n-m}^2=k_0^2,
-$$
+$$ k_{n-m}^2=k_0^2, $$
 
 which corresponds to the spatial average of the material.
 
 If $n\neq m$, then
 
-$$
-k_{n-m}^2
-$$
+$$ k_{n-m}^2 $$
 
 is a non-zero Fourier component of the periodic material distribution.
 
 Thus a material Fourier component with index $p$ couples modes satisfying
 
-$$
-n-m=p.
-$$
+$$ n-m=p. $$
 
 Equivalently,
 
-$$
-\boxed{
-n=m+p.
-}
-$$
+$$ \boxed{ n=m+p. } $$
 
 This gives a direct mathematical interpretation of diffraction:
 
-> A spatial Fourier component of the grating transfers an integer multiple of the grating momentum $K$ between Floquet orders.
+A spatial Fourier component of the grating transfers an integer multiple of the grating momentum $K$ between Floquet orders.
 
 Indeed,
 
-$$
-\alpha_n-\alpha_m
-=
-(n-m)K
-=
-pK.
-$$
+$$ \alpha_n-\alpha_m = (n-m)K = pK. $$
 
 Therefore,
 
-$$
-\boxed{
-\text{material Fourier order }p
-\quad\Longleftrightarrow\quad
-\text{momentum transfer }pK.
-}
-$$
+$$ \boxed{ \text{material Fourier order }p \quad\Longleftrightarrow\quad \text{momentum transfer }pK. } $$
 
 
 
@@ -1191,130 +840,59 @@ For a fixed $y$, suppose $k^2(x,y)$ is piecewise constant over one period.
 
 Let the discontinuities occur at
 
-$$
-x_1,x_2,\ldots,x_P
-$$
+$$ x_1,x_2,\ldots,x_P $$
 
 and define the jump at each discontinuity as
 
-$$
-\sigma_p
-=
-k^2_{\mathrm{right}}-k^2_{\mathrm{left}}.
-$$
+$$ \sigma_p = k^2_{\mathrm{right}}-k^2_{\mathrm{left}}. $$
 
 For $n\neq0$,
 
-$$
-k_n^2
-=
-\frac{1}{d}
-\int_0^d
-k^2(x)e^{-inKx}\,dx.
-$$
+$$ k_n^2 = \frac{1}{d} \int_0^d k^2(x)e^{-inKx}\,dx. $$
 
 Integration by parts gives
 
-$$
-\int_0^d
-k^2(x)e^{-inKx}\,dx
-=
-\left[
-\frac{k^2(x)e^{-inKx}}{-inK}
-\right]_0^d
-+
-\frac{1}{inK}
-\int_0^d
-\frac{dk^2}{dx}
-e^{-inKx}\,dx.
-$$
+$$ \int_0^d k^2(x)e^{-inKx}\,dx = \left[ \frac{k^2(x)e^{-inKx}}{-inK} \right]_0^d + \frac{1}{inK} \int_0^d \frac{dk^2}{dx} e^{-inKx}\,dx. $$
 
 Because $k^2(x)$ is periodic and
 
-$$
-e^{-inKd}
-=
-e^{-in2\pi}
-=
-1,
-$$
+$$ e^{-inKd} = e^{-in2\pi} = 1, $$
 
 the boundary term cancels.
 
 The derivative of a piecewise-constant function consists of delta distributions at the jumps:
 
-$$
-\frac{dk^2}{dx}
-=
-\sum_p
-\sigma_p\delta(x-x_p).
-$$
+$$ \frac{dk^2}{dx} = \sum_p \sigma_p\delta(x-x_p). $$
 
 Therefore,
 
-$$
-\int_0^d
-\frac{dk^2}{dx}
-e^{-inKx}\,dx
-=
-\sum_p
-\sigma_p e^{-inKx_p}.
-$$
+$$ \int_0^d \frac{dk^2}{dx} e^{-inKx}\,dx = \sum_p \sigma_p e^{-inKx_p}. $$
 
 Hence
 
-$$
-k_n^2
-=
-\frac{1}{d}
-\frac{1}{inK}
-\sum_p
-\sigma_p e^{-inKx_p}.
-$$
+$$ k_n^2 = \frac{1}{d} \frac{1}{inK} \sum_p \sigma_p e^{-inKx_p}. $$
 
 Since
 
-$$
-K=\frac{2\pi}{d},
-$$
+$$ K=\frac{2\pi}{d}, $$
 
 we have
 
-$$
-dK=2\pi.
-$$
+$$ dK=2\pi. $$
 
 Thus
 
-$$
-\boxed{
-k_n^2
-=
-\frac{1}{2\pi in}
-\sum_p
-\sigma_p e^{-inKx_p}.
-}
-$$
+$$ \boxed{ k_n^2 = \frac{1}{2\pi in} \sum_p \sigma_p e^{-inKx_p}. } $$
 
 The exact sign depends on the convention used for the jump orientation and Fourier-transform convention. With the convention
 
-$$
-\sigma_p=k^2_{\mathrm{right}}-k^2_{\mathrm{left}},
-$$
+$$ \sigma_p=k^2_{\mathrm{right}}-k^2_{\mathrm{left}}, $$
 
 and the Fourier factor $e^{-inKx}$, the expression above follows directly from the distributional derivative. If the implementation defines the jump with the opposite orientation, the equivalent formula appears with a minus sign.
 
 For $n=0$, the formula involving $1/n$ is invalid. Instead,
 
-$$
-\boxed{
-k_0^2
-=
-\frac{1}{d}
-\int_0^d
-k^2(x)\,dx.
-}
-$$
+$$ \boxed{ k_0^2 = \frac{1}{d} \int_0^d k^2(x)\,dx. } $$
 
 Thus the zeroth coefficient is simply the spatial average.
 
@@ -1324,113 +902,55 @@ Thus the zeroth coefficient is simply the spatial average.
 
 Suppose the medium is homogeneous in $x$:
 
-$$
-k^2(x,y)=k^2.
-$$
+$$ k^2(x,y)=k^2. $$
 
 Then
 
-$$
-k_n^2
-=
-0
-\qquad
-(n\neq0),
-$$
+$$ k_n^2 = 0 \qquad (n\neq0), $$
 
 while
 
-$$
-k_0^2=k^2.
-$$
+$$ k_0^2=k^2. $$
 
 Therefore,
 
-$$
-k_{n-m}^2
-=
-k^2\delta_{nm}.
-$$
+$$ k_{n-m}^2 = k^2\delta_{nm}. $$
 
 The coupling matrix becomes
 
-$$
-M_{nm}
-=
-\alpha_n^2\delta_{nm}
--
-k^2\delta_{nm}.
-$$
+$$ M_{nm} = \alpha_n^2\delta_{nm} - k^2\delta_{nm}. $$
 
 Hence
 
-$$
-\boxed{
-M_{nm}
-=
-(\alpha_n^2-k^2)\delta_{nm}.
-}
-$$
+$$ \boxed{ M_{nm} = (\alpha_n^2-k^2)\delta_{nm}. } $$
 
 The matrix is diagonal, so all modes decouple:
 
-$$
-u_n''
-=
-(\alpha_n^2-k^2)u_n.
-$$
+$$ u_n'' = (\alpha_n^2-k^2)u_n. $$
 
 Define
 
-$$
-\boxed{
-\beta_n^2
-=
-k^2-\alpha_n^2.
-}
-$$
+$$ \boxed{ \beta_n^2 = k^2-\alpha_n^2. } $$
 
 Then
 
-$$
-\boxed{
-u_n''+\beta_n^2u_n=0.
-}
-$$
+$$ \boxed{ u_n''+\beta_n^2u_n=0. } $$
 
 The two independent solutions are
 
-$$
-u_n(y)
-=
-A_ne^{i\beta_ny}
-+
-B_ne^{-i\beta_ny}.
-$$
+$$ u_n(y) = A_ne^{i\beta_ny} + B_ne^{-i\beta_ny}. $$
 
 Differentiating,
 
-$$
-u_n'(y)
-=
-i\beta_nA_ne^{i\beta_ny}
--
-i\beta_nB_ne^{-i\beta_ny}.
-$$
+$$ u_n'(y) = i\beta_nA_ne^{i\beta_ny} - i\beta_nB_ne^{-i\beta_ny}. $$
 
 At $y=0$,
 
-$$
-u_n=A_n+B_n,
-$$
+$$ u_n=A_n+B_n, $$
 
 and
 
-$$
-u_n'
-=
-i\beta_n(A_n-B_n).
-$$
+$$ u_n' = i\beta_n(A_n-B_n). $$
 
 This gives the basic conversion between field variables and directional modal amplitudes.
 
@@ -1440,116 +960,47 @@ This gives the basic conversion between field variables and directional modal am
 
 At a reference plane,
 
-$$
-u_n=A_n+B_n
-$$
+$$ u_n=A_n+B_n $$
 
 and
 
-$$
-u_n'=i\beta_n(A_n-B_n).
-$$
+$$ u_n'=i\beta_n(A_n-B_n). $$
 
 Divide the second equation by $i\beta_n$:
 
-$$
-\frac{u_n'}{i\beta_n}
-=
-A_n-B_n.
-$$
+$$ \frac{u_n'}{i\beta_n} = A_n-B_n. $$
 
 We therefore have the two equations
 
-$$
-u_n=A_n+B_n
-$$
+$$ u_n=A_n+B_n $$
 
 and
 
-$$
-\frac{u_n'}{i\beta_n}
-=
-A_n-B_n.
-$$
+$$ \frac{u_n'}{i\beta_n} = A_n-B_n. $$
 
 Adding them,
 
-$$
-u_n+\frac{u_n'}{i\beta_n}
-=
-2A_n.
-$$
+$$ u_n+\frac{u_n'}{i\beta_n} = 2A_n. $$
 
 Thus
 
-$$
-\boxed{
-A_n
-=
-\frac12
-\left(
-u_n+\frac{u_n'}{i\beta_n}
-\right).
-}
-$$
+$$ \boxed{ A_n = \frac12 \left( u_n+\frac{u_n'}{i\beta_n} \right). } $$
 
 Subtracting,
 
-$$
-u_n-\frac{u_n'}{i\beta_n}
-=
-2B_n,
-$$
+$$ u_n-\frac{u_n'}{i\beta_n} = 2B_n, $$
 
 so
 
-$$
-\boxed{
-B_n
-=
-\frac12
-\left(
-u_n-\frac{u_n'}{i\beta_n}
-\right).
-}
-$$
+$$ \boxed{ B_n = \frac12 \left( u_n-\frac{u_n'}{i\beta_n} \right). } $$
 
 In matrix form,
 
-$$
-\begin{pmatrix}
-u_n\\
-u_n'
-\end{pmatrix}
-=
-\begin{pmatrix}
-1&1\\
-i\beta_n&-i\beta_n
-\end{pmatrix}
-\begin{pmatrix}
-A_n\\
-B_n
-\end{pmatrix}.
-$$
+$$ \begin{pmatrix} u_n\\ u_n' \end{pmatrix} = \begin{pmatrix} 1&1\\ i\beta_n&-i\beta_n \end{pmatrix} \begin{pmatrix} A_n\\ B_n \end{pmatrix}. $$
 
 The inverse transformation is
 
-$$
-\begin{pmatrix}
-A_n\\
-B_n
-\end{pmatrix}
-=
-\frac12
-\begin{pmatrix}
-1&1/(i\beta_n)\\
-1&-1/(i\beta_n)
-\end{pmatrix}
-\begin{pmatrix}
-u_n\\
-u_n'
-\end{pmatrix}.
-$$
+$$ \begin{pmatrix} A_n\\ B_n \end{pmatrix} = \frac12 \begin{pmatrix} 1&1/(i\beta_n)\\ 1&-1/(i\beta_n) \end{pmatrix} \begin{pmatrix} u_n\\ u_n' \end{pmatrix}. $$
 
 This is the precise mathematical basis for changing between the state-vector representation and the incoming/outgoing representation.
 
@@ -1559,31 +1010,21 @@ This is the precise mathematical basis for changing between the state-vector rep
 
 Recall
 
-$$
-\beta_n^2
-=
-k^2-\alpha_n^2.
-$$
+$$ \beta_n^2 = k^2-\alpha_n^2. $$
 
 #### Propagating case
 
 If
 
-$$
-|\alpha_n|<|k|,
-$$
+$$ |\alpha_n|<|k|, $$
 
 then $\beta_n^2>0$ for a real positive-index lossless medium, so $\beta_n$ can be chosen real:
 
-$$
-\beta_n\in\mathbb R.
-$$
+$$ \beta_n\in\mathbb R. $$
 
 The solutions are oscillatory:
 
-$$
-e^{\pm i\beta_ny}.
-$$
+$$ e^{\pm i\beta_ny}. $$
 
 These represent waves carrying energy in opposite vertical directions.
 
@@ -1591,41 +1032,23 @@ These represent waves carrying energy in opposite vertical directions.
 
 If
 
-$$
-|\alpha_n|>|k|,
-$$
+$$ |\alpha_n|>|k|, $$
 
 then
 
-$$
-\beta_n^2<0.
-$$
+$$ \beta_n^2<0. $$
 
 Write
 
-$$
-\beta_n=i\gamma_n,
-\qquad
-\gamma_n>0.
-$$
+$$ \beta_n=i\gamma_n, \qquad \gamma_n>0. $$
 
 Then
 
-$$
-e^{i\beta_ny}
-=
-e^{i(i\gamma_n)y}
-=
-e^{-\gamma_ny},
-$$
+$$ e^{i\beta_ny} = e^{i(i\gamma_n)y} = e^{-\gamma_ny}, $$
 
 while
 
-$$
-e^{-i\beta_ny}
-=
-e^{+\gamma_ny}.
-$$
+$$ e^{-i\beta_ny} = e^{+\gamma_ny}. $$
 
 Thus one solution decays and the other grows.
 
@@ -1635,109 +1058,58 @@ This is why the square-root branch cannot be chosen arbitrarily.
 
 A common radiation-condition convention is
 
-$$
-\boxed{
-\operatorname{Im}\beta_n\ge0.
-}
-$$
-
+$$ \boxed{ \operatorname{Im}\beta_n\ge0. } $$
 
 
 ### 14.10 First-Order Form of the Coupled ODE
 
 Starting from
 
-$$
-\mathbf u''(y)=M(y)\mathbf u(y),
-$$
+$$ \mathbf u''(y)=M(y)\mathbf u(y), $$
 
 define
 
-$$
-\mathbf v(y)=\mathbf u'(y).
-$$
+$$ \mathbf v(y)=\mathbf u'(y). $$
 
 Then
 
-$$
-\mathbf u'=\mathbf v
-$$
+$$ \mathbf u'=\mathbf v $$
 
 and
 
-$$
-\mathbf v'=M(y)\mathbf u.
-$$
+$$ \mathbf v'=M(y)\mathbf u. $$
 
 Define the state vector
 
-$$
-\mathbf w
-=
-\begin{pmatrix}
-\mathbf u\\
-\mathbf v
-\end{pmatrix}.
-$$
+$$ \mathbf w = \begin{pmatrix} \mathbf u\\ \mathbf v \end{pmatrix}. $$
 
 Then
 
-$$
-\frac{d\mathbf w}{dy}
-=
-\begin{pmatrix}
-0&I\\
-M(y)&0
-\end{pmatrix}
-\mathbf w.
-$$
+$$ \frac{d\mathbf w}{dy} = \begin{pmatrix} 0&I\\ M(y)&0 \end{pmatrix} \mathbf w. $$
 
 Therefore,
 
-$$
-\boxed{
-\mathbf w'(y)=A(y)\mathbf w(y),
-}
-$$
+$$ \boxed{ \mathbf w'(y)=A(y)\mathbf w(y), } $$
 
 with
 
-$$
-\boxed{
-A(y)
-=
-\begin{pmatrix}
-0&I\\
-M(y)&0
-\end{pmatrix}.
-}
-$$
+$$ \boxed{ A(y) = \begin{pmatrix} 0&I\\ M(y)&0 \end{pmatrix}. } $$
 
 If there are
 
-$$
-Q=2N+1
-$$
+$$ Q=2N+1 $$
 
 retained diffraction orders, then
 
-$$
-\mathbf u\in\mathbb C^Q
-$$
+$$ \mathbf u\in\mathbb C^Q $$
 
 and
 
-$$
-\mathbf w\in\mathbb C^{2Q}.
-$$
+$$ \mathbf w\in\mathbb C^{2Q}. $$
 
 Thus
 
-$$
-\boxed{
-\dim(\mathbf w)=2(2N+1).
-}
-$$
+$$ \boxed{ \dim(\mathbf w)=2(2N+1). } $$
 
 This is the origin of the state-space dimension used by the numerical solver.
 
@@ -1747,91 +1119,45 @@ This is the origin of the state-space dimension used by the numerical solver.
 
 Consider a layer occupying
 
-$$
-y_-\le y\le y_+.
-$$
+$$ y_-\le y\le y_+. $$
 
 The first-order system is
 
-$$
-\mathbf w'(y)=A(y)\mathbf w(y).
-$$
+$$ \mathbf w'(y)=A(y)\mathbf w(y). $$
 
 A fundamental matrix $\Phi(y)$ is a matrix whose columns are linearly independent solutions:
 
-$$
-\Phi(y)
-=
-\begin{pmatrix}
-|&|&&|\\
-\mathbf w^{(1)}(y)&
-\mathbf w^{(2)}(y)&\cdots&
-\mathbf w^{(2Q)}(y)\\
-|&|&&|
-\end{pmatrix}.
-$$
+$$ \Phi(y) = \begin{pmatrix} |&|&&|\\ \mathbf w^{(1)}(y)& \mathbf w^{(2)}(y)&\cdots& \mathbf w^{(2Q)}(y)\\ |&|&&| \end{pmatrix}. $$
 
 Every solution can be written as
 
-$$
-\mathbf w(y)=\Phi(y)\mathbf c
-$$
+$$ \mathbf w(y)=\Phi(y)\mathbf c $$
 
 for some constant coefficient vector $\mathbf c$.
 
 At the lower boundary,
 
-$$
-\mathbf w(y_-)
-=
-\Phi(y_-)\mathbf c.
-$$
+$$ \mathbf w(y_-) = \Phi(y_-)\mathbf c. $$
 
 Therefore,
 
-$$
-\mathbf c
-=
-\Phi(y_-)^{-1}\mathbf w(y_-).
-$$
+$$ \mathbf c = \Phi(y_-)^{-1}\mathbf w(y_-). $$
 
 At the upper boundary,
 
-$$
-\mathbf w(y_+)
-=
-\Phi(y_+)\mathbf c.
-$$
+$$ \mathbf w(y_+) = \Phi(y_+)\mathbf c. $$
 
 Substituting the previous expression,
 
-$$
-\mathbf w(y_+)
-=
-\Phi(y_+)
-\Phi(y_-)^{-1}
-\mathbf w(y_-).
-$$
+$$ \mathbf w(y_+) = \Phi(y_+) \Phi(y_-)^{-1} \mathbf w(y_-). $$
 
 Hence,
 
-$$
-\boxed{
-\mathcal T
-=
-\Phi(y_+)\Phi(y_-)^{-1}
-}
-$$
+$$ \boxed{ \mathcal T = \Phi(y_+)\Phi(y_-)^{-1} } $$
 
 and
 
-$$
-\boxed{
-\mathbf w(y_+)
-=
-\mathcal T\mathbf w(y_-).
-}
-$$
+$$ \boxed{ \mathbf w(y_+) = \mathcal T\mathbf w(y_-). } $$
 
 This proves why integrating a complete basis of trial solutions produces the transfer matrix.
 
@@ -1845,31 +1171,19 @@ Each satisfies a second-order differential equation.
 
 Therefore, each order contributes two independent initial conditions:
 
-$$
-u_n(y_-),
-\qquad
-u_n'(y_-).
-$$
+$$ u_n(y_-), \qquad u_n'(y_-). $$
 
 Hence the total number of independent initial conditions is
 
-$$
-2Q=2(2N+1).
-$$
+$$ 2Q=2(2N+1). $$
 
 The state vector therefore belongs to
 
-$$
-\mathbb C^{2Q}.
-$$
+$$ \mathbb C^{2Q}. $$
 
 A linear mapping from this space to itself must be represented by a
 
-$$
-\boxed{
-2Q\times2Q
-}
-$$
+$$ \boxed{ 2Q\times2Q } $$
 
 matrix.
 
@@ -1881,11 +1195,7 @@ Thus the dimension of the transfer matrix is not an arbitrary implementation cho
 
 A transfer matrix relates quantities on opposite sides:
 
-$$
-\mathbf w_+
-=
-\mathcal T\mathbf w_-.
-$$
+$$ \mathbf w_+ = \mathcal T\mathbf w_-. $$
 
 This representation treats both directions symmetrically as state variables.
 
@@ -1893,28 +1203,11 @@ For scattering problems, however, it is more natural to separate incoming and ou
 
 Schematically, write
 
-$$
-\begin{pmatrix}
-\mathbf a_{\mathrm{out}}^{\mathrm{top}}\\
-\mathbf a_{\mathrm{out}}^{\mathrm{bot}}
-\end{pmatrix}
-=
-S
-\begin{pmatrix}
-\mathbf a_{\mathrm{in}}^{\mathrm{top}}\\
-\mathbf a_{\mathrm{in}}^{\mathrm{bot}}
-\end{pmatrix}.
-$$
+$$ \begin{pmatrix} \mathbf a_{\mathrm{out}}^{\mathrm{top}}\\ \mathbf a_{\mathrm{out}}^{\mathrm{bot}} \end{pmatrix} = S \begin{pmatrix} \mathbf a_{\mathrm{in}}^{\mathrm{top}}\\ \mathbf a_{\mathrm{in}}^{\mathrm{bot}} \end{pmatrix}. $$
 
 The scattering matrix therefore has the block structure
 
-$$
-S=
-\begin{pmatrix}
-S_{11}&S_{12}\\
-S_{21}&S_{22}
-\end{pmatrix}.
-$$
+$$ S= \begin{pmatrix} S_{11}&S_{12}\\ S_{21}&S_{22} \end{pmatrix}. $$
 
 The first index identifies the output side and the second index identifies the input side.
 
@@ -1935,201 +1228,65 @@ Suppose two structures $A$ and $B$ are connected.
 
 Write the scattering equations of $A$ as
 
-$$
-\begin{pmatrix}
-b_1\\
-b_2
-\end{pmatrix}
-=
-\begin{pmatrix}
-S_{11}^A&S_{12}^A\\
-S_{21}^A&S_{22}^A
-\end{pmatrix}
-\begin{pmatrix}
-a_1\\
-a_2
-\end{pmatrix}.
-$$
+$$ \begin{pmatrix} b_1\\ b_2 \end{pmatrix} = \begin{pmatrix} S_{11}^A&S_{12}^A\\ S_{21}^A&S_{22}^A \end{pmatrix} \begin{pmatrix} a_1\\ a_2 \end{pmatrix}. $$
 
 Thus,
 
-$$
-b_1
-=
-S_{11}^Aa_1
-+
-S_{12}^Aa_2
-$$
+$$ b_1 = S_{11}^Aa_1 + S_{12}^Aa_2 $$
 
 and
 
-$$
-b_2
-=
-S_{21}^Aa_1
-+
-S_{22}^Aa_2.
-$$
+$$ b_2 = S_{21}^Aa_1 + S_{22}^Aa_2. $$
 
 For structure $B$,
 
-$$
-\begin{pmatrix}
-c_1\\
-c_2
-\end{pmatrix}
-=
-\begin{pmatrix}
-S_{11}^B&S_{12}^B\\
-S_{21}^B&S_{22}^B
-\end{pmatrix}
-\begin{pmatrix}
-d_1\\
-d_2
-\end{pmatrix}.
-$$
+$$ \begin{pmatrix} c_1\\ c_2 \end{pmatrix} = \begin{pmatrix} S_{11}^B&S_{12}^B\\ S_{21}^B&S_{22}^B \end{pmatrix} \begin{pmatrix} d_1\\ d_2 \end{pmatrix}. $$
 
 At the common interface, the internal waves satisfy
 
-$$
-a_2=c_1
-$$
+$$ a_2=c_1 $$
 
 and
 
-$$
-d_1=b_2.
-$$
+$$ d_1=b_2. $$
 
 Therefore,
 
-$$
-a_2
-=
-S_{11}^Bc_? 
-$$
+$$ a_2 = S_{11}^Bc_? $$
 
 and, after applying the interface identifications consistently,
 
-$$
-a_2
-=
-S_{11}^Bb_2
-+
-S_{12}^Bd_2.
-$$
+$$ a_2 = S_{11}^Bb_2 + S_{12}^Bd_2. $$
 
 Using
 
-$$
-b_2
-=
-S_{21}^Aa_1
-+
-S_{22}^Aa_2,
-$$
+$$ b_2 = S_{21}^Aa_1 + S_{22}^Aa_2, $$
 
 we obtain
 
-$$
-a_2
-=
-S_{11}^B
-\left(
-S_{21}^Aa_1
-+
-S_{22}^Aa_2
-\right)
-+
-S_{12}^Bd_2.
-$$
+$$ a_2 = S_{11}^B \left( S_{21}^Aa_1 + S_{22}^Aa_2 \right) + S_{12}^Bd_2. $$
 
 Collect the unknown internal amplitude $a_2$:
 
-$$
-\left(
-I-S_{11}^BS_{22}^A
-\right)a_2
-=
-S_{11}^BS_{21}^Aa_1
-+
-S_{12}^Bd_2.
-$$
+$$ \left( I-S_{11}^BS_{22}^A \right)a_2 = S_{11}^BS_{21}^Aa_1 + S_{12}^Bd_2. $$
 
 Therefore,
 
-$$
-\boxed{
-a_2
-=
-\left(
-I-S_{11}^BS_{22}^A
-\right)^{-1}
-\left(
-S_{11}^BS_{21}^Aa_1
-+
-S_{12}^Bd_2
-\right).
-}
-$$
+$$ \boxed{ a_2 = \left( I-S_{11}^BS_{22}^A \right)^{-1} \left( S_{11}^BS_{21}^Aa_1 + S_{12}^Bd_2 \right). } $$
 
 The internal amplitude has now been eliminated.
 
 Substituting this result into the expressions for the external outgoing waves yields the Redheffer star-product formulas:
 
-$$
-\boxed{
-S_{11}
-=
-S_{11}^A
-+
-S_{12}^A
-\left(
-I-S_{11}^BS_{22}^A
-\right)^{-1}
-S_{11}^BS_{21}^A
-}
-$$
+$$ \boxed{ S_{11} = S_{11}^A + S_{12}^A \left( I-S_{11}^BS_{22}^A \right)^{-1} S_{11}^BS_{21}^A } $$
 
-$$
-\boxed{
-S_{12}
-=
-S_{12}^A
-\left(
-I-S_{11}^BS_{22}^A
-\right)^{-1}
-S_{12}^B
-}
-$$
+$$ \boxed{ S_{12} = S_{12}^A \left( I-S_{11}^BS_{22}^A \right)^{-1} S_{12}^B } $$
 
 and equivalently,
 
-$$
-\boxed{
-S_{21}
-=
-S_{21}^B
-\left(
-I-S_{22}^AS_{11}^B
-\right)^{-1}
-S_{21}^A
-}
-$$
+$$ \boxed{ S_{21} = S_{21}^B \left( I-S_{22}^AS_{11}^B \right)^{-1} S_{21}^A } $$
 
-$$
-\boxed{
-S_{22}
-=
-S_{22}^B
-+
-S_{21}^B
-\left(
-I-S_{22}^AS_{11}^B
-\right)^{-1}
-S_{22}^AS_{12}^B.
-}
-$$
+$$ \boxed{ S_{22} = S_{22}^B + S_{21}^B \left( I-S_{22}^AS_{11}^B \right)^{-1} S_{22}^AS_{12}^B. } $$
 
 The important mathematical operation is the elimination of the internal interface variables.
 
@@ -2139,51 +1296,35 @@ The important mathematical operation is the elimination of the internal interfac
 
 Consider an evanescent mode with
 
-$$
-\beta=i\gamma.
-$$
+$$ \beta=i\gamma. $$
 
 Propagation through a thickness $h$ produces factors
 
-$$
-e^{-\gamma h}
-$$
+$$ e^{-\gamma h} $$
 
 and
 
-$$
-e^{+\gamma h}.
-$$
+$$ e^{+\gamma h}. $$
 
 For sufficiently large $\gamma h$,
 
-$$
-e^{+\gamma h}\gg1
-$$
+$$ e^{+\gamma h}\gg1 $$
 
 while
 
-$$
-e^{-\gamma h}\ll1.
-$$
+$$ e^{-\gamma h}\ll1. $$
 
 For example, if
 
-$$
-\gamma h=100,
-$$
+$$ \gamma h=100, $$
 
 then
 
-$$
-e^{100}\approx2.69\times10^{43},
-$$
+$$ e^{100}\approx2.69\times10^{43}, $$
 
 while
 
-$$
-e^{-100}\approx3.72\times10^{-44}.
-$$
+$$ e^{-100}\approx3.72\times10^{-44}. $$
 
 A transfer matrix must represent both scales simultaneously.
 
@@ -2193,77 +1334,41 @@ The scattering formulation instead eliminates internal growing amplitudes during
 
 This is the fundamental numerical motivation for the S-matrix formulation.
 
-
-
 ### 14.16 Incident-Order Selection
 
 The incident field is a single plane wave.
 
 Therefore the incoming amplitude vector has the form
 
-$$
-\mathbf a_{\mathrm{in}}
-=
-\mathbf e_0,
-$$
+$$ \mathbf a_{\mathrm{in}} = \mathbf e_0, $$
 
 where $\mathbf e_0$ is the unit vector corresponding to diffraction order $n=0$.
 
 For orders indexed by
 
-$$
--N,\ldots,-1,0,1,\ldots,N,
-$$
+$$ -N,\ldots,-1,0,1,\ldots,N, $$
 
 the position of order zero is
 
-$$
-N+1
-$$
+$$ N+1 $$
 
 in one-based indexing.
 
 Thus,
 
-$$
-\mathbf e_0
-=
-\begin{pmatrix}
-0\\
-\vdots\\
-0\\
-1\\
-0\\
-\vdots\\
-0
-\end{pmatrix}.
-$$
+$$ \mathbf e_0 = \begin{pmatrix} 0\\ \vdots\\ 0\\ 1\\ 0\\ \vdots\\ 0 \end{pmatrix}. $$
 
 If
 
-$$
-\mathbf b_{\mathrm{out}}
-=
-S\mathbf a_{\mathrm{in}},
-$$
+$$ \mathbf b_{\mathrm{out}} = S\mathbf a_{\mathrm{in}}, $$
 
 then
 
-$$
-\mathbf b_{\mathrm{out}}
-=
-S\mathbf e_0.
-$$
+$$ \mathbf b_{\mathrm{out}} = S\mathbf e_0. $$
 
 Multiplication by a basis vector selects a matrix column:
 
-$$
-\boxed{
-S\mathbf e_0
-=
-S_{(:,\,0)}.
-}
-$$
+$$ \boxed{ S\mathbf e_0 = S_{(:,\,0)}. } $$
 
 Therefore the reflected diffraction amplitudes are obtained directly from the corresponding column of the final scattering matrix.
 
@@ -2275,72 +1380,35 @@ No general matrix-vector solve is required for the single incident-order problem
 
 Consider an outgoing plane-wave order
 
-$$
-E_z^{(n)}
-=
-B_n
-e^{i\alpha_nx+i\beta_ny}.
-$$
+$$ E_z^{(n)} = B_n e^{i\alpha_nx+i\beta_ny}. $$
 
 For TE polarization, Maxwell's equation gives the corresponding magnetic field.
 
 From
 
-$$
-\nabla\times\mathbf E
-=
-i\omega\mu_0\mathbf H,
-$$
+$$ \nabla\times\mathbf E = i\omega\mu_0\mathbf H, $$
 
 we obtain
 
-$$
-\mathbf H
-=
-\frac{1}{i\omega\mu_0}
-\nabla\times\mathbf E.
-$$
+$$ \mathbf H = \frac{1}{i\omega\mu_0} \nabla\times\mathbf E. $$
 
 For
 
-$$
-\mathbf E=
-\hat{\mathbf z}
-B_ne^{i\alpha_nx+i\beta_ny},
-$$
+$$ \mathbf E= \hat{\mathbf z} B_ne^{i\alpha_nx+i\beta_ny}, $$
 
 the curl contains the factors $\alpha_n$ and $\beta_n$.
 
 The normal Poynting flux is proportional to
 
-$$
-\operatorname{Re}
-\left(
-\beta_n
-\right)
-|B_n|^2.
-$$
+$$ \operatorname{Re} \left( \beta_n \right) |B_n|^2. $$
 
 Consequently, after normalization to the incident order,
 
-$$
-\boxed{
-\eta_n
-=
-|B_n|^2
-\frac{\operatorname{Re}\beta_n}
-{\operatorname{Re}\beta_0}.
-}
-$$
+$$ \boxed{ \eta_n = |B_n|^2 \frac{\operatorname{Re}\beta_n} {\operatorname{Re}\beta_0}. } $$
 
 For a lossless propagating order, $\beta_n$ is real, so this reduces to
 
-$$
-\eta_n
-=
-|B_n|^2
-\frac{\beta_n}{\beta_0}.
-$$
+$$ \eta_n = |B_n|^2 \frac{\beta_n}{\beta_0}. $$
 
 The additional factor $\beta_n/\beta_0$ is essential: the squared field amplitude alone is not a power ratio.
 
@@ -2350,38 +1418,19 @@ The additional factor $\beta_n/\beta_0$ is essential: the squared field amplitud
 
 For an evanescent mode,
 
-$$
-\beta_n=i\gamma_n,
-\qquad
-\gamma_n>0.
-$$
+$$ \beta_n=i\gamma_n, \qquad \gamma_n>0. $$
 
 Therefore,
 
-$$
-\operatorname{Re}\beta_n=0.
-$$
+$$ \operatorname{Re}\beta_n=0. $$
 
 The efficiency expression gives
 
-$$
-\eta_n
-=
-|B_n|^2
-\frac{0}{\operatorname{Re}\beta_0}
-=
-0.
-$$
+$$ \eta_n = |B_n|^2 \frac{0}{\operatorname{Re}\beta_0} = 0. $$
 
 Thus
 
-$$
-\boxed{
-\eta_n=0
-\qquad
-\text{for an evanescent far-field order}.
-}
-$$
+$$ \boxed{ \eta_n=0 \qquad \text{for an evanescent far-field order}. } $$
 
 This does **not** mean that $B_n=0$.
 
@@ -2397,31 +1446,17 @@ For a lossless structure, the time-averaged Poynting theorem implies that the to
 
 For one incident order,
 
-$$
-P_{\mathrm{inc}}
-=
-P_{\mathrm{refl}}
-+
-P_{\mathrm{trans}}.
-$$
+$$ P_{\mathrm{inc}} = P_{\mathrm{refl}} + P_{\mathrm{trans}}. $$
 
 After normalization by the incident power,
 
-$$
-\boxed{
-\sum_nR_n+\sum_nT_n=1.
-}
-$$
+$$ \boxed{ \sum_nR_n+\sum_nT_n=1. } $$
 
 Only propagating orders contribute to these sums.
 
 Numerically, one obtains
 
-$$
-\sum_nR_n+\sum_nT_n
-=
-1+\epsilon_{\mathrm{num}},
-$$
+$$ \sum_nR_n+\sum_nT_n = 1+\epsilon_{\mathrm{num}}, $$
 
 where $\epsilon_{\mathrm{num}}$ measures numerical error.
 
@@ -2437,11 +1472,7 @@ Thus energy conservation provides an independent validation of:
 
 If the materials are absorbing, the outgoing power is smaller:
 
-$$
-\boxed{
-\sum_nR_n+\sum_nT_n<1.
-}
-$$
+$$ \boxed{ \sum_nR_n+\sum_nT_n<1. } $$
 
 The missing power corresponds to absorption inside the material.
 
@@ -2451,67 +1482,39 @@ The missing power corresponds to absorption inside the material.
 
 For an absorbing material,
 
-$$
-n=n'+in''.
-$$
+$$ n=n'+in''. $$
 
 The relative permittivity is related to the refractive index by
 
-$$
-\varepsilon_r=n^2.
-$$
+$$ \varepsilon_r=n^2. $$
 
 Therefore,
 
-$$
-\varepsilon_r
-=
-(n'+in'')^2
-$$
+$$ \varepsilon_r = (n'+in'')^2 $$
 
 and hence
 
-$$
-\varepsilon_r
-=
-(n'^2-n''^2)
-+
-2in'n''.
-$$
+$$ \varepsilon_r = (n'^2-n''^2) + 2in'n''. $$
 
 Consequently,
 
-$$
-k^2=k_0^2\varepsilon_r
-$$
+$$ k^2=k_0^2\varepsilon_r $$
 
 is complex.
 
 Its Fourier coefficients are therefore complex:
 
-$$
-k_n^2\in\mathbb C.
-$$
+$$ k_n^2\in\mathbb C. $$
 
 The coupling matrix
 
-$$
-M_{nm}
-=
-\alpha_n^2\delta_{nm}
--
-k_{n-m}^2
-$$
+$$ M_{nm} = \alpha_n^2\delta_{nm} - k_{n-m}^2 $$
 
 is consequently complex as well.
 
 The vertical propagation constants
 
-$$
-\beta_n
-=
-\sqrt{k^2-\alpha_n^2}
-$$
+$$ \beta_n = \sqrt{k^2-\alpha_n^2} $$
 
 also become complex.
 
@@ -2525,37 +1528,21 @@ The imaginary parts are thus not numerical artifacts. They are part of the physi
 
 Suppose an outgoing wave is represented at a reference plane $y=a$:
 
-$$
-u_n(a)
-\propto
-B_ne^{i\beta_na}.
-$$
+$$ u_n(a) \propto B_ne^{i\beta_na}. $$
 
 If we want the amplitude referenced to $y=0$, we remove the propagation factor:
 
-$$
-B_n^{(0)}
-=
-B_n^{(a)}e^{-i\beta_na}.
-$$
+$$ B_n^{(0)} = B_n^{(a)}e^{-i\beta_na}. $$
 
 The incident wave has also accumulated a phase between $y=0$ and $y=a$:
 
-$$
-A_0(a)
-=
-A_0(0)e^{i\beta_0a}.
-$$
+$$ A_0(a) = A_0(0)e^{i\beta_0a}. $$
 
 If the incident amplitude is normalized to unity at $y=a$, then the corresponding amplitude at $y=0$ contains the inverse phase factor.
 
 Combining the two reference changes gives a relative phase factor of the form
 
-$$
-\boxed{
-e^{-i(\beta_n+\beta_0)a}.
-}
-$$
+$$ \boxed{ e^{-i(\beta_n+\beta_0)a}. } $$
 
 The exact sign depends on the chosen propagation-direction convention, but the physical principle is invariant:
 
@@ -2563,9 +1550,7 @@ The exact sign depends on the chosen propagation-direction convention, but the p
 
 Since efficiency depends on
 
-$$
-|B_n|^2,
-$$
+$$ |B_n|^2, $$
 
 a purely real propagation phase does not change the efficiency.
 
@@ -2575,72 +1560,43 @@ a purely real propagation phase does not change the efficiency.
 
 The continuous structure has
 
-$$
-M=M(y).
-$$
+$$ M=M(y). $$
 
 The exact problem is
 
-$$
-\mathbf w'(y)=A(y)\mathbf w(y).
-$$
+$$ \mathbf w'(y)=A(y)\mathbf w(y). $$
 
 Suppose the vertical coordinate is divided into intervals
 
-$$
-[y_j,y_{j+1}]
-$$
+$$ [y_j,y_{j+1}] $$
 
 with
 
-$$
-\Delta y_j=y_{j+1}-y_j.
-$$
+$$ \Delta y_j=y_{j+1}-y_j. $$
 
 Within each interval, the material distribution is approximated by a representative value:
 
-$$
-M(y)\approx M_j.
-$$
+$$ M(y)\approx M_j. $$
 
 Then
 
-$$
-\mathbf w'
-=
-A_j\mathbf w.
-$$
+$$ \mathbf w' = A_j\mathbf w. $$
 
 The exact local solution for a constant $A_j$ is
 
-$$
-\mathbf w(y_{j+1})
-=
-e^{A_j\Delta y_j}
-\mathbf w(y_j).
-$$
+$$ \mathbf w(y_{j+1}) = e^{A_j\Delta y_j} \mathbf w(y_j). $$
 
 Thus the layer transfer matrix is, formally,
 
-$$
-\boxed{
-T_j
-=
-e^{A_j\Delta y_j}.
-}
-$$
+$$ \boxed{ T_j = e^{A_j\Delta y_j}. } $$
 
 For a sufficiently fine discretization,
 
-$$
-M(y)\approx M_j
-$$
+$$ M(y)\approx M_j $$
 
 within each layer, and the piecewise-constant approximation converges toward the continuous problem as
 
-$$
-{\max}_{j} \Delta y_j\rightarrow0.
-$$
+$$ {\max}_{j} \Delta y_j\rightarrow0. $$
 
 Hence layering is a numerical discretization of the continuous $y$ dependence.
 
@@ -2650,49 +1606,33 @@ Hence layering is a numerical discretization of the continuous $y$ dependence.
 
 For an evanescent mode,
 
-$$
-\beta_n=i\gamma_n.
-$$
+$$ \beta_n=i\gamma_n. $$
 
 Its characteristic variation length is
 
-$$
-L_n=\frac{1}{\gamma_n}.
-$$
+$$ L_n=\frac{1}{\gamma_n}. $$
 
 A vertical discretization interval $\Delta y$ should therefore resolve the fastest relevant variation.
 
 The propagation factor over one layer is
 
-$$
-e^{\gamma_n\Delta y}.
-$$
+$$ e^{\gamma_n\Delta y}. $$
 
 The largest retained decay/growth rate,
 
-$$
-\gamma_{\max},
-$$
+$$ \gamma_{\max}, $$
 
 sets the most restrictive scale.
 
 A useful dimensionless parameter is
 
-$$
-\boxed{
-\gamma_{\max}\Delta y.
-}
-$$
+$$ \boxed{ \gamma_{\max}\Delta y. } $$
 
 If this quantity becomes too large, the layer contains an enormous exponential dynamic range.
 
 Therefore, a physically meaningful discretization criterion is to keep
 
-$$
-\boxed{
-|\beta_{\max}|\Delta y
-}
-$$
+$$ \boxed{ |\beta_{\max}|\Delta y } $$
 
 within a numerically manageable range.
 
@@ -2704,65 +1644,39 @@ This does not mean that there is one universal value of the allowed product. The
 
 The exact Floquet expansion is
 
-$$
-u(x,y)
-=
-\sum_{n=-\infty}^{\infty}
-u_n(y)e^{i\alpha_nx}.
-$$
+$$ u(x,y) = \sum_{n=-\infty}^{\infty} u_n(y)e^{i\alpha_nx}. $$
 
 Numerically, this is replaced by
 
-$$
-\boxed{
-u(x,y)
-\approx
-\sum_{n=-N}^{N}
-u_n(y)e^{i\alpha_nx}.
-}
-$$
+$$ \boxed{ u(x,y) \approx \sum_{n=-N}^{N} u_n(y)e^{i\alpha_nx}. } $$
 
 The number of retained orders is
 
-$$
-Q=2N+1.
-$$
+$$ Q=2N+1. $$
 
 Consequently,
 
-$$
-M\in\mathbb C^{Q\times Q}
-$$
+$$ M\in\mathbb C^{Q\times Q} $$
 
 and the first-order state matrix has dimension
 
-$$
-2Q\times2Q.
-$$
+$$ 2Q\times2Q. $$
 
 Increasing $N$ enlarges the represented modal space.
 
 A converged calculation should satisfy
 
-$$
-\eta_n(N+\Delta N)
-\approx
-\eta_n(N)
-$$
+$$ \eta_n(N+\Delta N) \approx \eta_n(N) $$
 
 for all quantities of interest.
 
 Thus two distinct numerical convergence questions must be separated:
 
 1. **Vertical discretization convergence**
-   $$
-   \Delta y\rightarrow0;
-   $$
+   $$ \Delta y\rightarrow0; $$
 
 2. **Fourier/modal truncation convergence**
-   $$
-   N\rightarrow\infty.
-   $$
+   $$ N\rightarrow\infty. $$
 
 A result can be converged with respect to one while still being unconverged with respect to the other.
 
@@ -2772,174 +1686,63 @@ A result can be converged with respect to one while still being unconverged with
 
 The entire derivation can now be written without skipping the principal mathematical transitions:
 
-$$
-\text{Maxwell}
-$$
+$$ \text{Maxwell} $$
 
-$$
-\Downarrow
-$$
+$$ \Downarrow $$
 
-$$
-\nabla\times(\nabla\times\mathbf E)
-=
-k_0^2\varepsilon_r\mathbf E
-$$
+$$ \nabla\times(\nabla\times\mathbf E) = k_0^2\varepsilon_r\mathbf E $$
 
-$$
-\Downarrow
-$$
+$$ \Downarrow $$
 
-$$
-\text{TE specialization}
-$$
+$$ \text{TE specialization} $$
 
-$$
-\Downarrow
-$$
+$$ \Downarrow $$
 
-$$
-\boxed{
-(\partial_x^2+\partial_y^2+k_0^2\varepsilon_r)u=0
-}
-$$
+$$ \boxed{ (\partial_x^2+\partial_y^2+k_0^2\varepsilon_r)u=0 } $$
 
-$$
-\Downarrow
-$$
+$$ \Downarrow $$
 
-$$
-\varepsilon_r(x+d,y)=\varepsilon_r(x,y)
-$$
+$$ \varepsilon_r(x+d,y)=\varepsilon_r(x,y) $$
 
-$$
-\Downarrow
-$$
+$$ \Downarrow $$
 
-$$
-\boxed{
-u(x,y)
-=
-\sum_nu_n(y)e^{i\alpha_nx},
-\qquad
-\alpha_n=\alpha_0+nK
-}
-$$
+$$ \boxed{ u(x,y) = \sum_nu_n(y)e^{i\alpha_nx}, \qquad \alpha_n=\alpha_0+nK } $$
 
-$$
-\Downarrow
-$$
+$$ \Downarrow $$
 
-$$
-\boxed{
-k^2(x,y)
-=
-\sum_pk_p^2(y)e^{ipKx}
-}
-$$
+$$ \boxed{ k^2(x,y) = \sum_pk_p^2(y)e^{ipKx} } $$
 
-$$
-\Downarrow
-$$
+$$ \Downarrow $$
 
-$$
-\boxed{
-u_n''
-=
-\sum_m
-\left[
-\alpha_n^2\delta_{nm}
--
-k_{n-m}^2
-\right]u_m
-}
-$$
+$$ \boxed{ u_n'' = \sum_m \left[ \alpha_n^2\delta_{nm} - k_{n-m}^2 \right]u_m } $$
 
-$$
-\Downarrow
-$$
+$$ \Downarrow $$
 
-$$
-\boxed{
-\mathbf u''=M(y)\mathbf u
-}
-$$
+$$ \boxed{ \mathbf u''=M(y)\mathbf u } $$
 
-$$
-\Downarrow
-$$
+$$ \Downarrow $$
 
-$$
-\boxed{
-\mathbf w'
-=
-\begin{pmatrix}
-0&I\\
-M&0
-\end{pmatrix}
-\mathbf w
-}
-$$
+$$ \boxed{ \mathbf w' = \begin{pmatrix} 0&I\\ M&0 \end{pmatrix} \mathbf w } $$
 
-$$
-\Downarrow
-$$
+$$ \Downarrow $$
 
-$$
-\boxed{
-\mathbf w(y_+)
-=
-T_{\mathrm{layer}}\mathbf w(y_-)
-}
-$$
+$$ \boxed{ \mathbf w(y_+) = T_{\mathrm{layer}}\mathbf w(y_-) } $$
 
-$$
-\Downarrow
-$$
+$$ \Downarrow $$
 
-$$
-\boxed{
-S_{\mathrm{total}}
-=
-S_1\star S_2\star\cdots\star S_M
-}
-$$
+$$ \boxed{ S_{\mathrm{total}} = S_1\star S_2\star\cdots\star S_M } $$
 
-$$
-\Downarrow
-$$
+$$ \Downarrow $$
 
-$$
-\boxed{
-\mathbf a_{\mathrm{in}}=\mathbf e_0
-}
-$$
+$$ \boxed{ \mathbf a_{\mathrm{in}}=\mathbf e_0 } $$
 
-$$
-\Downarrow
-$$
+$$ \Downarrow $$
 
-$$
-\boxed{
-\mathbf B
-=
-S_{\mathrm{total}}\mathbf e_0
-}
-$$
+$$ \boxed{ \mathbf B = S_{\mathrm{total}}\mathbf e_0 } $$
 
-$$
-\Downarrow
-$$
+$$ \Downarrow $$
 
-$$
-\boxed{
-\eta_n
-=
-|B_n|^2
-\frac{\operatorname{Re}\beta_n}
-{\operatorname{Re}\beta_0}
-}
-$$
+$$ \boxed{ \eta_n = |B_n|^2 \frac{\operatorname{Re}\beta_n} {\operatorname{Re}\beta_0} } $$
 
 This is the mathematical chain implemented by the solver.
 
@@ -2949,85 +1752,39 @@ This is the mathematical chain implemented by the solver.
 
 The derivation can also be viewed as a dependency graph:
 
-$$
-\boxed{
-\varepsilon_r(x,y)
-}
-$$
+$$ \boxed{ \varepsilon_r(x,y) } $$
 
 determines
 
-$$
-\boxed{
-k^2(x,y)=k_0^2\varepsilon_r(x,y)
-}
-$$
+$$ \boxed{ k^2(x,y)=k_0^2\varepsilon_r(x,y) } $$
 
 which determines its Fourier coefficients
 
-$$
-\boxed{
-k_n^2(y)
-}
-$$
+$$ \boxed{ k_n^2(y) } $$
 
 which determine the coupling matrix
 
-$$
-\boxed{
-M_{nm}(y)
-=
-\alpha_n^2\delta_{nm}
--
-k_{n-m}^2(y)
-}
-$$
+$$ \boxed{ M_{nm}(y) = \alpha_n^2\delta_{nm} - k_{n-m}^2(y) } $$
 
 which determines the coupled ODE
 
-$$
-\boxed{
-\mathbf u''=M\mathbf u
-}
-$$
+$$ \boxed{ \mathbf u''=M\mathbf u } $$
 
 which determines the layer transfer relation
 
-$$
-\boxed{
-\mathbf w_+
-=
-T_{\mathrm{layer}}\mathbf w_-
-}
-$$
+$$ \boxed{ \mathbf w_+ = T_{\mathrm{layer}}\mathbf w_- } $$
 
 which is converted into and combined through scattering matrices
 
-$$
-\boxed{
-S_{\mathrm{total}}
-}
-$$
+$$ \boxed{ S_{\mathrm{total}} } $$
 
 which, for the incident state $\mathbf e_0$, gives
 
-$$
-\boxed{
-\mathbf B=S_{\mathrm{total}}\mathbf e_0
-}
-$$
+$$ \boxed{ \mathbf B=S_{\mathrm{total}}\mathbf e_0 } $$
 
 and finally
 
-$$
-\boxed{
-\eta_n
-=
-|B_n|^2
-\frac{\operatorname{Re}\beta_n}
-{\operatorname{Re}\beta_0}.
-}
-$$
+$$ \boxed{ \eta_n = |B_n|^2 \frac{\operatorname{Re}\beta_n} {\operatorname{Re}\beta_0}. } $$
 
 Thus every numerical quantity in the final diffraction efficiency can be traced back through an explicit mathematical chain to the original spatial permittivity distribution.
 
@@ -3037,86 +1794,36 @@ Thus every numerical quantity in the final diffraction efficiency can be traced 
 
 The central mathematical structure of `TESolver` is therefore a sequence of representations of the same electromagnetic boundary-value problem:
 
-$$
-\boxed{
-\text{Maxwell equations}
-}
-$$
+$$ \boxed{ \text{Maxwell equations} } $$
 
 are reduced to
 
-$$
-\boxed{
-\text{scalar PDE}
-}
-$$
+$$ \boxed{ \text{scalar PDE} } $$
 
 by the TE symmetry assumption.
 
 The periodicity of the PDE is then represented by
 
-$$
-\boxed{
-\text{Floquet/Fourier modes}
-}
-$$
+$$ \boxed{ \text{Floquet/Fourier modes} } $$
 
 which transforms the two-dimensional PDE into
 
-$$
-\boxed{
-\text{a one-dimensional coupled ODE system}.
-}
-$$
+$$ \boxed{ \text{a one-dimensional coupled ODE system}. } $$
 
 The ODE system is represented locally by
 
-$$
-\boxed{
-\text{transfer matrices}
-}
-$$
+$$ \boxed{ \text{transfer matrices} } $$
 
 while numerical stability motivates the global representation
 
-$$
-\boxed{
-\text{scattering matrices}.
-}
-$$
+$$ \boxed{ \text{scattering matrices}. } $$
 
 Finally, the physical observable is not the complex field amplitude itself, but the normal Poynting flux:
 
-$$
-\boxed{
-\text{modal amplitude}
-\rightarrow
-\text{power}
-\rightarrow
-\text{diffraction efficiency}.
-}
-$$
+$$ \boxed{ \text{modal amplitude} \rightarrow \text{power} \rightarrow \text{diffraction efficiency}. } $$
 
 The entire method can therefore be summarized mathematically as
 
-$$
-\boxed{
-\varepsilon_r(x,y)
-\rightarrow
-k_n^2(y)
-\rightarrow
-M(y)
-\rightarrow
-\mathbf u(y)
-\rightarrow
-T
-\rightarrow
-S
-\rightarrow
-B_n
-\rightarrow
-\eta_n.
-}
-$$
+$$ \boxed{ \varepsilon_r(x,y) \rightarrow k_n^2(y) \rightarrow M(y) \rightarrow \mathbf u(y) \rightarrow T \rightarrow S \rightarrow B_n \rightarrow \eta_n. } $$
 
 This chain is the mathematical backbone of the implementation. The geometry determines the material Fourier coefficients; the Fourier coefficients determine modal coupling; the coupled modes determine the electromagnetic response; and the resulting outgoing modal amplitudes determine the measurable diffraction efficiencies.
