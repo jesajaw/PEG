@@ -152,6 +152,11 @@ int main(int argc, char** argv) {
 	bool anyFailures = false;
 	bool anySuccesses = false;
 
+	// On Process 0: separate result histories per polarization / combination.
+	std::vector<Result> resultsTE;
+	std::vector<Result> resultsTM;
+	std::vector<Result> resultsCombined; // reuses Result's layout for the averaged spectrum
+
 	// On process 0: create a buffer for receiving results from other processes.
 	// Both TE and TM results share the same array layout (eff[2N+1] + 4 scalar fields),
 	// so we pack one TE result followed by one TM result into each rank's send buffer.
@@ -164,16 +169,44 @@ int main(int argc, char** argv) {
 
 	std::vector<double> mpiSendBuffer(pairSize);
 
-	// On Process 0: separate result histories per polarization / combination.
-	std::vector<Result> resultsTE;
-	std::vector<Result> resultsTM;
-	std::vector<Result> resultsCombined; // reuses Result's layout for the averaged spectrum
+
 
 	for(int i=0; i<totalSteps; i+=commandSize) {
 		Result resultTE = Result(Result::InactiveCalculation);
 		Result resultTM = Result(Result::InactiveCalculation);
 
 		if(i+rank < totalSteps){
+
+			double currentValue = io.min + io.increment*(i+rank);
+
+			// determine wavelength (um): depends on mode and eV/um setting.
+			double wavelength = (io.mode == CommandLineOptions::ConstantWavelength) ? io.wavelength : currentValue;
+			// interpret input wavelength as eV instead, and convert to actual wavelength.
+			// Formula: wavelength = hc / eV. => hc = 1.23984172 eV * um.
+			if(io.eV)
+				wavelength = M_HC / wavelength;
+
+			// determine incidence angle: depends on mode and possibly wavelength.
+			double incidenceAngle;
+			switch(io.mode) {
+			case CommandLineOptions::ConstantIncidence:
+				incidenceAngle = io.incidenceAngle;
+				break;
+			case CommandLineOptions::ConstantIncludedAngle: {
+				double ciaRad = io.includedAngle * M_PI / 180;
+				// formula for constant included angle: satisfies alpha + beta = cia, and grating equation io.toOrder*wavelength/d = sin(beta) - sin(alpha).
+				incidenceAngle = (asin(-io.toOrder*wavelength/2/io.period/cos(ciaRad/2)) + ciaRad/2) * 180 / M_PI;
+				break;
+				}
+			case CommandLineOptions::ConstantWavelength:
+				incidenceAngle = currentValue;
+				break;
+			default:
+				// never happens: input validation assures valid mode.
+				incidenceAngle = 0;
+				break;
+			}
+
 			if(io.computeTE || io.combineTETM)
 				resultTE = grating->getEffTE(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
 			if(io.computeTM || io.combineTETM)
