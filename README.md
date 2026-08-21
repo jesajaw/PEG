@@ -186,7 +186,7 @@ totalSteps=41
 
 The Output table lists reflected efficiencies at each (wavelength/eV/incidence angle) sequentially from the -N order to the +N order.  (Efficiencies are 0 if the orders are evanescent instead of propagating.)  Note that we use the sign convention where _inside diffraction orders_ are negative (n < 0), corresponding to the grating equation:
 
-$$ \sin(\beta) = \sin(\alpha) + n \lambda / d$$
+$$ \sin(\beta) = \sin(\alpha) + \frac{n \lambda}{d}$$
 
 License
 ---
