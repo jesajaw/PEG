@@ -49,7 +49,7 @@ Result Grating::getEffTE(double incidenceDeg, double wl, double rmsRoughnessNm, 
 
 Result Grating::getEffTM(double incidenceDeg, double wl, double rmsRoughnessNm, const MathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
 	TMSolver s(*this, mo, numThreads, measureTiming);
-	return s.getEff(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
+	return s.getEffTM(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
 }
 
 std::complex<double> Grating::refractiveIndex(double wl, const std::string& material) {
