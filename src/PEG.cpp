@@ -9,7 +9,7 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 
 #include "PEG.h"
 #include "TESolver.h"
-//#include "TESolver.h"
+#include "TMSolver.h"
 
 #include <fstream>
 #include <iostream>
@@ -48,19 +48,8 @@ Result Grating::getEffTE(double incidenceDeg, double wl, double rmsRoughnessNm, 
 }
 
 Result Grating::getEffTM(double incidenceDeg, double wl, double rmsRoughnessNm, const MathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
-	(void)incidenceDeg;
-	(void)wl;
-	(void)rmsRoughnessNm;
-	(void)mo;
-	(void)printDebugOutput;
-	(void)numThreads;
-	(void)measureTiming;
-
-	/// \todo TM solver (analogous to TESolver) is not implemented yet.
-	/// Once a TMSolver class exists, this should mirror getEffTE():
-	///   TMSolver s(*this, mo, numThreads, measureTiming);
-	///   return s.getEff(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
-	return Result(Result::OtherFailure);
+	TMSolver s(*this, mo, numThreads, measureTiming);
+	return s.getEff(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
 }
 
 std::complex<double> Grating::refractiveIndex(double wl, const std::string& material) {
