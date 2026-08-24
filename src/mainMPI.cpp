@@ -172,9 +172,6 @@ int main(int argc, char** argv) {
 
 
 	for(int i=0; i<totalSteps; i+=commandSize) {
-		Result resultTE = Result(Result::InactiveCalculation);
-		Result resultTM = Result(Result::InactiveCalculation);
-
 		if(i+rank < totalSteps){
 
 			double currentValue = io.min + io.increment*(i+rank);
@@ -208,8 +205,10 @@ int main(int argc, char** argv) {
 			}
 
 			if(io.computeTE || io.combineTETM)
+				Result resultTE = Result(Result::InactiveCalculation);
 				resultTE = grating->getEffTE(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
 			if(io.computeTM || io.combineTETM)
+				Result resultTM = Result(Result::InactiveCalculation);
 				resultTM = grating->getEffTM(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
 		}
 
