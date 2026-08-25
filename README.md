@@ -186,7 +186,7 @@ totalSteps=41
 
 The Output table lists reflected efficiencies at each (wavelength/eV/incidence angle) sequentially from the -N order to the +N order.  (Efficiencies are 0 if the orders are evanescent instead of propagating.)  Note that we use the sign convention where _inside diffraction orders_ are negative (n < 0), corresponding to the grating equation:
 
-$$ \sin(\beta) = \sin(\alpha) + \frac{n \lambda}{d}$$
+$$ \sin\beta = \sin\alpha + \frac{n \lambda}{d}$$
 
 License
 ---
@@ -201,6 +201,8 @@ As a modification of GPLv3-licensed software, this reworked version remains boun
 
 References
 ---
+
+Credit first and foremost to Mark Boots — the vast majority of the effort lies in his original implementation, [markboots/peg](https://github.com/markboots/peg)!
 
 1. M Nevière et al, Nouvelle Revue d'Optique 5 65 (1974) http://dx.doi.org/10.1088/0335-7368/5/2/301
 
