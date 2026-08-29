@@ -159,7 +159,7 @@ The extra factor of $\varepsilon_r$ compared to the TE relation ([TESolver §2.2
 
 ## 4. Transfer Matrix and Scattering Matrix
 
-Nothing about the transfer-matrix or scattering-matrix formalism itself depends on which physical fields make up the state vector — only on the fact that the governing equation is a linear first-order ODE system in a $2Q$-dimensional state, with a well-defined split into "top/bottom" and "in/out" amplitude pairs. Since [§2.1](#21-first-order-system) and [§3.1](#31-the-actual-boundary-conditions-for-tm) establish exactly that structure for TM (with $\mathbf w_{\text{full}}=(\mathbf u,\mathbf w)$ in place of $(\mathbf u,\mathbf u')$), every result in TESolver's transfer- and scattering-matrix chapters transfers verbatim:
+Nothing about the transfer-matrix or scattering-matrix formalism itself depends on which physical fields make up the state vector — only on the fact that the governing equation is a linear first-order ODE system in a $2Q$-dimensional state, with a well-defined split into "top/bottom" and "in/out" amplitude pairs. Since [§2.1](#21-first-order-system) and [§3.1](#31-the-actual-boundary-conditions-for-tm) establish exactly that structure for TM (with $\mathbf w_{ull}=(\mathbf u,\mathbf w)$ in place of $(\mathbf u,\mathbf u')$), every result in TESolver's transfer- and scattering-matrix chapters transfers verbatim:
 
 - Definition of the transfer matrix via a fundamental-solution basis: [TESolver §3.1–3.2](#), [§14.11](#)
 - Block structure $(T_{11},T_{12},T_{21},T_{22})$: [TESolver §3.3](#)
@@ -190,7 +190,7 @@ $$\boxed{\eta_n^{\text{TM}} = |B_n|^2\,\frac{\operatorname{Re}(\beta_n)/\varepsi
 
 Compare with the TE result, $\eta_n = |B_n|^2\,\operatorname{Re}(\beta_n)/\operatorname{Re}(\beta_0)$ ([TESolver §7.2](#)). For **reflected** orders, $n$ and the incident order $0$ live in the *same* outer medium, so $\varepsilon_{r,n}=\varepsilon_{r,0}$ and the ratio reduces to the identical TE-looking expression. For **transmitted** orders, $n$ lives in the substrate while the incident order is normalized in the top medium, so $\varepsilon_{r,n}\neq\varepsilon_{r,0}$ in general, and this extra permittivity ratio is a genuine, physically necessary difference from the naive TE-analogous formula — it is not optional or convention-dependent, it follows directly from $E_x \propto \beta_n/\varepsilon_r$ rather than $E_z \propto$ (no $\varepsilon_r$ factor at all, cf. [TESolver §14.17](#)).
 
-Evanescent orders again carry $\operatorname{Re}(\beta_n)=0$ and hence $\eta_n^{\text{TM}}=0$ far-field, for the same reason as TE ([TESolver §7.3](#)).
+Evanescent orders again carry $\operatorname{Re}(\beta_n)=0$ and hence $\eta_n^{TM}=0$ far-field, for the same reason as TE ([TESolver §7.3](#)).
 
 ---
 
