@@ -117,6 +117,17 @@ Output:
 --outputFile <file name>
 	The calculation output will be written to this file.
 
+--computeTE
+	If included, computes and outputs the TE-polarized efficiency (section "# TE" in the output file).
+
+--computeTM
+	If included, computes and outputs the TM-polarized efficiency (section "# TM" in the output file). Note: TM support is not yet implemented — results will currently report a failure status for every point.
+
+--combineTETM
+	If included, computes both TE and TM internally and outputs their simple average, (TE_eff + TM_eff)/2 per order (section "# (TE+TM)/2" in the output file). Only points where both the TE and TM calculation succeeded are included. Since TM is not yet implemented, this currently produces no output.
+
+At least one of --computeTE, --computeTM, or --combineTETM must be specified.
+
 Optional:
 
 --progressFile <file name>
@@ -139,17 +150,6 @@ Optional:
 
 --integrationTolerance <tolerance>
 	If provided, specifies the error tolerance (eps) required at each step of the numerical integration process. Default if not provided is 1e-5.
-
---computeTE
-	If included, computes and outputs the TE-polarized efficiency (section "# TE" in the output file).
-
---computeTM
-	If included, computes and outputs the TM-polarized efficiency (section "# TM" in the output file). Note: TM support is not yet implemented — results will currently report a failure status for every point.
-
---combineTETM
-	If included, computes both TE and TM internally and outputs their simple average, (TE_eff + TM_eff)/2 per order (section "# (TE+TM)/2" in the output file). Only points where both the TE and TM calculation succeeded are included. Since TM is not yet implemented, this currently produces no output.
-
-	At least one of --computeTE, --computeTM, or --combineTETM must be specified.
 
 --showLegal
 	If included, prints the full copyright and license notice (including the disclaimer about modifications) instead of the short version.
