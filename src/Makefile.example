@@ -6,16 +6,16 @@ INCLUDEPATH += /usr/include/eigen3
 CC=mpic++
 CFLAGS=-c -g -Wall -fopenmp $(if $(INCLUDEPATH),-I$(INCLUDEPATH))
 LDFLAGS=-fopenmp $(if $(LIBPATH),-L$(LIBPATH))
-SOURCES=mainSerial.cpp mainMPI.cpp PEG.cpp TESolver.cpp mainSupport.cpp
+SOURCES = mainSerial.cpp mainMPI.cpp PEG.cpp TESolver.cpp TMSolver.cpp mainSupport.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 
 all: $(SOURCES) pegSerial pegMPI
 
-pegSerial: mainSerial.o mainSupport.o PEG.o TESolver.o
-	$(CC) $(LDFLAGS) mainSerial.o mainSupport.o PEG.o TESolver.o -o ../$@
+pegSerial: mainSerial.o PEG.o TESolver.o TMSolver.o mainSupport.o
+	$(CC) $(LDFLAGS) mainSerial.o PEG.o TESolver.o TMSolver.o mainSupport.o -o pegSerial
 
-pegMPI: mainMPI.o mainSupport.o PEG.o TESolver.o
-	$(CC) $(LDFLAGS) mainMPI.o mainSupport.o PEG.o TESolver.o -o ../$@
+pegMPI: mainMPI.o PEG.o TESolver.o TMSolver.o mainSupport.o
+	$(CC) $(LDFLAGS) mainMPI.o PEG.o TESolver.o TMSolver.o mainSupport.o -o pegMPI
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@

@@ -205,10 +205,8 @@ int main(int argc, char** argv) {
 			}
 
 			if(io.computeTE || io.combineTETM)
-				Result resultTE = Result(Result::InactiveCalculation);
 				resultTE = grating->getEffTE(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
 			if(io.computeTM || io.combineTETM)
-				Result resultTM = Result(Result::InactiveCalculation);
 				resultTM = grating->getEffTM(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
 		}
 
