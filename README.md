@@ -111,11 +111,6 @@ Operating mode:
 	In constant incidence mode, a calculation is performed for wavelengths from --min to --max in steps of --increment, at a fixed incidence angle given by --incidenceAngle.
 	In constant included angle mode, the incidence angle is calculated at each wavelength to ensure a constant included angle of --includedAngle between the incident light and the order specified in --toOrder. This is the operating mode for many monochromators. (Inside orders are negative, outside orders are positive.)
 	In constant wavelength mode, a calculation is performed for incidence angles from --min to --max in steps of --increment, for a fixed wavelength given by --wavelength.
-	
-Output:
-
---outputFile <file name>
-	The calculation output will be written to this file.
 
 --computeTE
 	If included, computes and outputs the TE-polarized efficiency (section "# TE" in the output file).
@@ -127,6 +122,11 @@ Output:
 	If included, computes both TE and TM internally and outputs their simple average, (TE_eff + TM_eff)/2 per order (section "# (TE+TM)/2" in the output file). Only points where both the TE and TM calculation succeeded are included. Since TM is not yet implemented, this currently produces no output.
 
 At least one of --computeTE, --computeTM, or --combineTETM must be specified.
+	
+Output:
+
+--outputFile <file name>
+	The calculation output will be written to this file.
 
 Optional:
 
