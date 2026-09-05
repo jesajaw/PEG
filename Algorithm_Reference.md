@@ -1881,18 +1881,18 @@ The following results depend only on periodicity, linearity, and general matrix/
 
 | Topic | TESolver section |
 |---|---|
-| Bloch–Floquet origin of $\alpha_n = k_{\text{top}}\sin\theta + nK$ | §0.2, §14.2 |
-| Geometry bridge (extracting the $x$-cross-section at fixed $y$) | §0.5 |
-| Dimension-counting argument for the state space | §1.2, §14.12 |
-| Fundamental-matrix argument: why integrating trial solutions yields $\mathcal T$ | §3.2, §14.11 |
-| Why direct transfer-matrix multiplication is numerically unstable | §3.4, §14.15 |
-| Scattering-matrix idea and the Redheffer star product | §4, §14.13–14.14 |
-| Layering as a numerical discretization of continuous $y$-dependence | §5, §14.22–14.23 |
-| Origin of the single-order incident condition $\mathbf a_{\text{in}} = \mathbf e_0$ | §6.1, §14.16 |
-| Phase referencing to a common origin | §7.1, §14.21 |
-| Mode truncation ($N\to\infty$ vs. finite $N$) | §8.1, §14.24 |
-| Energy-balance sum rule $\sum_n R_n + \sum_n T_n \le 1$ | §11.2, §14.19 |
-| Complex refractive index and absorption entering as complex coefficients | §11.3, §14.20 |
+| Bloch–Floquet origin of $\alpha_n = k_{\text{top}}\sin\theta + nK$ | [Fourier & Floquet Expansion](#02-fourier-and-floquet-expansion), [From Periodicity to the Floquet Expansion](#142-from-periodicity-to-the-floquet-expansion) |
+| Geometry bridge (extracting the $x$-cross-section at fixed $y$) | [Geometry Bridge](#05-geometry-bridge) |
+| Dimension-counting argument for the state space | [Dimension of the Solution Space](#12-dimension-of-the-solution-space), [Why the Transfer Matrix Has Dimension $2Q\times2Q$](#1412-why-the-transfer-matrix-has-dimension-2qtimes2q) |
+| Fundamental-matrix argument: why integrating trial solutions yields $\mathcal T$ | [Why a Basis of Trial Solutions Generates the Transfer Matrix](#32-why-a-basis-of-trial-solutions-generates-the-transfer-matrix), [Fundamental Matrix and Transfer Matrix](#1411-fundamental-matrix-and-transfer-matrix) |
+| Why direct transfer-matrix multiplication is numerically unstable | [Why Direct Multiplication of Transfer Matrices Is Numerically Problematic](#34-why-direct-multiplication-of-transfer-matrices-is-numerically-problematic), [Why Scattering-Matrix Composition Is Numerically Better](#1415-why-scattering-matrix-composition-is-numerically-better) |
+| Scattering-matrix idea and the Redheffer star product | [Scattering Matrix](#4-scattering-matrix), [From Transfer Variables to Scattering Variables](#1413-from-transfer-variables-to-scattering-variables)–[Derivation of the Redheffer Star Product](#1414-derivation-of-the-redheffer-star-product) |
+| Layering as a numerical discretization of continuous $y$-dependence | [Layering as a Numerical Discretization](#5-layering-as-a-numerical-discretization), [Vertical Layering as a Numerical Approximation](#1422-vertical-layering-as-a-numerical-approximation)–[Why the Evanescent Spectrum Controls the Vertical Resolution](#1423-why-the-evanescent-spectrum-controls-the-vertical-resolution) |
+| Origin of the single-order incident condition $\mathbf a_{\text{in}} = \mathbf e_0$ | [Origin of the Single-Order Incident Condition](#61-origin-of-the-single-order-incident-condition), [Incident-Order Selection](#1416-incident-order-selection) |
+| Phase referencing to a common origin | [Phase Referencing to a Common Origin](#71-phase-referencing-to-a-common-origin), [Phase Referencing](#1421-phase-referencing) |
+| Mode truncation ($N\to\infty$ vs. finite $N$) | [Finite Mode Number N](#81-finite-mode-number-n), [Mode Truncation](#1424-mode-truncation) |
+| Energy-balance sum rule $\sum_n R_n + \sum_n T_n \le 1$ | [Energy Balance](#112-energy-balance), [Energy Conservation](#1419-energy-conservation) |
+| Complex refractive index and absorption entering as complex coefficients | [Complex Quantities and Absorption](#113-complex-quantities-and-absorption), [Complex Refractive Index and Complex Propagation Constants](#1420-complex-refractive-index-and-complex-propagation-constants) |
 
 What changes for TM is confined to: the wave equation itself, the coupling matrix $M(y)$, the first-order state system, the physical quantity that must match at layer boundaries, the modal-amplitude transform, and the diffraction-efficiency normalization. These are derived below.
 
