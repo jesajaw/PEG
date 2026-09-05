@@ -9,9 +9,11 @@ INCLUDEPATH += /usr/include/eigen3
 
 HEADERS += src/PEG.h \
 	src/TESolver.h \
+	src/TMSolver.h \
 	src/mainSupport.h
 
 SOURCES += src/PEG.cpp\
 	src/TESolver.cpp \
+	src/MESolver.cpp \
 	src/mainSupport.cpp \
 	src/mainSerial.cpp

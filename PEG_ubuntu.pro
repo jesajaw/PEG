@@ -2,16 +2,19 @@ QT     -= gui core
 
 TARGET = pegSerial
 
-QMAKE_CXXFLAGS += -march=native -O2 -c -Wall -fopenmp
+# QMAKE_CXXFLAGS += -march=native -O2 -c -Wall -fopenmp
+QMAKE_CXXFLAGS += -O3 -march=native
 QMAKE_LFLAGS += -fopenmp
 
 INCLUDEPATH += /usr/include/eigen3
 
 HEADERS += src/PEG.h \
 	src/TESolver.h \
+	src/TMSolver.h \
 	src/mainSupport.h
 
 SOURCES += src/PEG.cpp\
 	src/TESolver.cpp \
+	src/MESolver.cpp \
 	src/mainSupport.cpp \
 	src/mainSerial.cpp

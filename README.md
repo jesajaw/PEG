@@ -1,43 +1,35 @@
-About
----
-
+# About
 PEG ("Parallel Efficiency of Gratings") is a tool for calculating the efficiency of diffraction gratings, particularly those used in the Soft X-ray regime.  Developed by the Materials Research Group in the Department of Physics at the University of Saskatchewan (http://beamteam.usask.ca), it was used to characterize the optical components for the REIXS XES beamline at the Canadian Light Source. It implements the _differential theory_ developed by Neviere, Vincent, and Petit [1], and is updated for stability using the _S-matrix formulation_ of Li [2].
 
 This repository is a 2026 rework of the original PEG project by Jesaja Weintritt. The core physics and algorithm (differential theory + S-matrix formulation) are unchanged, but the codebase has been substantially modernized: the GSL dependency has been replaced with Eigen and Boost.Odeint (see Dependencies below), naming and class structure were cleaned up, and support for Transverse Magnetic (TM) polarization is being added alongside the existing Transverse Electric (TE) solver (see Limitations below). This reworked version has not been independently verified against the original; see License.
 
-Features
----
-
+## Features
 - Standard grating shape profiles: rectangular, blazed (triangular), trapezoidal, sinusoidal
 - Custom grating shape profiles: any point-wise defined profile.
 - Coatings: an optional coating layer on top of the grating (user-defined thickness; thick or inter-penetrating)
-	- Note: Coatings are not (yet) supported on custom profiles.
 - Automatic lookup of complex refractive indexes for common materials from Henke data [3].
-- Several built-in scanning modes: over wavelength, over incidence angle, over wavelength maintaining constant deviation ("monochromator mode")
+- Several built-in scanning modes:
+	- over wavelength,
+	- over incidence angle,
+	- over wavelength maintaining constant deviation ("monochromator mode")
 - Support for scalable parallel calculation:
 	- fine parallelization of a single calculation, using OpenMP
 	- coarse parallelization of many efficiency points, using MPI on grid computers.
 
-Limitations
----
+## Limitations / Todo
+- Transverse Electric (TE) polarization is fully supported - but Transverse Magnetic (TM) polarization is not fully implemented yet.
+- Coatings:
+	- The custom grating profile does not yet support coatings.
+	- only single layer coatings
 
-- Transverse Electric (TE) polarization is fully supported (`--computeTE`).
-- Transverse Magnetic (TM) polarization is not yet implemented. The `--computeTM` and `--combineTETM` command-line options already exist, but currently every TM calculation returns a failure result (`Grating::getEffTM()` is a placeholder) — a real TM solver is under active development.
-	- For Soft X-ray gratings used at grazing incidence, the TE and TM polarization efficiency is nearly identical, so TE-only results remain a good approximation until TM support lands.
-- The custom (point-wise) grating profile does not yet support coatings.
-
-Dependencies
----
-
+## Dependencies
 PEG no longer depends on the GNU Scientific Library (GSL). Linear algebra is provided by [Eigen](https://eigen.tuxfamily.org/), and ODE integration by [Boost.Odeint](https://www.boost.org/doc/libs/release/libs/numeric/odeint/). Both are header-only, so no separate library build or linking step is required — just make sure the headers are reachable on your include path.
 
 ```
 sudo apt install libeigen3-dev libboost-dev
 ```
 
-Building
----
-
+## Building
 The 'qmake' build tool from the Qt Framework can be used to generate Makefiles based on PEG_mac.pro or PEG_ubuntu.pro.  (The Qt library is not required to build PEG.)  Edit one of these files to define the include paths for Eigen (and Boost, if not already on your system include path) for your system.
 
 This will build the single-machine command-line program 'pegSerial':
@@ -61,9 +53,7 @@ cd src
 make pegMPI
 ```
 
-Running
----
-
+## Running
 Single-computer version 'pegSerial':
 
 ```
@@ -76,27 +66,31 @@ Cluster-version:
 mpiexec -n <number of nodes> ./pegMPI --mode constantIncidence --min 100 --max 200 --increment 5 --eV  --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile results.txt --progressFile progress.txt --computeTE
 ```
 
-Command-line options:
-```
-Grating specification:
+### Command-line options
 
+#### Grating specification:
+```
 --gratingType <rectangular|blazed|sinusoidal|trapezoidal|custom>
 --gratingPeriod <grating period in um>
 --gratingGeometry <command-delimited list of geometry parameters, in um and/or degrees>
-	Rectangular profile: depth (um),valley width (um)
-	Blazed profile: blaze angle (deg),anti-blaze angle (deg)
-	Sinusoidal profile: depth (um)
-	Trapezoial profile: depth (um),valley width (um),blaze angle (deg),anti-blaze angle (deg)
-	Custom profile: depth (um), followed by list of (x,y) points that describe the surface profile y = g(x).  [x followed by y for each].  The points must go from (0,0) to (1,0) inclusive, and will be scaled so that (0,0)->(1,1) maps to (0,0)->(period,depth).  For example, an isosceles triangular profile with a depth of 0.1um would need three points; the geometry argument would be: {0.1,0,0,0.5,1,1,0}.
-
+```
+- **Rectangular profile**: depth (um),valley width (um)
+- **Blazed profile**: blaze angle (deg),anti-blaze angle (deg)
+- **Sinusoidal profile**: depth (um)
+- **Trapezoial profile**: depth (um),valley width (um),blaze angle (deg),anti-blaze angle (deg)
+- **Custom profile**: depth (um), followed by list of (x,y) points that describe the surface profile y = g(x).  [x followed by y for each]. The points must go from (0,0) to (1,0) inclusive, and will be scaled so that (0,0)->(1,1) maps to (0,0)->(period,depth). For example, an isosceles triangular profile with a depth of 0.1um would need three points; the geometry argument would be: {0.1,0,0,0.5,1,1,0}.
+```
 --gratingMaterial <grating substrate material>
 	This should be a name corresponding to a refractive index database filename, ex: Au, Ni, C, SiO2, etc.
 	
 --N <truncation index>
-	Specifies the number of positive and negative orders to include in the Fourier expansion. Will also determine the number of orders that are calculated, although if you only want to calculate 3 orders, you will still need a much larger truncation index for accurate results.  In the soft x-ray range, convergence is usually attained with N ~ 15..45.
+	Specifies the number of positive and negative orders to include in the Fourier expansion.
+	Will also determine the number of orders that are calculated, although if you only want to calculate 3 orders, you will still need a much larger truncation index for accurate results.
+```
 
-Operating mode:
+#### Operating mode
 
+```
 --mode <constantIncidence|constantIncludedAngle|constantWavelength>
 --min <min>
 --max <max>
@@ -107,29 +101,23 @@ Operating mode:
 --incidenceAngle <incidence angle in degrees>
 --includedAngle <deviation angle in degrees> --toOrder <diffraction order for the included angle>
 --wavelength <wavelength in um>
+```
 
-	In constant incidence mode, a calculation is performed for wavelengths from --min to --max in steps of --increment, at a fixed incidence angle given by --incidenceAngle.
-	In constant included angle mode, the incidence angle is calculated at each wavelength to ensure a constant included angle of --includedAngle between the incident light and the order specified in --toOrder. This is the operating mode for many monochromators. (Inside orders are negative, outside orders are positive.)
-	In constant wavelength mode, a calculation is performed for incidence angles from --min to --max in steps of --increment, for a fixed wavelength given by --wavelength.
+- In **constant incidence** mode, a calculation is performed for wavelengths from --min to --max in steps of --increment, at a fixed incidence angle given by --incidenceAngle.
+- In **constant included angle** mode, the incidence angle is calculated at each wavelength to ensure a constant included angle of --includedAngle between the incident light and the order specified in --toOrder. This is the operating mode for many monochromators. (Inside orders are negative, outside orders are positive.)
+- In **constant wavelength** mode, a calculation is performed for incidence angles from --min to --max in steps of --increment, for a fixed wavelength given by --wavelength.
 
---computeTE
-	If included, computes and outputs the TE-polarized efficiency (section "# TE" in the output file).
-
---computeTM
-	If included, computes and outputs the TM-polarized efficiency (section "# TM" in the output file). Note: TM support is not yet implemented — results will currently report a failure status for every point.
-
---combineTETM
-	If included, computes both TE and TM internally and outputs their simple average, (TE_eff + TM_eff)/2 per order (section "# (TE+TM)/2" in the output file). Only points where both the TE and TM calculation succeeded are included. Since TM is not yet implemented, this currently produces no output.
-
-At least one of --computeTE, --computeTM, or --combineTETM must be specified.
-	
-Output:
-
+#### Output
+```
 --outputFile <file name>
 	The calculation output will be written to this file.
 
-Optional:
-
+--computeTE | --computeTM | --combineTETM
+	If included, computes and outputs the TE-polarized efficiency (section "# TE" in the output file) || TM-polarized efficiency (section "# TM" in the output file).
+	... computes both TE and TM internally and outputs their simple average as well ( $$(TE_eff + TM_eff)/2$$ per order -- section "# (TE+TM)/2" in the output file). Only points where both the TE and TM calculation succeeded are included. At least one of --computeTE, --computeTM, or --combineTETM must be specified.
+```
+#### Optional
+```
 --progressFile <file name>
 	If provided, the current status of the calculation will be written in this file; it can be monitored to determine the progress of long calculations.  This provides an interface for other processes to monitor the status of this calculation (for example, a web-based or GUI front-end, etc.).
 	
@@ -155,9 +143,7 @@ Optional:
 	If included, prints the full copyright and license notice (including the disclaimer about modifications) instead of the short version.
 ```
 
-Example Output
----
-
+#### Example Output
 ```
 # Input
 mode=constantIncidence
