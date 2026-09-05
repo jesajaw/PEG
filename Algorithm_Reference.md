@@ -289,7 +289,7 @@ and $e^{\pm i\beta_n y}$ describes genuine traveling waves.
 
 **Evanescent.** If $|\alpha_n| > |k|$, then $\beta_n = i\gamma_n$ with $\gamma_n > 0$, so
 $$e^{i\beta_n y} = e^{-\gamma_n y}, \qquad e^{-i\beta_n y} = e^{+\gamma_n y}.$$
-A physically admissible solution in a semi-infinite outer medium must not grow exponentially with distance from the structure. The branch of the square root must therefore be chosen so that the physically allowed direction decays — conventionally by requiring $\operatorname{Im}\beta_n \ge 0$.
+A physically admissible solution in a semi-infinite outer medium must not grow exponentially with distance from the structure. The branch of the square root must therefore be chosen so that the physically allowed direction decays — conventionally by requiring $\text{Im}\beta_n \ge 0$.
 
 ### 1.5 Two Distinct Sets of Asymptotic Parameters
 
@@ -439,13 +439,13 @@ For the diffraction efficiency itself, this absolute phase is ultimately irrelev
 ### 7.2 From Field Amplitude to Power
 
 The quantity $|B_n|^2$ is, by itself, only a squared field amplitude — not yet a power. The physically transported power is proportional to the outward normal component of the time-averaged Poynting vector,
-$$\mathbf{S} = \frac{1}{2}\operatorname{Re}\left(\mathbf{E}\times\mathbf{H}^*\right).$$
-For a plane wave of order $n$ propagating in the outer medium, the power flowing normal to the structure carries a factor proportional to $\operatorname{Re}\beta_n$. Normalizing the outgoing power in order $n$ to the incident power (order $0$) gives the diffraction efficiency
-$$\eta_n = |B_n|^2\,\frac{\operatorname{Re}\beta_n}{\operatorname{Re}\beta_0}.$$
+$$\mathbf{S} = \frac{1}{2}\text{Re}\left(\mathbf{E}\times\mathbf{H}^*\right).$$
+For a plane wave of order $n$ propagating in the outer medium, the power flowing normal to the structure carries a factor proportional to $\text{Re}\beta_n$. Normalizing the outgoing power in order $n$ to the incident power (order $0$) gives the diffraction efficiency
+$$\eta_n = |B_n|^2\,\frac{\text{Re}\beta_n}{\text{Re}\beta_0}.$$
 
 ### 7.3 Why Evanescent Orders Automatically Have Zero Efficiency
 
-For an evanescent order, $\beta_n = i\gamma_n$ with real $\gamma_n>0$, so $\operatorname{Re}\beta_n = 0$ and therefore
+For an evanescent order, $\beta_n = i\gamma_n$ with real $\gamma_n>0$, so $\text{Re}\beta_n = 0$ and therefore
 $$\boxed{\eta_n = 0.}$$
 This does not mean the evanescent mode is physically absent — it can be significant in the near field close to the structure — but it carries no net normal radiative power into the far field of the homogeneous outer half-space. This is why such modes must still be carried through the full internal calculation (they participate in mode coupling and boundary matching), yet contribute nothing to the far-field efficiency.
 
@@ -509,7 +509,7 @@ $$\varepsilon_r(x,y)\ \rightarrow\ k^2(x,y)=k_0^2\varepsilon_r(x,y)\ \rightarrow
 $$u(x,y) = \sum_n u_n(y)\,e^{i\alpha_n x}, \qquad k^2(x,y) = \sum_p k_p^2(y)\,e^{ipKx}$$
 $$u_n''(y) = \sum_m\left[\alpha_n^2\delta_{nm} - k_{n-m}^2(y)\right]u_m(y), \qquad \beta_n^2 = k_{\text{medium}}^2 - \alpha_n^2$$
 $$\mathbf{w}(y_+) = \mathcal{T}_{\text{layer}}\,\mathbf{w}(y_-), \qquad \mathbf{a}_{\text{out}} = S\,\mathbf{a}_{\text{in}}, \qquad \mathbf{a}_{\text{in}} = \mathbf{e}_0$$
-$$B_n = (S\mathbf{e}_0)_n \quad \text{(up to the phase reference of §7.1)}, \qquad \eta_n = |B_n|^2\,\frac{\operatorname{Re}\beta_n}{\operatorname{Re}\beta_0}$$
+$$B_n = (S\mathbf{e}_0)_n \quad \text{(up to the phase reference of §7.1)}, \qquad \eta_n = |B_n|^2\,\frac{\text{Re}\beta_n}{\text{Re}\beta_0}$$
 
 ---
 
@@ -1059,7 +1059,7 @@ This is why the square-root branch cannot be chosen arbitrarily.
 
 A common radiation-condition convention is
 
-$$ \boxed{ \operatorname{Im}\beta_n\ge0. } $$
+$$ \boxed{ \text{Im}\beta_n\ge0. } $$
 
 
 ### 14.10 First-Order Form of the Coupled ODE
@@ -1401,11 +1401,11 @@ the curl contains the factors $\alpha_n$ and $\beta_n$.
 
 The normal Poynting flux is proportional to
 
-$$ \operatorname{Re} \left( \beta_n \right) |B_n|^2. $$
+$$ \text{Re} \left( \beta_n \right) |B_n|^2. $$
 
 Consequently, after normalization to the incident order,
 
-$$ \boxed{ \eta_n = |B_n|^2 \frac{\operatorname{Re}\beta_n} {\operatorname{Re}\beta_0}. } $$
+$$ \boxed{ \eta_n = |B_n|^2 \frac{\text{Re}\beta_n} {\text{Re}\beta_0}. } $$
 
 For a lossless propagating order, $\beta_n$ is real, so this reduces to
 
@@ -1423,11 +1423,11 @@ $$ \beta_n=i\gamma_n, \qquad \gamma_n>0. $$
 
 Therefore,
 
-$$ \operatorname{Re}\beta_n=0. $$
+$$ \text{Re}\beta_n=0. $$
 
 The efficiency expression gives
 
-$$ \eta_n = |B_n|^2 \frac{0}{\operatorname{Re}\beta_0} = 0. $$
+$$ \eta_n = |B_n|^2 \frac{0}{\text{Re}\beta_0} = 0. $$
 
 Thus
 
@@ -1743,7 +1743,7 @@ $$ \boxed{ \vec B = S_{\mathrm{total}}\vec E_0 } $$
 
 $$ \Downarrow $$
 
-$$ \boxed{ \eta_n = |B_n|^2 \frac{\operatorname{Re}\beta_n} {\operatorname{Re}\beta_0} } $$
+$$ \boxed{ \eta_n = |B_n|^2 \frac{\text{Re}\beta_n} {\text{Re}\beta_0} } $$
 
 This is the mathematical chain implemented by the solver.
 
@@ -1785,7 +1785,7 @@ $$ \boxed{ \vec B=S_{\mathrm{total}}\vec E_0 } $$
 
 and finally
 
-$$ \boxed{ \eta_n = |B_n|^2 \frac{\operatorname{Re}\beta_n} {\operatorname{Re}\beta_0}. } $$
+$$ \boxed{ \eta_n = |B_n|^2 \frac{\text{Re}\beta_n} {\text{Re}\beta_0}. } $$
 
 Thus every numerical quantity in the final diffraction efficiency can be traced back through an explicit mathematical chain to the original spatial permittivity distribution.
 
@@ -1906,7 +1906,7 @@ For TM polarization in the same 1D-periodic, $z$-invariant geometry as TE, the r
 
 $$\boxed{\frac{\partial}{\partial x}\!\left(\frac{1}{\varepsilon_r(x,y)}\frac{\partial u}{\partial x}\right) + \frac{\partial}{\partial y}\!\left(\frac{1}{\varepsilon_r(x,y)}\frac{\partial u}{\partial y}\right) + k_0^2\, u(x,y) = 0.}$$
 
-Contrast with the TE equation ([TESolver §0.1](#)):
+Contrast with the TE equation ([§0.1](#)):
 $$\frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2} + k_0^2\varepsilon_r(x,y)\, u = 0.$$
 
 In TE, $\varepsilon_r$ multiplies $u$ directly — an algebraic, pointwise coefficient. In TM, $1/\varepsilon_r$ sits *inside* a divergence, weighting a gradient before it is differentiated again. This is not a cosmetic difference: it means the Fourier-space representation of the TM equation cannot be obtained by simply replacing $k_0^2\varepsilon_r \to k_0^2/\varepsilon_r$ termwise — the divergence structure has to be expanded explicitly, which is done next.
@@ -1915,7 +1915,7 @@ In TE, $\varepsilon_r$ multiplies $u$ directly — an algebraic, pointwise coeff
 
 Introduce the auxiliary field
 $$\eta(x,y) \equiv \frac{1}{\varepsilon_r(x,y)},$$
-periodic in $x$ with the same period $d$ as $\varepsilon_r$, and expand it in the same Fourier basis used for $k^2(x,y)$ in TE ([TESolver §0.6](#)):
+periodic in $x$ with the same period $d$ as $\varepsilon_r$, and expand it in the same Fourier basis used for $k^2(x,y)$ in TE ([§0.6](#)):
 $$\eta(x,y) = \sum_p \eta_p(y)\, e^{ipKx}.$$
 
 Carrying out the Floquet substitution $u(x,y) = \sum_n u_n(y) e^{i\alpha_n x}$ in the divergence-form equation (full derivation in [§7.2](#72-derivation-of-the-tm-coupled-mode-equation)) yields a coupled system that, unlike TE, mixes the mode amplitudes **and** their derivatives through the same convolution structure:
@@ -1926,17 +1926,17 @@ where $H_{nm}(y) \equiv \eta_{n-m}(y)$ is the Toeplitz (convolution) matrix buil
 
 $$\boxed{\big(H(y)\,\mathbf u'(y)\big)' = \big(D_\alpha H(y) D_\alpha - k_0^2 I\big)\,\mathbf u(y).}$$
 
-This is the TM analogue of the TE coupled-mode equation $\mathbf u''(y) = M(y)\mathbf u(y)$ ([TESolver §0.3](#)) — but note the derivative now acts on $H(y)\mathbf u'(y)$ as a whole, not on $\mathbf u'(y)$ alone. The physical quantity $H(y)\mathbf u'(y)$ is not a bookkeeping convenience; it is proportional to the tangential electric field ([§5.1](#51-the-tangential-electric-field-for-tm)), which is why it appears as a single differentiated unit.
+This is the TM analogue of the TE coupled-mode equation $\mathbf u''(y) = M(y)\mathbf u(y)$ ([§0.3](#)) — but note the derivative now acts on $H(y)\mathbf u'(y)$ as a whole, not on $\mathbf u'(y)$ alone. The physical quantity $H(y)\mathbf u'(y)$ is not a bookkeeping convenience; it is proportional to the tangential electric field ([§5.1](#51-the-tangential-electric-field-for-tm)), which is why it appears as a single differentiated unit.
 
 ### 1.3 The Fourier-Factorization Subtlety
 
-A point worth flagging explicitly, because it is a genuine mathematical subtlety specific to TM (and absent from TE): $H(y)$ above is the Toeplitz matrix built from the Fourier coefficients of $\eta = 1/\varepsilon_r$ **computed directly from $\varepsilon_r(x,y)$'s own piecewise-constant profile** — i.e. $\eta_p(y)$ obtained by applying the piecewise-constant Fourier-coefficient formula ([TESolver §0.6](#)) to $1/\varepsilon_r(x,y)$ itself, not by algebraically inverting the Toeplitz matrix of $\varepsilon_r$'s coefficients.
+A point worth flagging explicitly, because it is a genuine mathematical subtlety specific to TM (and absent from TE): $H(y)$ above is the Toeplitz matrix built from the Fourier coefficients of $\eta = 1/\varepsilon_r$ **computed directly from $\varepsilon_r(x,y)$'s own piecewise-constant profile** — i.e. $\eta_p(y)$ obtained by applying the piecewise-constant Fourier-coefficient formula ([§0.6](#)) to $1/\varepsilon_r(x,y)$ itself, not by algebraically inverting the Toeplitz matrix of $\varepsilon_r$'s coefficients.
 
 It is a known result in the theory of Fourier-eigenmode methods for discontinuous periodic media that, once the mode sum is truncated to finite $N$, these two routes — (a) Fourier-expand $1/\varepsilon_r$ termwise, versus (b) Fourier-expand $\varepsilon_r$ and invert the resulting truncated Toeplitz matrix — are **not equivalent**, and converge at different rates as $N\to\infty$ at a jump discontinuity of $\varepsilon_r$. This is a consequence of how termwise multiplication of Fourier series behaves at discontinuities versus how matrix inversion of a truncated Toeplitz operator behaves; a short argument for why the two do not commute after truncation is given in [§7.3](#73-why-naive-termwise-fourier-inversion-is-inconsistent). Both routes converge to the same exact physics as $N\to\infty$; they differ only in truncated-$N$ behavior. Which convention is used to build $H(y)$ is therefore a numerical-convergence question, not a physical one — it does not change which equation is being solved, only how quickly the truncated system approximates it. This document states the coupled-mode equation in terms of $H(y)$ without committing to either construction; that choice belongs with the implementation, not the physics.
 
 ### 1.4 Physical Interpretation of the TM Coupling
 
-As in TE ([TESolver §0.4](#)), the coupling matrix separates into a part carrying the tangential-momentum structure and a part carrying the material structure — but for TM both roles are played by the *same* matrix $H(y)$, entering twice: once sandwiched between the $\alpha_n,\alpha_m$ factors, and once directly weighting $\mathbf u'$. In a laterally unstructured layer ($\eta_p = 0$ for $p\neq0$), $H$ reduces to $\eta_0(y) I$, both occurrences collapse to a scalar multiple of the identity, and the system decouples mode-by-mode — the same qualitative statement as the TE limiting case ([TESolver §0.4](#)), verified quantitatively in [§2.2](#22-homogeneous-medium-limiting-case).
+As in TE ([§0.4](#)), the coupling matrix separates into a part carrying the tangential-momentum structure and a part carrying the material structure — but for TM both roles are played by the *same* matrix $H(y)$, entering twice: once sandwiched between the $\alpha_n,\alpha_m$ factors, and once directly weighting $\mathbf u'$. In a laterally unstructured layer ($\eta_p = 0$ for $p\neq0$), $H$ reduces to $\eta_0(y) I$, both occurrences collapse to a scalar multiple of the identity, and the system decouples mode-by-mode — the same qualitative statement as the TE limiting case ([§0.4](#)), verified quantitatively in [§2.2](#22-homogeneous-medium-limiting-case).
 
 ---
 
@@ -1944,11 +1944,11 @@ As in TE ([TESolver §0.4](#)), the coupling matrix separates into a part carryi
 
 ### 2.1 First-Order System
 
-Following the same logic as [TESolver §1.1](#), but now using $w(y) \equiv H(y)\mathbf u'(y)$ as the natural companion field (rather than $\mathbf u'$ itself, since it is $w$, not $\mathbf u'$, that is differentiated as a unit in [§1.2](#12-coupled-mode-equation-for-tm)):
+Following the same logic as [§1.1](#), but now using $w(y) \equiv H(y)\mathbf u'(y)$ as the natural companion field (rather than $\mathbf u'$ itself, since it is $w$, not $\mathbf u'$, that is differentiated as a unit in [§1.2](#12-coupled-mode-equation-for-tm)):
 
 $$\mathbf u'(y) = H(y)^{-1}\, \mathbf w(y), \qquad \mathbf w'(y) = \big(D_\alpha H(y) D_\alpha - k_0^2 I\big)\, \mathbf u(y).$$
 
-The state vector is again $\mathbf w_{\text{full}} = (\mathbf u,\, \mathbf w)$, of the same dimension $2(2N+1)$ as in TE ([TESolver §1.2](#), unchanged — the dimension-counting argument depends only on "second-order ODE per mode," which still holds). The structural difference from TE is that the coupling in the first equation is no longer the identity; $H(y)^{-1}$ appears explicitly. This is the direct algebraic consequence of $1/\varepsilon_r$ sitting inside the divergence in [§1.1](#11-maxwell-to-scalar-tm-wave-equation).
+The state vector is again $\mathbf w_{\text{full}} = (\mathbf u,\, \mathbf w)$, of the same dimension $2(2N+1)$ as in TE ([§1.2](#), unchanged — the dimension-counting argument depends only on "second-order ODE per mode," which still holds). The structural difference from TE is that the coupling in the first equation is no longer the identity; $H(y)^{-1}$ appears explicitly. This is the direct algebraic consequence of $1/\varepsilon_r$ sitting inside the divergence in [§1.1](#11-maxwell-to-scalar-tm-wave-equation).
 
 ### 2.2 Homogeneous-Medium Limiting Case
 
@@ -1956,15 +1956,15 @@ In a homogeneous outer medium (no lateral structure), $H_{nm}(y) = \eta_0\,\delt
 
 $$u_n''(y) = \big(\alpha_n^2 - k^2\big)\, u_n(y), \qquad k^2 = k_0^2\varepsilon_r,$$
 
-**exactly** the same equation obtained for TE in the homogeneous limit ([TESolver §1.3](#)). This is an essential consistency check: TE and TM must agree in any region without lateral material contrast, since polarization is only a meaningful distinction where there is a preferred in-plane direction — and this is confirmed algebraically here, not merely assumed. Consequently:
+**exactly** the same equation obtained for TE in the homogeneous limit ([§1.3](#)). This is an essential consistency check: TE and TM must agree in any region without lateral material contrast, since polarization is only a meaningful distinction where there is a preferred in-plane direction — and this is confirmed algebraically here, not merely assumed. Consequently:
 
 $$\boxed{\beta_n^2 = k^2 - \alpha_n^2}$$
 
-is **identical in value and definition** to the TE case. All conclusions in TESolver about propagating/evanescent orders, the outer-medium branch choice, and the two independent asymptotic parameter sets $\beta_n^{\text{top}}, \beta_n^{\text{sub}}$ ([TESolver §1.4–1.5](#)) carry over to TM without modification.
+is **identical in value and definition** to the TE case. All conclusions in TESolver about propagating/evanescent orders, the outer-medium branch choice, and the two independent asymptotic parameter sets $\beta_n^{\text{top}}, \beta_n^{\text{sub}}$ ([§1.4–1.5](#)) carry over to TM without modification.
 
 ### 2.3 Propagating and Evanescent Orders
 
-Unchanged from TE — see [TESolver §1.4](#). The classification depends only on $\beta_n^2 = k^2-\alpha_n^2$, which by [§2.2](#22-homogeneous-medium-limiting-case) is the same quantity for both polarizations in the (necessarily homogeneous) outer half-spaces.
+Unchanged from TE — see [§1.4](#). The classification depends only on $\beta_n^2 = k^2-\alpha_n^2$, which by [§2.2](#22-homogeneous-medium-limiting-case) is the same quantity for both polarizations in the (necessarily homogeneous) outer half-spaces.
 
 ---
 
@@ -1972,7 +1972,7 @@ Unchanged from TE — see [TESolver §1.4](#). The classification depends only o
 
 ### 3.1 The Actual Boundary Conditions for TM
 
-For TE, the Maxwell boundary conditions require continuity of $u = E_z$ and (proportionally) $u'$, because both are tangential-field components at a horizontal interface ([TESolver §2.1](#)).
+For TE, the Maxwell boundary conditions require continuity of $u = E_z$ and (proportionally) $u'$, because both are tangential-field components at a horizontal interface ([§2.1](#)).
 
 For TM, the tangential field components at a horizontal interface ($y=\text{const}$) are $H_z = u$ and $E_x$. Continuity of $u$ is unchanged. But $u'$ *by itself* is **not** the continuous quantity anymore — $E_x$ is proportional to $\eta\,\partial u/\partial y$ ([§5.1](#51-the-tangential-electric-field-for-tm)), so in mode space it is $w_n = [H(y)\mathbf u'(y)]_n$, not $u_n'$, that must match across a layer boundary.
 
@@ -1982,11 +1982,11 @@ This is the precise sense in which the TM boundary conditions differ from TE —
 
 ### 3.2 Modal Amplitudes from $u$ and $w$
 
-In a homogeneous medium, $w_n = \eta_0\, u_n' = (1/\varepsilon_r)\,u_n'$. Repeating the TE derivation ([TESolver §2.2](#)) with this substitution (full steps in [§7.6](#76-derivation-of-the-tm-modal-amplitude-transformation)):
+In a homogeneous medium, $w_n = \eta_0\, u_n' = (1/\varepsilon_r)\,u_n'$. Repeating the TE derivation ([§2.2](#)) with this substitution (full steps in [§7.6](#76-derivation-of-the-tm-modal-amplitude-transformation)):
 
 $$\boxed{A_n = \frac12\left(u_n + \frac{\varepsilon_r\, w_n}{i\beta_n}\right), \qquad B_n = \frac12\left(u_n - \frac{\varepsilon_r\, w_n}{i\beta_n}\right).}$$
 
-The extra factor of $\varepsilon_r$ compared to the TE relation ([TESolver §2.2](#)) is the direct trace of $w = (1/\varepsilon_r)u'$ instead of $w=u'$ — inverting that relation to isolate $u'$ reintroduces $\varepsilon_r$.
+The extra factor of $\varepsilon_r$ compared to the TE relation ([§2.2](#)) is the direct trace of $w = (1/\varepsilon_r)u'$ instead of $w=u'$ — inverting that relation to isolate $u'$ reintroduces $\varepsilon_r$.
 
 ---
 
@@ -1994,10 +1994,10 @@ The extra factor of $\varepsilon_r$ compared to the TE relation ([TESolver §2.2
 
 Nothing about the transfer-matrix or scattering-matrix formalism itself depends on which physical fields make up the state vector — only on the fact that the governing equation is a linear first-order ODE system in a $2Q$-dimensional state, with a well-defined split into "top/bottom" and "in/out" amplitude pairs. Since [§2.1](#21-first-order-system) and [§3.1](#31-the-actual-boundary-conditions-for-tm) establish exactly that structure for TM (with $\mathbf w_{ull}=(\mathbf u,\mathbf w)$ in place of $(\mathbf u,\mathbf u')$), every result in TESolver's transfer- and scattering-matrix chapters transfers verbatim:
 
-- Definition of the transfer matrix via a fundamental-solution basis: [TESolver §3.1–3.2](#), [§14.11](#)
-- Block structure $(T_{11},T_{12},T_{21},T_{22})$: [TESolver §3.3](#)
-- Numerical breakdown of direct transfer-matrix multiplication for evanescent modes: [TESolver §3.4](#), [§14.15](#)
-- Physical idea of the S-matrix and the Redheffer star-product recursion: [TESolver §4](#), [§14.13–14.14](#)
+- Definition of the transfer matrix via a fundamental-solution basis: [§3.1–3.2](#), [§14.11](#)
+- Block structure $(T_{11},T_{12},T_{21},T_{22})$: [§3.3](#)
+- Numerical breakdown of direct transfer-matrix multiplication for evanescent modes: [§3.4](#), [§14.15](#)
+- Physical idea of the S-matrix and the Redheffer star-product recursion: [§4](#), [§14.13–14.14](#)
 
 The only substitution needed anywhere in this machinery is: wherever TESolver writes $(\mathbf a,\mathbf b)$ built from $(u_n, u_n')$, read $(\mathbf a,\mathbf b)$ built from $(u_n, w_n)$ per [§3.2](#32-modal-amplitudes-from-u-and-w) above.
 
@@ -2017,13 +2017,13 @@ This confirms the claim used in [§3.1](#31-the-actual-boundary-conditions-for-t
 For an outgoing order $u_n = B_n e^{i\alpha_n x + i\beta_n y}$ in a homogeneous outer medium, $\partial u_n/\partial y = i\beta_n u_n$, so from [§5.1](#51-the-tangential-electric-field-for-tm):
 $$E_{x,n} \propto \frac{\beta_n}{\varepsilon_r}\,B_n\, e^{i\alpha_n x + i\beta_n y}.$$
 
-The time-averaged normal Poynting flux is proportional to $\operatorname{Re}(E_{x,n} H_{z,n}^*) \propto \operatorname{Re}(\beta_n)/\varepsilon_r \cdot |B_n|^2$ (full derivation in [§7.7](#77-derivation-of-the-tm-diffraction-efficiency-formula), mirroring [TESolver §14.17](#) with $E_x$ and $H_z$ swapped relative to the TE case). Normalizing to the incident order:
+The time-averaged normal Poynting flux is proportional to $\text{Re}(E_{x,n} H_{z,n}^*) \propto \text{Re}(\beta_n)/\varepsilon_r \cdot |B_n|^2$ (full derivation in [§7.7](#77-derivation-of-the-tm-diffraction-efficiency-formula), mirroring [§14.17](#) with $E_x$ and $H_z$ swapped relative to the TE case). Normalizing to the incident order:
 
-$$\boxed{\eta_n^{\text{TM}} = |B_n|^2\,\frac{\operatorname{Re}(\beta_n)/\varepsilon_{r,n}}{\operatorname{Re}(\beta_0)/\varepsilon_{r,0}}.}$$
+$$\boxed{\eta_n^{\text{TM}} = |B_n|^2\,\frac{\text{Re}(\beta_n)/\varepsilon_{r,n}}{\text{Re}(\beta_0)/\varepsilon_{r,0}}.}$$
 
-Compare with the TE result, $\eta_n = |B_n|^2\,\operatorname{Re}(\beta_n)/\operatorname{Re}(\beta_0)$ ([TESolver §7.2](#)). For **reflected** orders, $n$ and the incident order $0$ live in the *same* outer medium, so $\varepsilon_{r,n}=\varepsilon_{r,0}$ and the ratio reduces to the identical TE-looking expression. For **transmitted** orders, $n$ lives in the substrate while the incident order is normalized in the top medium, so $\varepsilon_{r,n}\neq\varepsilon_{r,0}$ in general, and this extra permittivity ratio is a genuine, physically necessary difference from the naive TE-analogous formula — it is not optional or convention-dependent, it follows directly from $E_x \propto \beta_n/\varepsilon_r$ rather than $E_z \propto$ (no $\varepsilon_r$ factor at all, cf. [TESolver §14.17](#)).
+Compare with the TE result, $\eta_n = |B_n|^2\,\text{Re}(\beta_n)/\text{Re}(\beta_0)$ ([§7.2](#)). For **reflected** orders, $n$ and the incident order $0$ live in the *same* outer medium, so $\varepsilon_{r,n}=\varepsilon_{r,0}$ and the ratio reduces to the identical TE-looking expression. For **transmitted** orders, $n$ lives in the substrate while the incident order is normalized in the top medium, so $\varepsilon_{r,n}\neq\varepsilon_{r,0}$ in general, and this extra permittivity ratio is a genuine, physically necessary difference from the naive TE-analogous formula — it is not optional or convention-dependent, it follows directly from $E_x \propto \beta_n/\varepsilon_r$ rather than $E_z \propto$ (no $\varepsilon_r$ factor at all, cf. [§14.17](#)).
 
-Evanescent orders again carry $\operatorname{Re}(\beta_n)=0$ and hence $\eta_n^{TM}=0$ far-field, for the same reason as TE ([TESolver §7.3](#)).
+Evanescent orders again carry $\text{Re}(\beta_n)=0$ and hence $\eta_n^{TM}=0$ far-field, for the same reason as TE ([§7.3](#)).
 
 ---
 
@@ -2031,9 +2031,9 @@ Evanescent orders again carry $\operatorname{Re}(\beta_n)=0$ and hence $\eta_n^{
 
 All consistency checks from TESolver apply with the substitutions above:
 
-- **Homogeneous-grating limit** ([TESolver §11.1](#)): with $\varepsilon_r(x,y)=\text{const}$, $H(y)$ reduces to a scalar multiple of the identity ([§1.4](#14-physical-interpretation-of-the-tm-coupling)), and the system decouples into plane-wave propagation — same qualitative statement as TE, confirmed quantitatively in [§2.2](#22-homogeneous-medium-limiting-case).
-- **Energy balance** ([TESolver §11.2](#)): $\sum_n R_n + \sum_n T_n \le 1$ holds identically for TM, using $\eta_n^{\text{TM}}$ from [§5.2](#52-efficiency-formula-and-its-difference-from-te) in place of the TE efficiency.
-- **Complex quantities and absorption** ([TESolver §11.3](#)): unchanged — complex $\varepsilon_r$ makes $H(y)$, $\beta_n$, $u_n(y)$, and $B_n$ complex, with the imaginary parts again encoding absorption rather than being numerical artifacts.
+- **Homogeneous-grating limit** ([§11.1](#)): with $\varepsilon_r(x,y)=\text{const}$, $H(y)$ reduces to a scalar multiple of the identity ([§1.4](#14-physical-interpretation-of-the-tm-coupling)), and the system decouples into plane-wave propagation — same qualitative statement as TE, confirmed quantitatively in [§2.2](#22-homogeneous-medium-limiting-case).
+- **Energy balance** ([§11.2](#)): $\sum_n R_n + \sum_n T_n \le 1$ holds identically for TM, using $\eta_n^{\text{TM}}$ from [§5.2](#52-efficiency-formula-and-its-difference-from-te) in place of the TE efficiency.
+- **Complex quantities and absorption** ([§11.3](#)): unchanged — complex $\varepsilon_r$ makes $H(y)$, $\beta_n$, $u_n(y)$, and $B_n$ complex, with the imaginary parts again encoding absorption rather than being numerical artifacts.
 - **TE–TM cross-check specific to this document**: in any layer without lateral structure, TE and TM must produce identical $\beta_n$ and, for reflection, identical efficiencies — this was shown algebraically in [§2.2](#22-homogeneous-medium-limiting-case) and is a strong implementation-independent test unique to having both solvers available.
 
 ---
@@ -2062,7 +2062,7 @@ $$-\frac{i}{\omega\varepsilon_0}\left[\frac{\partial}{\partial x}\!\left(\frac{1
 
 Multiply both sides by $i\omega\varepsilon_0$ (using $i\cdot i = -1$ on the left after moving the sign, equivalently multiply by $-i\omega\varepsilon_0/(-i)=i\omega\varepsilon_0$ and simplify):
 $$\frac{\partial}{\partial x}\!\left(\frac{1}{\varepsilon_r}\frac{\partial u}{\partial x}\right) + \frac{\partial}{\partial y}\!\left(\frac{1}{\varepsilon_r}\frac{\partial u}{\partial y}\right) = -\omega^2\mu_0\varepsilon_0\, u = -k_0^2\, u,$$
-using $k_0^2=\omega^2\mu_0\varepsilon_0$ as in TE ([TESolver §14.1](#)). Rearranged:
+using $k_0^2=\omega^2\mu_0\varepsilon_0$ as in TE ([§14.1](#)). Rearranged:
 $$\boxed{\frac{\partial}{\partial x}\!\left(\frac{1}{\varepsilon_r}\frac{\partial u}{\partial x}\right) + \frac{\partial}{\partial y}\!\left(\frac{1}{\varepsilon_r}\frac{\partial u}{\partial y}\right) + k_0^2 u = 0.}$$
 
 This confirms [§1.1](#11-maxwell-to-scalar-tm-wave-equation). Unlike the TE derivation, no vector identity for $\nabla\times(\nabla\times\mathbf E)$ was needed, because the elimination was carried out on $\mathbf H$ directly via two scalar Maxwell equations rather than by taking a curl of a curl — a direct consequence of $\mathbf H$, not $\mathbf E$, being purely out-of-plane for TM.
@@ -2074,7 +2074,7 @@ $$\partial_x(\eta\,\partial_x u) + \partial_y(\eta\,\partial_y u) + k_0^2 u = 0.
 
 **First term.** $\partial_x u = \sum_m i\alpha_m u_m(y) e^{i\alpha_m x}$, so
 $$\eta\,\partial_x u = \sum_{p,m} \eta_p(y)\, i\alpha_m u_m(y)\, e^{i(pK+\alpha_m)x} = \sum_n\left(\sum_m i\alpha_m\, \eta_{n-m}(y)\, u_m(y)\right) e^{i\alpha_n x}$$
-using the same index substitution $n=m+p$ as in TE ([TESolver §14.4](#)). Differentiating once more in $x$ brings down a factor $i\alpha_n$:
+using the same index substitution $n=m+p$ as in TE ([§14.4](#)). Differentiating once more in $x$ brings down a factor $i\alpha_n$:
 $$\partial_x(\eta\,\partial_x u) = \sum_n\left(-\alpha_n \sum_m \alpha_m\, \eta_{n-m}(y)\, u_m(y)\right) e^{i\alpha_n x} = -\sum_n\Big(D_\alpha H(y) D_\alpha\,\mathbf u(y)\Big)_n e^{i\alpha_n x},$$
 with $H_{nm}(y)=\eta_{n-m}(y)$ and $D_\alpha=\mathrm{diag}(\alpha_n)$.
 
@@ -2106,7 +2106,7 @@ $$\mathbf u' = \eta_0^{-1}\mathbf w = \varepsilon_r\,\mathbf w, \qquad \mathbf w
 
 Differentiate the first equation and substitute the second (both hold mode-by-mode, so drop indices):
 $$u_n'' = \varepsilon_r\, w_n' = \varepsilon_r\left(\frac{\alpha_n^2}{\varepsilon_r} - k_0^2\right) u_n = \big(\alpha_n^2 - k_0^2\varepsilon_r\big)\, u_n = (\alpha_n^2 - k^2)\, u_n,$$
-using $k^2 = k_0^2\varepsilon_r$. This is exactly the TE homogeneous-layer equation ([TESolver §14.7](#)), confirming [§2.2](#22-homogeneous-medium-limiting-case) and, with it, that $\beta_n^2=k^2-\alpha_n^2$ is unchanged between polarizations.
+using $k^2 = k_0^2\varepsilon_r$. This is exactly the TE homogeneous-layer equation ([§14.7](#)), confirming [§2.2](#22-homogeneous-medium-limiting-case) and, with it, that $\beta_n^2=k^2-\alpha_n^2$ is unchanged between polarizations.
 
 ### 7.5 Derivation of the TM Boundary-Matching Variable
 
@@ -2125,15 +2125,15 @@ confirming [§3.2](#32-modal-amplitudes-from-u-and-w).
 For an outgoing order, $H_z = u_n = B_n\, e^{i\alpha_n x + i\beta_n y}$. From [§5.1](#51-the-tangential-electric-field-for-tm),
 $$E_{x,n} = \frac{i}{\omega\varepsilon_0\varepsilon_r}\frac{\partial u_n}{\partial y} = \frac{i}{\omega\varepsilon_0\varepsilon_r}\, (i\beta_n)\, B_n\, e^{i\alpha_n x+i\beta_n y} = -\frac{\beta_n}{\omega\varepsilon_0\varepsilon_r}\, B_n\, e^{i\alpha_n x+i\beta_n y}.$$
 
-The time-averaged Poynting vector's $y$-component is proportional to $\operatorname{Re}(E_x H_z^*)$ (up to the sign fixed by $\hat x\times\hat z=-\hat y$, which is common to every order and cancels in the normalization below):
-$$\operatorname{Re}(E_{x,n} H_{z,n}^*) = -\frac{1}{\omega\varepsilon_0}\operatorname{Re}\!\left(\frac{\beta_n}{\varepsilon_r}\right)|B_n|^2 \ \overset{\varepsilon_r\ \text{real (lossless)}}{=}\ -\frac{1}{\omega\varepsilon_0}\,\frac{\operatorname{Re}(\beta_n)}{\varepsilon_r}\,|B_n|^2.$$
+The time-averaged Poynting vector's $y$-component is proportional to $\text{Re}(E_x H_z^*)$ (up to the sign fixed by $\hat x\times\hat z=-\hat y$, which is common to every order and cancels in the normalization below):
+$$\text{Re}(E_{x,n} H_{z,n}^*) = -\frac{1}{\omega\varepsilon_0}\text{Re}\!\left(\frac{\beta_n}{\varepsilon_r}\right)|B_n|^2 \ \overset{\varepsilon_r\ \text{real (lossless)}}{=}\ -\frac{1}{\omega\varepsilon_0}\,\frac{\text{Re}(\beta_n)}{\varepsilon_r}\,|B_n|^2.$$
 
 Normalizing to the incident order (which sees its own outer-medium permittivity $\varepsilon_{r,0}$) cancels the common prefactor $1/(\omega\varepsilon_0)$ and the sign, giving
-$$\boxed{\eta_n^{\text{TM}} = |B_n|^2\,\frac{\operatorname{Re}(\beta_n)/\varepsilon_{r,n}}{\operatorname{Re}(\beta_0)/\varepsilon_{r,0}},}$$
-confirming [§5.2](#52-efficiency-formula-and-its-difference-from-te). For an absorbing medium, $\varepsilon_r$ is complex and the $\operatorname{Re}(\cdot)$ must in general be taken of the full ratio $\beta_n/\varepsilon_r$ rather than $\beta_n$ and $\varepsilon_r$ separately — the expression above is written for the lossless case for clarity, matching the level of detail at which TESolver's §7.2/§14.17 state the TE formula.
+$$\boxed{\eta_n^{\text{TM}} = |B_n|^2\,\frac{\text{Re}(\beta_n)/\varepsilon_{r,n}}{\text{Re}(\beta_0)/\varepsilon_{r,0}},}$$
+confirming [§5.2](#52-efficiency-formula-and-its-difference-from-te). For an absorbing medium, $\varepsilon_r$ is complex and the $\text{Re}(\cdot)$ must in general be taken of the full ratio $\beta_n/\varepsilon_r$ rather than $\beta_n$ and $\varepsilon_r$ separately — the expression above is written for the lossless case for clarity, matching the level of detail at which TESolver's §7.2/§14.17 state the TE formula.
 
 ---
 
 ## 8. Conclusion
 
-The TM formalism is not an independent theory but the same electromagnetic boundary-value problem, reduced through the same conceptual chain as TE (periodicity → Floquet modes → 1D coupled system → local transfer relation → global scattering matrix → outgoing power), with a single structural change propagating through every step: **the material coefficient sits inside a derivative rather than multiplying the field directly.** This is what turns $M(y)$ from TE's algebraic $\alpha_n^2\delta_{nm}-k_{n-m}^2(y)$ into TM's $H(y)$-sandwiched $D_\alpha H(y) D_\alpha - k_0^2 I$ with a non-trivial first-order coupling $H(y)^{-1}$; what turns the TE boundary pair $(u,u')$ into the TM pair $(u,\,Hu')$; and what turns the TE efficiency's bare $\operatorname{Re}(\beta_n)$ into TM's $\operatorname{Re}(\beta_n)/\varepsilon_{r,n}$. Every other part of the derivation — Floquet expansion, transfer-matrix propagation, S-matrix recursion, layering, mode truncation, energy conservation — is genuinely polarization-independent and is inherited from `TESolver_Algorithm_Reference.md` without change.
+The TM formalism is not an independent theory but the same electromagnetic boundary-value problem, reduced through the same conceptual chain as TE (periodicity → Floquet modes → 1D coupled system → local transfer relation → global scattering matrix → outgoing power), with a single structural change propagating through every step: **the material coefficient sits inside a derivative rather than multiplying the field directly.** This is what turns $M(y)$ from TE's algebraic $\alpha_n^2\delta_{nm}-k_{n-m}^2(y)$ into TM's $H(y)$-sandwiched $D_\alpha H(y) D_\alpha - k_0^2 I$ with a non-trivial first-order coupling $H(y)^{-1}$; what turns the TE boundary pair $(u,u')$ into the TM pair $(u,\,Hu')$; and what turns the TE efficiency's bare $\text{Re}(\beta_n)$ into TM's $\text{Re}(\beta_n)/\varepsilon_{r,n}$. Every other part of the derivation — Floquet expansion, transfer-matrix propagation, S-matrix recursion, layering, mode truncation, energy conservation — is genuinely polarization-independent and is inherited from `TESolver_Algorithm_Reference.md` without change.
