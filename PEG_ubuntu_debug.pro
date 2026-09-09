@@ -14,6 +14,6 @@ HEADERS += src/PEG.h \
 
 SOURCES += src/PEG.cpp\
 	src/TESolver.cpp \
-	src/MESolver.cpp \
+	src/TMSolver.cpp \
 	src/mainSupport.cpp \
 	src/mainSerial.cpp
