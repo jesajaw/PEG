@@ -172,6 +172,8 @@ int main(int argc, char** argv) {
 
 
 	for(int i=0; i<totalSteps; i+=commandSize) {
+		Result resultTE(Result::InactiveCalculation);
+		Result resultTM(Result::InactiveCalculation);
 		if(i+rank < totalSteps){
 
 			double currentValue = io.min + io.increment*(i+rank);
@@ -234,8 +236,11 @@ int main(int argc, char** argv) {
 				resultTEj.fromDoubleArray(mpiReceiveBuffer.data() + j*pairSize);
 				resultTMj.fromDoubleArray(mpiReceiveBuffer.data() + j*pairSize + resultSize);
 
-				// indicates non-calculation for inactive process on last round
-				if(resultTEj.status != Result::InactiveCalculation) {
+				// indicates non-calculation for inactive process on last round -- whichever result was actually requested tells us whether this rank had work this round
+				bool wasActive = (io.computeTE || io.combineTETM)
+					? (resultTEj.status != Result::InactiveCalculation)
+					: (resultTMj.status != Result::InactiveCalculation);
+				if(wasActive) {
 					if(io.computeTE) {
 						resultsTE.push_back(resultTEj);
 						if(resultTEj.status == Result::Success) anySuccesses = true; else anyFailures = true;
