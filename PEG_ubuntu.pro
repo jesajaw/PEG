@@ -2,7 +2,6 @@ QT     -= gui core
 
 TARGET = pegSerial
 
-# QMAKE_CXXFLAGS += -march=native -O2 -c -Wall -fopenmp
 QMAKE_CXXFLAGS += -O3 -march=native
 QMAKE_LFLAGS += -fopenmp
 
