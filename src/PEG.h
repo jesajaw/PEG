@@ -271,7 +271,7 @@ public:
   	// geo(0) is the depth.
 
 	This returns inverse of grating profile formula above; will always return x in first half of period.*/
-	virtual double xIntersection1(double y) const { return geo(0)/2/M_PI * acos(1 - 2*y/geo(0)); }
+	virtual double xIntersection1(double y) const { return period()/2/M_PI * acos(1 - 2*y/geo(0)); }
 	/// Returns the x-coordinate of the second intersection with the surface at \c y. Due to symmetry, x2 = period() - x1().
 	virtual double xIntersection2(double y) const { return period() - xIntersection1(y); }
 };
@@ -296,10 +296,18 @@ public:
 	/// geo(0) is the depth, aka height.
 	virtual double profileHeight() const { return geo(0); }
 
-	/// Returns the x-coordinate of the first intersection with the surface at \c y. \todo Not yet implemented!
-	virtual double xIntersection1(double y) const { (void)y; return -1; }
-	/// Returns the x-coordinate of the second intersection with the surface at \c y. \todo Not yet implemented!
-	virtual double xIntersection2(double y) const { (void)y; return -1; }
+	/// Returns the x-coordinate of the first intersection with the surface at \c y.
+	/*! Same convention as RectangularGrating (flat valley of width geo(1) at y=0) and BlazedGrating
+	(walls rising/falling at the blaze/anti-blaze angles): the material spans [x1(y), x2(y)], starting
+	as the flat valley floor [geo(1), period()) at y=0 and narrowing as the two walls close in with
+	increasing y. Unlike BlazedGrating, geo(0) [height] is independent of geo(1)..geo(3), so the walls
+	need not meet by y=geo(0) -- if they haven't, the ridge simply has a flat top of width
+	period()-geo(1)-geo(0)*(cot(blaze)+cot(antiBlaze)); if geo(0) is set larger than the angles/valley
+	allow (the walls would have to cross before reaching y=geo(0)), this returns x1>x2 there, which the
+	base class's computeK2StepsAtY() already detects and reports as an invalid-geometry error. */
+	virtual double xIntersection1(double y) const { return geo(1) + y / tan(geo(2)*M_PI/180.0); }
+	/// Returns the x-coordinate of the second intersection with the surface at \c y. See xIntersection1() for the convention.
+	virtual double xIntersection2(double y) const { return period() - y / tan(geo(3)*M_PI/180.0); }
 };
 
 /// Custom grating subclass: profile is defined pointwise with a series of (x,y) points.
