@@ -233,10 +233,14 @@ bool CommandLineOptions::isValid() {
 		if(max == DBL_MAX) throw "The maximum range --max must be provided.";
 		if(increment == DBL_MAX) throw "The range increment --increment must be provided.";
 		
+		if(!(increment > 0)) throw "The range increment --increment must be a positive number.";
+		if(max < min) throw "The range maximum --max must not be smaller than the minimum --min.";
+		
 		if(mode == ConstantIncidence && incidenceAngle == DBL_MAX) throw "In constant incidence mode, the incidence angle --incidenceAngle must be provided.";
 		if(mode == ConstantIncludedAngle && includedAngle == DBL_MAX) throw "In constant included angle mode, the included angle --includedAngle must be provided.";
 		if(mode == ConstantIncludedAngle && toOrder == INT_MAX) throw "In constant included angle mode, the operating order --toOrder must be provided.";
 		if(mode == ConstantWavelength && wavelength == DBL_MAX) throw "In constant wavelength mode, the wavelength --wavelength must be provided.";
+		if(mode == ConstantWavelength && !(wavelength > 0)) throw "The wavelength --wavelength must be a positive number.";
 		
 		if(outputFile.empty()) throw "The output data file --outputFile must be provided.";
 		
@@ -244,7 +248,9 @@ bool CommandLineOptions::isValid() {
 		if(material.empty()) throw "The grating material --gratingMaterial must be provided.";
 		// todo: check that material is valid.
 		if(period == DBL_MAX) throw "The grating period --gratingPeriod must be provided.";
+		if(!(period > 0)) throw "The grating period --gratingPeriod must be a positive number.";
 
+		if(coatingThickness < 0) throw "The coating thickness --coatingThickness must not be negative.";
 		if(coatingThickness != 0 && coating.empty()) throw "A coating thickness was specified, but this requires a --coatingMaterial.";
 		if(!coating.empty() && coatingThickness == 0) throw "A coating material was specified, but this requires a non-zero --coatingThickness.";
 
@@ -259,6 +265,7 @@ bool CommandLineOptions::isValid() {
 		if(N == INT_MAX) throw "The truncation index --N must be provided.";
 		if(N < 0) throw "The truncation index --N must not be negative.";
 		if(threads < 1) throw "The number of --threads to use for fine parallelization must be a positive number, at least 1.";
+		if(!(integrationTolerance > 0)) throw "The integration tolerance --integrationTolerance must be a positive number.";
 
 		if(rmsRoughnessNm < 0) throw "The RMS roughness must be in nm, larger than or equal to 0.";
 		if(!computeTE && !computeTM && !combineTETM) throw "At least one of --computeTE, --computeTM, or --combineTETM must be specified.";
