@@ -18,8 +18,8 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 #include <boost/numeric/odeint.hpp>
 
 namespace {
-	/// Thrown from TMSolver::odeFunction() when the grating expansion cannot be computed at
-	/// some y. Caught in integrateTrialSolutionAlongY() and mapped to Result::InvalidGratingFailure.
+	/// Thrown from TMSolver::odeFunctionMatrix() when the grating expansion cannot be computed at
+	/// some y. Caught in integrateAllTrialSolutionsAlongY() and mapped to Result::InvalidGratingFailure.
 	/// (Own copy, mirroring TESolver.cpp's anonymous-namespace struct -- duplication is intentional
 	/// for now, see the pending SolverSupport extraction.)
 	struct GratingExpansionError {};
@@ -55,12 +55,15 @@ TMSolver::TMSolver(const Grating& grating, const MathOptions& mo, int numThreads
 	beta1_.resize(twoNp1_);
 	BM_.resize(twoNp1_);
 
-	// one k2_ array per thread. NOTE: sized twoNp1_ (2N+1), matching TESolver's actual (not its
-	// docstring's claimed) buffer size -- see accompanying note on the banded |n-m|<=N coupling.
-	k2_.assign(numThreads_, std::vector<std::complex<double>>(twoNp1_));
+	// *** 2026-09-29 performance fix: single buffers, not one-per-thread -- odeFunctionMatrix() is
+	// called by one shared stepper now (see class-level / integrateAllTrialSolutionsAlongY() notes).
+	k2_.resize(twoNp1_);
+	toeplitz_.resize(twoNp1_, twoNp1_);
+	k2Inv_.resize(twoNp1_);
+	toeplitzInv_.resize(twoNp1_, twoNp1_);
 
-	// one (2N+1 x 2N+1) Toeplitz(k^2) workspace per thread, reused across odeFunction() calls.
-	toeplitz_.assign(numThreads_, Eigen::MatrixXcd(twoNp1_, twoNp1_));
+	// concatenated [u,w] blocks for all fourNp2_ trial columns -- see combinedState_'s header comment.
+	combinedState_.resize(fourNp2_ * eightNp4_);
 
 	timing_[0] = omp_get_wtime() - time_;
 }
@@ -331,6 +334,39 @@ Result::Code TMSolver::computeGratingExpansion(double y, std::complex<double>* k
 	return Result::Success;
 }
 
+Result::Code TMSolver::computeInvEpsExpansion(double y, std::complex<double>* invEps) const {
+
+	// Same step geometry as computeGratingExpansion(double,...), but Fourier-expand 1/eps_r(y) instead of
+	// k^2(y) -- see 2026-09-29 class-level note in TMSolver.h for why the u' equation needs this second
+	// expansion, computed via Li's inverse rule.
+
+	std::complex<double> k_M(2 * M_PI / wl_, 0);
+	std::complex<double> k_1 = v_1_ * k_M;
+	std::complex<double> k_c = v_c_ * k_M;
+
+	std::complex<double> k2_M = k_M * k_M;
+	std::complex<double> k2_1 = k_1 * k_1;
+	std::complex<double> k2_c = k_c * k_c;
+
+	double stepsX[PEG_MAX_PROFILE_CROSSINGS];
+	std::complex<double> stepsK2[PEG_MAX_PROFILE_CROSSINGS];
+
+	int numSteps = g_.computeK2StepsAtY(y, k2_M, k2_1, k2_c, stepsX, stepsK2);
+	if(numSteps < 1)
+		return Result::InvalidGratingFailure;
+
+	// eps_r = k2/k2_M (k2_M = k_0^2 is material-independent), so 1/eps_r = k2_M/k2 -- dimensionless, as
+	// needed: computeGratingExpansion()'s Fourier-coefficient math doesn't care what physical quantity the
+	// step values represent.
+	std::complex<double> stepsInvEps[PEG_MAX_PROFILE_CROSSINGS];
+	for(int p=0; p<numSteps; ++p)
+		stepsInvEps[p] = k2_M / stepsK2[p];
+
+	computeGratingExpansion(stepsX, stepsInvEps, numSteps, invEps);
+
+	return Result::Success;
+}
+
 void TMSolver::computeGratingExpansion(const double *stepsX, const std::complex<double> *stepsK2, int numSteps, std::complex<double> *k2) const
 {
 	double d = g_.period();
@@ -384,66 +420,75 @@ void TMSolver::buildToeplitz(const std::complex<double>* coeffs, int N, Eigen::M
 	}
 }
 
-std::complex<double>* TMSolver::k2ForCurrentThread() {
-	return k2_[omp_get_thread_num()].data();
-}
-
-Eigen::MatrixXcd& TMSolver::toeplitzForCurrentThread() {
-	return toeplitz_[omp_get_thread_num()];
-}
-
-void TMSolver::odeFunction(double y, const std::vector<double>& w_arr, std::vector<double>& f)
+void TMSolver::odeFunctionMatrix(double y, const std::vector<double>& state, std::vector<double>& f)
 {
-	std::complex<double>* localK2 = k2ForCurrentThread();
-	if(computeGratingExpansion(y, localK2) != Result::Success) {
+	// Build both Toeplitz matrices and factorize them ONCE for this y -- shared across all fourNp2_
+	// trial columns below. This one-per-y (not one-per-column-per-y) cost is the entire point of
+	// batching; see the performance note on this function in TMSolver.h.
+	if(computeGratingExpansion(y, k2_.data()) != Result::Success) {
 		std::cout << "ODE: Function Error: Cannot compute grating expansion at y = " << y << std::endl;
 		throw GratingExpansionError{};
 	}
+	buildToeplitz(k2_.data(), N_, toeplitz_);
 
-	Eigen::MatrixXcd& toeplitzK2 = toeplitzForCurrentThread();
-	buildToeplitz(localK2, N_, toeplitzK2);
-
-	Eigen::VectorXcd u_vec(twoNp1_), w_vec(twoNp1_), alphaU(twoNp1_);
-	for(int i=0; i<twoNp1_; ++i) {
-		u_vec(i) = std::complex<double>(w_arr[2*i], w_arr[2*i+1]);
-		w_vec(i) = std::complex<double>(w_arr[fourNp2_ + 2*i], w_arr[fourNp2_ + 2*i + 1]);
-		alphaU(i) = alpha_[i] * u_vec(i);
+	if(computeInvEpsExpansion(y, k2Inv_.data()) != Result::Success) {
+		std::cout << "ODE: Function Error: Cannot compute 1/eps grating expansion at y = " << y << std::endl;
+		throw GratingExpansionError{};
 	}
+	buildToeplitz(k2Inv_.data(), N_, toeplitzInv_);
+
+	Eigen::PartialPivLU<Eigen::MatrixXcd> luInvEps(toeplitzInv_);
+	Eigen::PartialPivLU<Eigen::MatrixXcd> lu(toeplitz_);
+
+	// Unpack all fourNp2_ columns' [u,w] out of the flat, concatenated state (see combinedState_'s
+	// header comment for the layout -- identical to a single column's w_arr, repeated fourNp2_ times)
+	// into (twoNp1_ x fourNp2_) matrices, one column of each matrix per trial solution.
+	Eigen::MatrixXcd U(twoNp1_, fourNp2_), W(twoNp1_, fourNp2_), alphaU(twoNp1_, fourNp2_);
+	for(int j=0; j<fourNp2_; ++j) {
+		const double* col = state.data() + j*eightNp4_;
+		for(int i=0; i<twoNp1_; ++i) {
+			U(i,j) = std::complex<double>(col[2*i], col[2*i+1]);
+			W(i,j) = std::complex<double>(col[fourNp2_ + 2*i], col[fourNp2_ + 2*i + 1]);
+		}
+	}
+	for(int i=0; i<twoNp1_; ++i)
+		alphaU.row(i) = alpha_[i] * U.row(i);
 
 	double k0 = 2 * M_PI / wl_;
 	double k0sq = k0 * k0;
 
-	// du/dy = (1/k0^2) * Toeplitz(k^2) * w  -- plain multiply.
-	Eigen::VectorXcd duDy = (toeplitzK2 * w_vec) / k0sq;
+	// Same two equations as the old per-column odeFunction() (see class-level note for the physics),
+	// now with a MatrixXcd right-hand side: each solve() below reuses ONE LU factorization across
+	// every column at once, rather than refactorizing per column as the old code did.
+	Eigen::MatrixXcd dUdy = luInvEps.solve(W);
+	Eigen::MatrixXcd V = lu.solve(alphaU);
 
-	// dw/dy = k0^2 * (D_alpha * v - u), where Toeplitz(k^2) * v = D_alpha * u  -- one LU solve.
-	Eigen::PartialPivLU<Eigen::MatrixXcd> lu(toeplitzK2);
-	Eigen::VectorXcd v_vec = lu.solve(alphaU);
-
-	for(int i=0; i<twoNp1_; ++i) {
-		std::complex<double> dwDy_i = k0sq * (alpha_[i] * v_vec(i) - u_vec(i));
-
-		f[2*i] = duDy(i).real();
-		f[2*i+1] = duDy(i).imag();
-		f[fourNp2_ + 2*i] = dwDy_i.real();
-		f[fourNp2_ + 2*i + 1] = dwDy_i.imag();
+	for(int j=0; j<fourNp2_; ++j) {
+		double* col = f.data() + j*eightNp4_;
+		for(int i=0; i<twoNp1_; ++i) {
+			std::complex<double> dwDy_ij = k0sq * (alpha_[i] * V(i,j) - U(i,j));
+			col[2*i]              = dUdy(i,j).real();
+			col[2*i+1]            = dUdy(i,j).imag();
+			col[fourNp2_ + 2*i]   = dwDy_ij.real();
+			col[fourNp2_ + 2*i+1] = dwDy_ij.imag();
+		}
 	}
 }
 
-Result::Code TMSolver::integrateTrialSolutionAlongY(std::vector<double>& w_arr, double yStart, double yEnd) {
+Result::Code TMSolver::integrateAllTrialSolutionsAlongY(std::vector<double>& state, double yStart, double yEnd) {
 
 	namespace odeint = boost::numeric::odeint;
 
 	odeint::bulirsch_stoer<std::vector<double>> stepper(integrationTolerance_, integrationTolerance_);
 
-	auto system = [this](const std::vector<double>& state, std::vector<double>& dwdy, double y) {
-		odeFunction(y, state, dwdy);
+	auto system = [this](const std::vector<double>& s, std::vector<double>& dsdy, double y) {
+		odeFunctionMatrix(y, s, dsdy);
 	};
 
 	double hStart = (yEnd - yStart)/200;
 
 	try {
-		odeint::integrate_adaptive(stepper, system, w_arr, yStart, yEnd, hStart);
+		odeint::integrate_adaptive(stepper, system, state, yStart, yEnd, hStart);
 	}
 	catch(const GratingExpansionError&) {
 		return Result::InvalidGratingFailure;
@@ -490,16 +535,16 @@ void TMSolver::computeBMFromSMatrix()
 
 Result::Code TMSolver::computeTMatrixBelowLayer(int m, bool printDebugOutput)
 {
-	bool integrationFailureOccurred = false;
-
-#pragma omp parallel for num_threads(numThreads_) schedule(dynamic) reduction(||:integrationFailureOccurred)
+	// *** 2026-09-29 performance fix: fill every column's starting values (setIntegrationStartingValues()
+	// itself is unchanged), then integrate all fourNp2_ trial solutions as ONE combined ODE instead of
+	// fourNp2_ independent ones under a #pragma omp parallel for -- see the header comment on
+	// integrateAllTrialSolutionsAlongY() / odeFunctionMatrix() for why this is faster even on one core.
 	for(int j=0; j<fourNp2_; ++j) {
-
 		std::vector<double>& w_arr = wVectorForP(j);
-
 		setIntegrationStartingValues(w_arr, j, m-1);
+		std::copy(w_arr.begin(), w_arr.end(), combinedState_.begin() + j*eightNp4_);
 
-		if(printDebugOutput && omp_get_thread_num() == 0) {
+		if(printDebugOutput && j == 0) {
 			std::cout << "Initial value u_{p=" << j-N_ << "}(yStart):" <<std::endl;
 			std::cout << "     ";
 			for(int n=0; n<twoNp1_; ++n)
@@ -512,10 +557,17 @@ Result::Code TMSolver::computeTMatrixBelowLayer(int m, bool printDebugOutput)
 			std::cout << std::endl;
 			std::cout << std::endl;
 		}
+	}
 
-		Result::Code status = integrateTrialSolutionAlongY(w_arr, y_[m-1], y_[m]);
+	Result::Code status = integrateAllTrialSolutionsAlongY(combinedState_, y_[m-1], y_[m]);
+	if(status != Result::Success)
+		return status;
 
-		if(printDebugOutput && omp_get_thread_num() == 0) {
+	for(int j=0; j<fourNp2_; ++j) {
+		std::vector<double>& w_arr = wVectorForP(j);
+		std::copy(combinedState_.begin() + j*eightNp4_, combinedState_.begin() + (j+1)*eightNp4_, w_arr.begin());
+
+		if(printDebugOutput && j == 0) {
 			std::cout << "Final value u_{p=" << j-N_ << "}(yEnd):" <<std::endl;
 			std::cout << "     ";
 			for(int n=0; n<twoNp1_; ++n)
@@ -529,39 +581,32 @@ Result::Code TMSolver::computeTMatrixBelowLayer(int m, bool printDebugOutput)
 			std::cout << std::endl;
 		}
 
-		if(status != Result::Success)
-			integrationFailureOccurred = true;
-		else {
-			// Transform formula is unchanged from TESolver's: this construction is always
-			// referenced against betaM_ (vacuum, eps_r=1), so the eps_r factor from
-			// TMSolver_alg_ref.md \S3.2 evaluates to 1 here -- see class-level comment in TMSolver.h.
-			if(j >= twoNp1_) {
-				int jj = j - twoNp1_;
+		// Transform formula is unchanged from TESolver's: this construction is always referenced
+		// against betaM_ (vacuum, eps_r=1), so the eps_r factor from TMSolver_alg_ref.md \S3.2
+		// evaluates to 1 here -- see class-level comment in TMSolver.h.
+		if(j >= twoNp1_) {
+			int jj = j - twoNp1_;
 
-				for(int i=0; i<twoNp1_; ++i) {
-					std::complex<double> u_ij(w_arr[2*i], w_arr[2*i+1]);
-					std::complex<double> w_ij(w_arr[fourNp2_ + 2*i], w_arr[fourNp2_ + 2*i + 1]);
-					std::complex<double> temp = w_ij / (betaM_[i] * std::complex<double>(0,1));
+			for(int i=0; i<twoNp1_; ++i) {
+				std::complex<double> u_ij(w_arr[2*i], w_arr[2*i+1]);
+				std::complex<double> w_ij(w_arr[fourNp2_ + 2*i], w_arr[fourNp2_ + 2*i + 1]);
+				std::complex<double> temp = w_ij / (betaM_[i] * std::complex<double>(0,1));
 
-					T12_(i, jj) = 0.5*(u_ij - temp);
-					T22_(i, jj) = 0.5*(u_ij + temp);
-				}
+				T12_(i, jj) = 0.5*(u_ij - temp);
+				T22_(i, jj) = 0.5*(u_ij + temp);
 			}
-			else {
-				for(int i=0; i<twoNp1_; ++i) {
-					std::complex<double> u_ij(w_arr[2*i], w_arr[2*i+1]);
-					std::complex<double> w_ij(w_arr[fourNp2_ + 2*i], w_arr[fourNp2_ + 2*i + 1]);
-					std::complex<double> temp = w_ij / (betaM_[i] * std::complex<double>(0,1));
+		}
+		else {
+			for(int i=0; i<twoNp1_; ++i) {
+				std::complex<double> u_ij(w_arr[2*i], w_arr[2*i+1]);
+				std::complex<double> w_ij(w_arr[fourNp2_ + 2*i], w_arr[fourNp2_ + 2*i + 1]);
+				std::complex<double> temp = w_ij / (betaM_[i] * std::complex<double>(0,1));
 
-					T11_(i, j) = 0.5*(u_ij - temp);
-					T21_(i, j) = 0.5*(u_ij + temp);
-				}
+				T11_(i, j) = 0.5*(u_ij - temp);
+				T21_(i, j) = 0.5*(u_ij + temp);
 			}
 		}
 	}
 
-	if(integrationFailureOccurred)
-		return Result::ConvergenceFailure;
-	else
-		return Result::Success;
+	return Result::Success;
 }
