@@ -269,6 +269,44 @@ bool CommandLineOptions::isValid() {
 
 		if(rmsRoughnessNm < 0) throw "The RMS roughness must be in nm, larger than or equal to 0.";
 		if(!computeTE && !computeTM && !combineTETM) throw "At least one of --computeTE, --computeTM, or --combineTETM must be specified.";
+
+		// finiteness guards
+		if(!std::isfinite(min) || !std::isfinite(max) || !std::isfinite(increment))
+			throw "--min, --max, and --increment must all be finite numbers.";
+		if(incidenceAngle != DBL_MAX && !std::isfinite(incidenceAngle)) throw "--incidenceAngle must be a finite number.";
+		if(includedAngle != DBL_MAX && !std::isfinite(includedAngle)) throw "--includedAngle must be a finite number.";
+		if(wavelength != DBL_MAX && !std::isfinite(wavelength)) throw "--wavelength must be a finite number.";
+		if(!std::isfinite(period)) throw "The grating period --gratingPeriod must be a finite number.";
+
+		// angle ranges
+		if(mode == ConstantIncidence && !(incidenceAngle >= 0 && incidenceAngle < 90))
+			throw "The incidence angle --incidenceAngle must be in the range [0,90) degrees.";
+		if(mode == ConstantIncludedAngle && !(includedAngle > 0 && includedAngle < 180))
+			throw "The included angle --includedAngle must be in the range (0,180) degrees.";
+		if(mode == ConstantWavelength && !(min >= 0 && max < 90))
+			throw "In constant wavelength mode, --min and --max (the incidence angle sweep) must fall in [0,90) degrees.";
+		if(mode != ConstantWavelength && !(min > 0))
+			throw (eV ? "In this mode, --min and --max (the energy sweep) must be positive."
+					: "In this mode, --min and --max (the wavelength sweep) must be positive.");
+
+		// per-profile geometry sanity checks (after the existing argument-count checks)
+		for(double gv : geometry) if(!std::isfinite(gv)) throw "Every --gratingGeometry argument must be a finite number.";
+		if(profile == Grating::RectangularProfile) {
+			if(!(geometry[0] > 0)) throw "...depth... must be positive.";
+			if(!(geometry[1] >= 0 && geometry[1] < period)) throw "...valleyWidth... must be in [0,period).";
+		}
+		if(profile == Grating::BlazedProfile) {
+			if(!(geometry[0] > 0 && geometry[0] < 90)) throw "...blazeAngle... must be in (0,90) degrees.";
+			if(!(geometry[1] > 0 && geometry[1] < 90)) throw "...antiBlazeAngle... must be in (0,90) degrees.";
+		}
+		if(profile == Grating::SinusoidalProfile) { if(!(geometry[0] > 0)) throw "...depth... must be positive."; }
+		if(profile == Grating::TrapezoidalProfile) {
+			if(!(geometry[0] > 0)) throw "...depth... must be positive.";
+			if(!(geometry[1] >= 0 && geometry[1] < period)) throw "...valleyWidth... must be in [0,period).";
+			if(!(geometry[2] > 0 && geometry[2] < 90)) throw "...blazeAngle... must be in (0,90) degrees.";
+			if(!(geometry[3] > 0 && geometry[3] < 90)) throw "...antiBlazeAngle... must be in (0,90) degrees.";
+		}
+		if(profile == Grating::CustomProfile) { if(!(geometry[0] > 0)) throw "...maximum height... must be positive."; }
 	}
 	
 	catch(const char* errMsg) {

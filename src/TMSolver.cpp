@@ -136,6 +136,14 @@ Result TMSolver::getEffTM(double incidenceDeg, double wl, double rmsRoughnessNm,
 	Zinv_ = T11_;
 	{
 		Eigen::PartialPivLU<Eigen::MatrixXcd> lu(Zinv_);
+		double rcond = lu.rcond();
+		if(printDebugOutput && rcond < PEG_RCOND_WARN_THRESHOLD)
+			std::cout << "Warning: Zinv_ is ill-conditioned below layer 2 (rcond = " << rcond << "). Results may be inaccurate." << std::endl;
+		if(rcond < PEG_RCOND_FAIL_THRESHOLD) {
+			if(printDebugOutput)
+				std::cout << "Algebra failure: Zinv_ is singular to working precision below layer 2 (rcond = " << rcond << ")." << std::endl;
+			return Result::AlgebraFailure;
+		}
 		S22_ = lu.inverse();
 	}
 	S12_ = T21_ * S22_;

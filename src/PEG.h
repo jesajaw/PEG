@@ -26,6 +26,9 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 /// Maximum supported number of interfaces crossed in a horizontal slice through the grating; determines the size of arrays in computeK2StepsAtY().
 #define PEG_MAX_PROFILE_CROSSINGS 60
 
+#define PEG_RCOND_FAIL_THRESHOLD 1e-12   // below this, inverse is untrustworthy -> AlgebraFailure
+#define PEG_RCOND_WARN_THRESHOLD 1e-8    // below this, just a debug-output warning
+
 // Common definitions for the PEG parallel grating efficiency library
 
 /// This type is returned by a single grating efficiency calculation. It contains a status code/error code to indicate the result of the calculation, a vector of inside order efficiencies, and a vector of outside order efficiencies. The first element in the output vectors is the 0 order, and is duplicated over both.
