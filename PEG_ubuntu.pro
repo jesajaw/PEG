@@ -2,7 +2,7 @@ QT     -= gui core
 
 TARGET = pegSerial
 
-QMAKE_CXXFLAGS += -O3 -march=native
+QMAKE_CXXFLAGS += -O3 -march=native -fopenmp
 QMAKE_LFLAGS += -fopenmp
 
 INCLUDEPATH += /usr/include/eigen3
