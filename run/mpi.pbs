@@ -8,6 +8,8 @@
 #PBS -M markjboots@gmail.com; jesaja.weintritt@stud.eah-jena.de
  
 cd $PBS_O_WORKDIR
+mkdir -p output
+export PEG_MATERIAL_DB="$PBS_O_WORKDIR/materialDatabase"
 echo "Current working directory is `pwd`"
 
 echo "Node file: $PBS_NODEFILE :"
