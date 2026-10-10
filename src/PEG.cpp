@@ -86,6 +86,10 @@ std::complex<double> Grating::refractiveIndex(double wl, const std::string& mate
 
 	if(wl_nm.empty())
 		return std::complex<double>(0,0);	// the database is empty.
+	
+	// lower_bound below needs ascending wavelengths; treat a mis-ordered table as unusable.
+	if(!std::is_sorted(wl_nm.begin(), wl_nm.end()))
+		return std::complex<double>(0,0);
 
 	// Need to convert wavelength from um to nm, since our data files are in the format:
 	//   wl(nm)	delta	beta
