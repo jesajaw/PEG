@@ -3,7 +3,7 @@ PEG ("Parallel Efficiency of Gratings") is a tool for calculating the efficiency
 
 This repository is a 2026 rework of the original PEG project by Jesaja Weintritt. The core physics and algorithm (differential theory + S-matrix formulation) are unchanged, but the codebase has been substantially modernized: the GSL dependency has been replaced with Eigen and Boost.Odeint (see Dependencies below), naming and class structure were cleaned up, and support for Transverse Magnetic (TM) polarization is being added alongside the existing Transverse Electric (TE) solver (see Limitations below). This reworked version has not been independently verified against the original; see License.
 
----
+
 ## Features
 - Standard grating shape profiles: rectangular, blazed (triangular), trapezoidal, sinusoidal
 - Custom grating shape profiles: any point-wise defined profile.
@@ -17,14 +17,14 @@ This repository is a 2026 rework of the original PEG project by Jesaja Weintritt
 	- fine parallelization of a single calculation, using OpenMP
 	- coarse parallelization of many efficiency points, using MPI on grid computers.
 
----
+
 ## Limitations / Todo
 - Transverse Electric (TE) polarization is fully supported - but Transverse Magnetic (TM) polarization is not fully implemented yet.
 - Coatings:
 	- The custom grating profile does not yet support coatings.
 	- only single layer coatings
 
----
+
 ## Dependencies
 PEG no longer depends on the GNU Scientific Library (GSL). Linear algebra is provided by [Eigen](https://eigen.tuxfamily.org/), and ODE integration by [Boost.Odeint](https://www.boost.org/doc/libs/release/libs/numeric/odeint/). Both are header-only, so no separate library build or linking step is required — just make sure the headers are reachable on your include path.
 
@@ -32,7 +32,7 @@ PEG no longer depends on the GNU Scientific Library (GSL). Linear algebra is pro
 sudo apt install libeigen3-dev libboost-dev
 ```
 
----
+
 ## Building
 The `qmake` build tool from the Qt Framework can be used to generate Makefiles based on PEG_mac.pro or PEG_ubuntu.pro.  (The Qt library is not required to build PEG.)  Edit one of these files to define the include paths for Eigen (and Boost, if not already on your system include path) for your system.
 
@@ -59,7 +59,7 @@ cd src
 make pegMPI
 ```
 
----
+
 ## Running
 Single-computer version `pegSerial`:
 
@@ -181,7 +181,7 @@ The Output table lists reflected efficiencies at each (wavelength/eV/incidence a
 
 $$ \sin\beta = \sin\alpha + \frac{n \lambda}{d}$$
 
----
+
 ## License
 Copyright (C) 2026 Jesaja Weintritt (jesaja.weintritt@stud.eah-jena.de) and 2012 Mark Boots (mark.boots@usask.ca).
 
@@ -191,7 +191,7 @@ This reworked version (2026) contains substantial modifications and has not been
 
 As a modification of GPLv3-licensed software, this reworked version remains bound by the same copyleft terms, independent of the underlying numerical libraries used (previously GSL, now Eigen and Boost.Odeint).
 
----
+
 ## References
 Credit first and foremost to Mark Boots — the vast majority of the effort lies in his original implementation, [markboots/peg](https://github.com/markboots/peg)!
 
