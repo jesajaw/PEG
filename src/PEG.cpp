@@ -15,6 +15,7 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 #include <iostream>
 #include <algorithm>
 #include <cstring>
+#include <cstdlib>
 
 // This packs the current result into a plain double \c array, for easy communication using standard MPI types.  The array must have pre-allocated room for 2N+1 + 4 elements.
 void Result::toDoubleArray(double* array) const {
@@ -44,12 +45,18 @@ void Result::fromDoubleArray(const double* array) {
 
 Result Grating::getEffTE(double incidenceDeg, double wl, double rmsRoughnessNm, const MathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
 	TESolver s(*this, mo, numThreads, measureTiming);
-	return s.getEffTE(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
+	Result r = s.getEffTE(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
+	r.wavelength = wl;
+	r.incidenceDeg = incidenceDeg;
+	return r;
 }
 
 Result Grating::getEffTM(double incidenceDeg, double wl, double rmsRoughnessNm, const MathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
 	TMSolver s(*this, mo, numThreads, measureTiming);
-	return s.getEffTM(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
+	Result r = s.getEffTM(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
+	r.wavelength = wl;
+	r.incidenceDeg = incidenceDeg;
+	return r;
 }
 
 std::complex<double> Grating::refractiveIndex(double wl, const std::string& material) {
