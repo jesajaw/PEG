@@ -60,13 +60,10 @@ Result Grating::getEffTM(double incidenceDeg, double wl, double rmsRoughnessNm, 
 }
 
 std::complex<double> Grating::refractiveIndex(double wl, const std::string& material) {
-	// Override for testing:
-//	return std::complex<double>(0.993, 0.00754);	// Pt at 410 eV
-//	return std::complex<double>(1.4, -0.);	// plain glass in visible range.
-//	return std::complex<double>(0.993, 0);
-
 	// Attempt to open the material database file.
-	std::string fileName = std::string(PEG_MATERIALS_DB_PATH) + std::string("/") + material + std::string(".idx");
+	const char* dbEnv = std::getenv("PEG_MATERIAL_DB");
+	std::string dbDir = (dbEnv && *dbEnv) ? std::string(dbEnv) : std::string(PEG_MATERIALS_DB_PATH);
+	std::string fileName = dbDir + "/" + material + ".idx";
 
 	std::ifstream matFile;
 	matFile.open(fileName.c_str());
