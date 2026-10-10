@@ -4,6 +4,7 @@ PEG ("Parallel Efficiency of Gratings") is a tool for calculating the efficiency
 This repository is a 2026 rework of the original PEG project by Jesaja Weintritt. The core physics and algorithm (differential theory + S-matrix formulation) are unchanged, but the codebase has been substantially modernized: the GSL dependency has been replaced with Eigen and Boost.Odeint (see Dependencies below), naming and class structure were cleaned up, and support for Transverse Magnetic (TM) polarization is being added alongside the existing Transverse Electric (TE) solver (see Limitations below). This reworked version has not been independently verified against the original; see License.
 
 ## Features
+---
 - Standard grating shape profiles: rectangular, blazed (triangular), trapezoidal, sinusoidal
 - Custom grating shape profiles: any point-wise defined profile.
 - Coatings: an optional coating layer on top of the grating (user-defined thickness; thick or inter-penetrating)
@@ -17,24 +18,27 @@ This repository is a 2026 rework of the original PEG project by Jesaja Weintritt
 	- coarse parallelization of many efficiency points, using MPI on grid computers.
 
 ## Limitations / Todo
+---
 - Transverse Electric (TE) polarization is fully supported - but Transverse Magnetic (TM) polarization is not fully implemented yet.
 - Coatings:
 	- The custom grating profile does not yet support coatings.
 	- only single layer coatings
 
 ## Dependencies
+---
 PEG no longer depends on the GNU Scientific Library (GSL). Linear algebra is provided by [Eigen](https://eigen.tuxfamily.org/), and ODE integration by [Boost.Odeint](https://www.boost.org/doc/libs/release/libs/numeric/odeint/). Both are header-only, so no separate library build or linking step is required — just make sure the headers are reachable on your include path.
 
-```
+```bash
 sudo apt install libeigen3-dev libboost-dev
 ```
 
 ## Building
-The 'qmake' build tool from the Qt Framework can be used to generate Makefiles based on PEG_mac.pro or PEG_ubuntu.pro.  (The Qt library is not required to build PEG.)  Edit one of these files to define the include paths for Eigen (and Boost, if not already on your system include path) for your system.
+---
+The `qmake` build tool from the Qt Framework can be used to generate Makefiles based on PEG_mac.pro or PEG_ubuntu.pro.  (The Qt library is not required to build PEG.)  Edit one of these files to define the include paths for Eigen (and Boost, if not already on your system include path) for your system.
 
-This will build the single-machine command-line program 'pegSerial':
+This will build the single-machine command-line program `pegSerial`:
 
-```
+```bash
 qmake PEG_ubuntu.pro
 make
 ```
@@ -42,34 +46,37 @@ make
 The pegSerial application can take advantage of fine-grained parallelization to use more than one thread (for example, as many threads as CPU cores on your machine). This speeds up the calculation of a single efficiency data point.
 
 There is also an application to exploit coarse-grained parallelization over an arbitrary number of nodes in a cluster or grid computer, using MPI:
-```
+
+```bash
 sudo apt install build-essential openmpi-bin libopenmpi-dev
 ```
-This speeds up the calculation of many efficiency data points. To build the pegMPI program, create a makefile based on src/Makefile.example.
 
-```
+This speeds up the calculation of many efficiency data points. To build the pegMPI program, create a makefile based on `src/Makefile.example`.
+
+```bash
 cp src/Makefile.example src/Makefile
 cd src
 make pegMPI
 ```
 
 ## Running
-Single-computer version 'pegSerial':
+---
+Single-computer version `pegSerial`:
 
-```
+```bash
 ./pegSerial --mode constantIncidence --min 100 --max 200 --increment 5 --eV --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile results.txt --progressFile progress.txt --computeTE
 ```
 
 Cluster-version:
 
-```
+```bash
 mpiexec -n <number of nodes> ./pegMPI --mode constantIncidence --min 100 --max 200 --increment 5 --eV  --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile results.txt --progressFile progress.txt --computeTE
 ```
 
 ### Command-line options
 
 #### Grating specification:
-```
+```bash
 --gratingType <rectangular|blazed|sinusoidal|trapezoidal|custom>
 --gratingPeriod <grating period in um>
 --gratingGeometry <command-delimited list of geometry parameters, in um and/or degrees>
@@ -81,7 +88,7 @@ mpiexec -n <number of nodes> ./pegMPI --mode constantIncidence --min 100 --max 2
 - **Custom profile**: depth (um), followed by list of (x,y) points that describe the surface profile y = g(x).  [x followed by y for each]. The points must go from (0,0) to (1,0) inclusive, and will be scaled so that (0,0)->(1,1) maps to (0,0)->(period,depth). For example, an isosceles triangular profile with a depth of 0.1um would need three points; the geometry argument would be: {0.1,0,0,0.5,1,1,0}.
 ```
 --gratingMaterial <grating substrate material>
-	This should be a name corresponding to a refractive index database filename, ex: Au, Ni, C, SiO2, etc.
+	This should be a name corresponding to a refractive index database filename, ex: Au, Ni, C, SiO2, etc. The standard tables cover photon energies of about 31 eV to 30 keV (0.0413-40 nm); other values are rejected at startup. The database folder is taken from the PEG_MATERIAL_DB environment variable if set, otherwise `./materialDatabase`.
 	
 --N <truncation index>
 	Specifies the number of positive and negative orders to include in the Fourier expansion.
@@ -90,7 +97,7 @@ mpiexec -n <number of nodes> ./pegMPI --mode constantIncidence --min 100 --max 2
 
 #### Operating mode
 
-```
+```bash
 --mode <constantIncidence|constantIncludedAngle|constantWavelength>
 --min <min>
 --max <max>
@@ -108,7 +115,7 @@ mpiexec -n <number of nodes> ./pegMPI --mode constantIncidence --min 100 --max 2
 - In **constant wavelength** mode, a calculation is performed for incidence angles from --min to --max in steps of --increment, for a fixed wavelength given by --wavelength.
 
 #### Output
-```
+```bash
 --outputFile <file name>
 	The calculation output will be written to this file.
 
@@ -117,7 +124,7 @@ mpiexec -n <number of nodes> ./pegMPI --mode constantIncidence --min 100 --max 2
 	... computes both TE and TM internally and outputs their simple average as well ( $$(TE_eff + TM_eff)/2$$ per order -- section "# (TE+TM)/2" in the output file). Only points where both the TE and TM calculation succeeded are included. At least one of --computeTE, --computeTM, or --combineTETM must be specified.
 ```
 #### Optional
-```
+```bash
 --progressFile <file name>
 	If provided, the current status of the calculation will be written in this file; it can be monitored to determine the progress of long calculations.  This provides an interface for other processes to monitor the status of this calculation (for example, a web-based or GUI front-end, etc.).
 	
@@ -144,7 +151,7 @@ mpiexec -n <number of nodes> ./pegMPI --mode constantIncidence --min 100 --max 2
 ```
 
 #### Example Output
-```
+```text
 # Input
 mode=constantIncidence
 incidenceAngle=88
@@ -174,7 +181,7 @@ The Output table lists reflected efficiencies at each (wavelength/eV/incidence a
 
 $$ \sin\beta = \sin\alpha + \frac{n \lambda}{d}$$
 
-License
+## License
 ---
 Copyright (C) 2026 Jesaja Weintritt (jesaja.weintritt@stud.eah-jena.de) and 2012 Mark Boots (mark.boots@usask.ca).
 
@@ -185,7 +192,7 @@ This reworked version (2026) contains substantial modifications and has not been
 As a modification of GPLv3-licensed software, this reworked version remains bound by the same copyleft terms, independent of the underlying numerical libraries used (previously GSL, now Eigen and Boost.Odeint).
 
 
-References
+## References
 ---
 
 Credit first and foremost to Mark Boots — the vast majority of the effort lies in his original implementation, [markboots/peg](https://github.com/markboots/peg)!
