@@ -183,12 +183,17 @@ std::ostream& operator<<(std::ostream& os, const Result& result) {
 
 int Grating::computeK2StepsAtY(double y, std::complex<double> k2_vaccuum, std::complex<double> k2_substrate, std::complex<double> k2_coating, double *stepsX, std::complex<double> *stepsK2) const
 {
+	int numSteps;
 	if(coatingThickness_ <= 0)
-		return computeK2StepsAtY_noCoating(y, k2_vaccuum, k2_substrate, k2_coating, stepsX, stepsK2);
+		numSteps = computeK2StepsAtY_noCoating(y, k2_vaccuum, k2_substrate, k2_coating, stepsX, stepsK2);
 	else if(coatingThickness_ < profileHeight())
-		return computeK2StepsAtY_interpenetratingCoating(y, k2_vaccuum, k2_substrate, k2_coating, stepsX, stepsK2);
+		numSteps = computeK2StepsAtY_interpenetratingCoating(y, k2_vaccuum, k2_substrate, k2_coating, stepsX, stepsK2);
 	else
-		return computeK2StepsAtY_thickCoating(y, k2_vaccuum, k2_substrate, k2_coating, stepsX, stepsK2);
+		numSteps = computeK2StepsAtY_thickCoating(y, k2_vaccuum, k2_substrate, k2_coating, stepsX, stepsK2);
+
+	for(int i = 0; i < numSteps; ++i)
+		if(!std::isfinite(stepsX[i])) return -1;	// NaN passes every comparison above
+	return numSteps;
 }
 
 int Grating::computeK2StepsAtY_noCoating(double y, std::complex<double> k2_vaccuum, std::complex<double> k2_substrate, std::complex<double> k2_coating, double *stepsX, std::complex<double> *stepsK2) const {
