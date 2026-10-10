@@ -16,6 +16,7 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 #include <vector>
 #include <ostream>
 #include <math.h>
+#include <algorithm>
 
 /// h*c (Planck constant * speed of light), in eV * um.  Used in conversion from eV to um.
 #define M_HC 1.23984172
@@ -274,7 +275,7 @@ public:
   	// geo(0) is the depth.
 
 	This returns inverse of grating profile formula above; will always return x in first half of period.*/
-	virtual double xIntersection1(double y) const { return period()/2/M_PI * acos(1 - 2*y/geo(0)); }
+	virtual double xIntersection1(double y) const { return period()/2/M_PI * acos(std::max(-1.0, std::min(1.0, 1 - 2*y/geo(0)))); }
 	/// Returns the x-coordinate of the second intersection with the surface at \c y. Due to symmetry, x2 = period() - x1().
 	virtual double xIntersection2(double y) const { return period() - xIntersection1(y); }
 };
