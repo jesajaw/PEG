@@ -26,7 +26,7 @@ This repository is a 2026 rework of the original PEG project by Jesaja Weintritt
 
 
 ## Dependencies
-PEG no longer depends on the GNU Scientific Library (GSL). Linear algebra is provided by [Eigen](https://eigen.tuxfamily.org/), and ODE integration by [Boost.Odeint](https://www.boost.org/doc/libs/release/libs/numeric/odeint/). Both are header-only, so no separate library build or linking step is required — just make sure the headers are reachable on your include path.
+PEG no longer depends on the GNU Scientific Library (GSL). Linear algebra is provided by [Eigen](https://eigen.tuxfamily.org/), and ODE integration by [Boost.Odeint](https://www.boost.org/doc/libs/release/libs/numeric/odeint/). Both are header-only, so no separate library build or linking step is required -- just make sure the headers are reachable on your include path.
 
 ```bash
 sudo apt install libeigen3-dev libboost-dev
@@ -193,7 +193,7 @@ As a modification of GPLv3-licensed software, this reworked version remains boun
 
 
 ## References
-Credit first and foremost to Mark Boots — the vast majority of the effort lies in his original implementation, [markboots/peg](https://github.com/markboots/peg)!
+Credit first and foremost to Mark Boots -- the vast majority of the effort lies in his original implementation, [markboots/peg](https://github.com/markboots/peg)!
 
 1. M Nevière et al, Nouvelle Revue d'Optique 5 65 (1974) http://dx.doi.org/10.1088/0335-7368/5/2/301
 
