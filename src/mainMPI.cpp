@@ -215,12 +215,12 @@ int main(int argc, char** argv) {
 				if(io.computeTM || io.combineTETM) resultTM = bad;
 			}
 			else {
+
 				if(io.computeTE || io.combineTETM)
-					resultTE = grating->getEffTE(incidenceAngle, wavelength, ...);
+					resultTE = grating->getEffTE(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
 				if(io.computeTM || io.combineTETM)
-					resultTM = grating->getEffTM(incidenceAngle, wavelength, ...);
+					resultTM = grating->getEffTM(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
 			}
-		}
 
 		// Pack both results into this rank's send buffer.
 		resultTE.toDoubleArray(mpiSendBuffer.data());
@@ -258,6 +258,9 @@ int main(int argc, char** argv) {
 					if(io.computeTM) {
 						resultsTM.push_back(resultTMj);
 						if(resultTMj.status == Result::Success) anySuccesses = true; else anyFailures = true;
+					}
+					if(io.combineTETM) {	// a combined point succeeds only if both polarizations did
+						if(resultTEj.status == Result::Success && resultTMj.status == Result::Success) anySuccesses = true; else anyFailures = true;
 					}
 					if(io.combineTETM && resultTEj.status == Result::Success && resultTMj.status == Result::Success) {
 						Result combined = resultTEj;
