@@ -353,6 +353,9 @@ int CustomProfileGrating::computeK2StepsAtY(double y, std::complex<double> k2_va
 				double slope = (x_[i] - x_[i-1])/(y_[i]-y_[i-1]);
 				double x = x_[i-1] + slope*(y - y_[i-1]);
 
+				if(numCrossings >= PEG_MAX_PROFILE_CROSSINGS)
+					return -1;	// more crossings than the fixed-size buffers can hold
+				
 				stepsK2[numCrossings] = k2_vaccuum;
 				stepsX[numCrossings++] = x;
 			}
