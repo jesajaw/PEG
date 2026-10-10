@@ -46,11 +46,13 @@ int main(int argc, char** argv) {
 
 	// Prevent getopt() from printing error messages except on Process 0.
 	if(rank != 0) opterr = 0;
-	if(!io.parseFromCommandLine(argc, argv)) {
-		if(rank == 0) std::cerr << "Invalid command-line options: " << io.firstErrorMessage() << std::endl;
+	std::string dataError;
+	if(!checkMaterialData(io, dataError)) {			// helper defined in mainSupport.cpp
+		if(rank == 0) std::cerr << dataError << std::endl;
 		MPI_Finalize();
 		return -1;
 	}
+	Eigen::setNbThreads(io.threads);				// #13, only if confirmed; needs #include <Eigen/Core>
 	
 	// Legal
 	if(rank == 0) {
@@ -104,12 +106,11 @@ int main(int argc, char** argv) {
 		outputFilePosition = outputFile.tellp();
 	}
 	
-	// How many steps do we have: int(min to max / increment)?
-	int totalSteps = int((io.max - io.min)/io.increment) + 1;
+	// How many steps do we have
+	int totalSteps = numSweepSteps(io);
 	
 	// On Process 0: Write the initial progress:
 	if(rank == 0) {
-		writeOutputFileProgress(outputFile, 0, totalSteps, false, false);
 		if(!io.progressFile.empty()) {
 			std::ofstream progressFile(io.progressFile.c_str(), std::ios::out | std::ios::trunc);
 			writeOutputFileProgress(progressFile, 0, totalSteps, false, false);
@@ -206,10 +207,19 @@ int main(int argc, char** argv) {
 				break;
 			}
 
-			if(io.computeTE || io.combineTETM)
-				resultTE = grating->getEffTE(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
-			if(io.computeTM || io.combineTETM)
-				resultTM = grating->getEffTM(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
+			if(!std::isfinite(incidenceAngle) || std::fabs(incidenceAngle) >= 90) {
+				Result bad(Result::OtherFailure);
+				bad.wavelength = wavelength;			// keeps the x-column of the failed row meaningful
+				bad.incidenceDeg = incidenceAngle;
+				if(io.computeTE || io.combineTETM) resultTE = bad;
+				if(io.computeTM || io.combineTETM) resultTM = bad;
+			}
+			else {
+				if(io.computeTE || io.combineTETM)
+					resultTE = grating->getEffTE(incidenceAngle, wavelength, ...);
+				if(io.computeTM || io.combineTETM)
+					resultTM = grating->getEffTM(incidenceAngle, wavelength, ...);
+			}
 		}
 
 		// Pack both results into this rank's send buffer.

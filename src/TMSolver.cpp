@@ -139,7 +139,7 @@ Result TMSolver::getEffTM(double incidenceDeg, double wl, double rmsRoughnessNm,
 		double rcond = lu.rcond();
 		if(printDebugOutput && rcond < PEG_RCOND_WARN_THRESHOLD)
 			std::cout << "Warning: Zinv_ is ill-conditioned below layer 2 (rcond = " << rcond << "). Results may be inaccurate." << std::endl;
-		if(rcond < PEG_RCOND_FAIL_THRESHOLD) {
+		if(!(rcond >= PEG_RCOND_FAIL_THRESHOLD)) {
 			if(printDebugOutput)
 				std::cout << "Algebra failure: Zinv_ is singular to working precision below layer 2 (rcond = " << rcond << ")." << std::endl;
 			return Result::AlgebraFailure;
@@ -167,6 +167,14 @@ Result TMSolver::getEffTM(double incidenceDeg, double wl, double rmsRoughnessNm,
 
 		{
 			Eigen::PartialPivLU<Eigen::MatrixXcd> lu(Zinv_);
+			double rcond = lu.rcond();
+			if(!(rcond >= PEG_RCOND_FAIL_THRESHOLD)) {	// also catches NaN
+				if(printDebugOutput)
+					std::cout << "Algebra failure: Zinv_ is singular to working precision below layer " << m << " (rcond = " << rcond << ")." << std::endl;
+				return Result::AlgebraFailure;
+			}
+			if(printDebugOutput && rcond < PEG_RCOND_WARN_THRESHOLD)
+				std::cout << "Warning: Zinv_ is ill-conditioned below layer " << m << " (rcond = " << rcond << "). Results may be inaccurate." << std::endl;
 			Z_ = lu.inverse();
 		}
 
