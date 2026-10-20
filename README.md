@@ -43,7 +43,7 @@ qmake PEG_ubuntu.pro
 make
 ```
 
-The pegSerial application can take advantage of fine-grained parallelization to use more than one thread (for example, as many threads as CPU cores on your machine). This speeds up the calculation of a single efficiency data point.
+The pegSerial application can take advantage of fine-grained parallelization.
 
 There is also an application to exploit coarse-grained parallelization over an arbitrary number of nodes in a cluster or grid computer, using MPI:
 
