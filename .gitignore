@@ -25,11 +25,6 @@ pegMPI.exe
 /core.[0-9]*
 vgcore.*
 
-# ---- Generated build files --------------------------------------------
-#/Makefile
-#/Makefile.*
-src/Makefile
-
 # More qmake / Qt Creator leftovers.
 .qmake.stash
 .qmake.cache
@@ -37,7 +32,7 @@ object_script.*
 *.pro.user
 *.pro.user.*
 *.autosave
-/build-*/
+/build/
 /debug/
 /release/
 moc_*
@@ -46,13 +41,9 @@ qrc_*
 
 
 # ---- Calculation results ----------------------------------------------
-/output/
-/run/output/
 /benchmark_results/
 *.partial
 *.FAILED
-*.txt
-*.csv
 
 *.o[0-9]*
 *.e[0-9]*

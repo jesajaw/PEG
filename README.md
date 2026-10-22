@@ -197,10 +197,9 @@ Credit first and foremost to Mark Boots -- the vast majority of the effort lies 
 
 1. M Nevière et al, Nouvelle Revue d'Optique 5 65 (1974) http://dx.doi.org/10.1088/0335-7368/5/2/301
 
-2. L. Li, JOSA A, Vol. 13, Issue 5, pp. 1024-1035 (1996)
-http://dx.doi.org/10.1364/JOSAA.13.001024
+2. L. Li, JOSA A, Vol. 13, Issue 5, pp. 1024-1035 (1996) http://dx.doi.org/10.1364/JOSAA.13.001024
 
-3. B.L. Henke, E.M. Gullikson, and J.C. Davis. X-ray interactions: photoabsorption, scattering, transmission, and reflection at E=50-30000 eV, Z=1-92, Atomic Data and Nuclear Data Tables Vol. 54 (no.2), 181-342 (July 1993).
+3. B.L. Henke, E.M. Gullikson, and J.C. Davis. X-ray interactions: photoabsorption, scattering, transmission, and reflection at E=50-30000 eV, Z=1-92, Atomic Data and Nuclear Data Tables Vol. 54 (no.2), 181-342 (July 1993). https://henke.lbl.gov/optical_constants/getdb2.html
 
 4. S.K. Sinha, E.B. Sirota, S. Garoff, and H.B. Stanley. X-ray and neutron scattering from rough surfaces. Physical Review B, Vol. 38, Issue 4, 2297 (1988), Equation 4.34. http://dx.doi.org/10.1103/PhysRevB.38.2297
 	Used for the optional RMS-roughness correction factor (`--rmsRoughnessNm`).

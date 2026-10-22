@@ -13,14 +13,11 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 #include <algorithm>
 #include <limits>
 #include <iostream>
-
 #include <omp.h>
 #include <boost/numeric/odeint.hpp>
 
 namespace {
-	/// Thrown from TESolver::odeFunction() when the grating expansion cannot be computed at
-	/// some y (invalid geometry, or y above the profile height). Caught in
-	/// integrateTrialSolutionAlongY() and mapped to Result::InvalidGratingFailure.
+	/// Thrown from TESolver::odeFunction() when the grating expansion cannot be computed at some y (invalid geometry, or y above the profile height). Caught in integrateTrialSolutionAlongY() and mapped to Result::InvalidGratingFailure.
 	struct GratingExpansionError {};
 }
 
@@ -40,6 +37,7 @@ TESolver::TESolver(const Grating& grating, const MathOptions& mo, int numThreads
 	// All storage below is RAII (std::vector / Eigen); nothing needs manual freeing anymore.
 	wVectors_.assign(fourNp2_, std::vector<double>(eightNp4_));
 
+	//
 	T11_.resize(twoNp1_, twoNp1_);
 	T12_.resize(twoNp1_, twoNp1_);
 	T21_.resize(twoNp1_, twoNp1_);

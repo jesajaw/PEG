@@ -9,6 +9,7 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 
 #include "PEG.h"
 #include "mainSupport.h"
+#include "mpi.h"
 
 #include <iostream>
 #include <fstream>
@@ -20,13 +21,10 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 #include <algorithm>
 #include <cmath>
 #include <memory>
-
-#include "mpi.h"
 #include <Eigen/Core>
 
 /*
-This mainstructur provides a command-line interface to run the calculations. The results are written to an output file and optionally a second file for information on the status of the calculation.
-This file is only responsible for input processing and output; all physical and numerical details are structured somewhere else.
+This mainstructur provides a command-line interface to run the calculations. The results are written to an output file and optionally a second file for information on the status of the calculation. This file is only responsible for input processing and output; all physical and numerical details are structured somewhere else.
 */
 
 int main(int argc, char** argv) {
@@ -48,7 +46,7 @@ int main(int argc, char** argv) {
 	// Prevent getopt() from printing error messages except on Process 0.
 	if(rank != 0) opterr = 0;
 	std::string dataError;
-	if(!checkMaterialData(io, dataError)) {			// helper defined in mainSupport.cpp
+	if(!checkMaterialData(io, dataError)) {
 		if(rank == 0) std::cerr << dataError << std::endl;
 		MPI_Finalize();
 		return -1;
@@ -287,22 +285,22 @@ int main(int argc, char** argv) {
 			}
 
 			// Update progress in progressFile, if provided.
+			///\todo change progressoutput for extern live tracking
 			if(!io.progressFile.empty()) {
 				std::ofstream progressFile(io.progressFile.c_str(), std::ios::out | std::ios::trunc);
 				writeOutputFileProgress(progressFile, std::min(i+commandSize, totalSteps), totalSteps, anySuccesses, anyFailures);
 			}
 		}
-
 	} // end of calculation loop.
 
 	// Timing: We know we're synchronized here because the last MPI_Gather has ensured that we have everyone's results.
 	double runTime = MPI_Wtime() - startTime;
 	if(rank == 0)
 		std::cout << "Run time (s): " << runTime << std::endl;
-
 	outputFile.close();
 
 	// Finalize MPI
 	MPI_Finalize();
 	return 0;
-}}
+	}
+}
