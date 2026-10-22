@@ -22,6 +22,7 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 #include <memory>
 
 #include "mpi.h"
+#include <Eigen/Core>
 
 /*
 This mainstructur provides a command-line interface to run the calculations. The results are written to an output file and optionally a second file for information on the status of the calculation.
@@ -52,7 +53,7 @@ int main(int argc, char** argv) {
 		MPI_Finalize();
 		return -1;
 	}
-	Eigen::setNbThreads(io.threads);				// #13, only if confirmed; needs #include <Eigen/Core>
+	Eigen::setNbThreads(io.threads);
 	
 	// Legal
 	if(rank == 0) {
@@ -153,14 +154,13 @@ int main(int argc, char** argv) {
 	bool anyFailures = false;
 	bool anySuccesses = false;
 
-	// On Process 0: separate result histories per polarization / combination.
+	// ... separate result histories per polarization / combination.
 	std::vector<Result> resultsTE;
 	std::vector<Result> resultsTM;
-	std::vector<Result> resultsCombined; // reuses Result's layout for the averaged spectrum
+	std::vector<Result> resultsCombined;
 
-	// On process 0: create a buffer for receiving results from other processes.
-	// Both TE and TM results share the same array layout (eff[2N+1] + 4 scalar fields),
-	// so we pack one TE result followed by one TM result into each rank's send buffer.
+	// ... create a buffer for receiving results from other processes.
+	// Both TE and TM results share the same array layout (eff[2N+1] + 4 scalar fields), so we pack one TE result followed by one TM result into each rank's send buffer.
 	const std::size_t resultSize = static_cast<std::size_t>(2*io.N + 1 + 4);
 	const std::size_t pairSize = 2 * resultSize; // [TE fields][TM fields]
 
@@ -182,8 +182,8 @@ int main(int argc, char** argv) {
 			// determine wavelength (um): depends on mode and eV/um setting.
 			double wavelength = (io.mode == CommandLineOptions::ConstantWavelength) ? io.wavelength : currentValue;
 			// interpret input wavelength as eV instead, and convert to actual wavelength.
-			// Formula: wavelength = hc / eV. => hc = 1.23984172 eV * um.
 			if(io.eV)
+				// formular for wavelength = hc / eV. => hc = 1.23984172 eV * um.
 				wavelength = M_HC / wavelength;
 
 			// determine incidence angle: depends on mode and possibly wavelength.
@@ -199,7 +199,7 @@ int main(int argc, char** argv) {
 				break;
 				}
 			case CommandLineOptions::ConstantWavelength:
-				incidenceAngle = currentValue;
+				incidenceAngle = currentValue; // static angle, no changes/formulars
 				break;
 			default:
 				// never happens: input validation assures valid mode.
@@ -207,7 +207,7 @@ int main(int argc, char** argv) {
 				break;
 			}
 
-			if(!std::isfinite(incidenceAngle) || std::fabs(incidenceAngle) >= 90) {
+			if(!std::isfinite(incidenceAngle) || std::fabs(incidenceAngle) >= 90) { // stay here? or to is valid
 				Result bad(Result::OtherFailure);
 				bad.wavelength = wavelength;			// keeps the x-column of the failed row meaningful
 				bad.incidenceDeg = incidenceAngle;
@@ -226,9 +226,7 @@ int main(int argc, char** argv) {
 		resultTE.toDoubleArray(mpiSendBuffer.data());
 		resultTM.toDoubleArray(mpiSendBuffer.data() + resultSize);
 
-		int err = MPI_Gather(mpiSendBuffer.data(), static_cast<int>(pairSize), MPI_DOUBLE,
-                      mpiReceiveBuffer.data(), static_cast<int>(pairSize), MPI_DOUBLE,
-                      0, MPI_COMM_WORLD);
+		int err = MPI_Gather(mpiSendBuffer.data(), static_cast<int>(pairSize), MPI_DOUBLE, mpiReceiveBuffer.data(), static_cast<int>(pairSize), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 		if(err != MPI_SUCCESS) {
 			char errStr[MPI_MAX_ERROR_STRING];
@@ -247,9 +245,7 @@ int main(int argc, char** argv) {
 				resultTMj.fromDoubleArray(mpiReceiveBuffer.data() + j*pairSize + resultSize);
 
 				// indicates non-calculation for inactive process on last round -- whichever result was actually requested tells us whether this rank had work this round
-				bool wasActive = (io.computeTE || io.combineTETM)
-					? (resultTEj.status != Result::InactiveCalculation)
-					: (resultTMj.status != Result::InactiveCalculation);
+				bool wasActive = (io.computeTE || io.combineTETM) ? (resultTEj.status != Result::InactiveCalculation) : (resultTMj.status != Result::InactiveCalculation);
 				if(wasActive) {
 					if(io.computeTE) {
 						resultsTE.push_back(resultTEj);
@@ -259,7 +255,7 @@ int main(int argc, char** argv) {
 						resultsTM.push_back(resultTMj);
 						if(resultTMj.status == Result::Success) anySuccesses = true; else anyFailures = true;
 					}
-					if(io.combineTETM) {	// a combined point succeeds only if both polarizations did
+					if(io.combineTETM) {	// succeeds only if both polarizations did
 						if(resultTEj.status == Result::Success && resultTMj.status == Result::Success) anySuccesses = true; else anyFailures = true;
 					}
 					if(io.combineTETM && resultTEj.status == Result::Success && resultTMj.status == Result::Success) {

@@ -95,6 +95,12 @@ protected:
 /// \pre Callers must ensure both teResult.status and tmResult.status are Result::Success before calling this.
 Result getEffCombined(const Result& teResult, const Result& tmResult);
 
+/// Number of points in the sweep min..max in steps of increment, robust against floating-point truncation.
+int numSweepSteps(const CommandLineOptions& io);
+
+/// Checks that refractive-index data exists for the grating and coating material across the whole sweep. On failure, error describes the problem.
+bool checkMaterialData(const CommandLineOptions& io, std::string& error);
+
 /// This helper function writes the header to the output file stream
 void writeOutputFileHeader(std::ostream& outputFileStream, const CommandLineOptions& io);
 

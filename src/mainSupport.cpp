@@ -15,6 +15,22 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 #include <cstdlib>
 #include <cstring>
 
+
+static double parseDouble(const char* s, const char* errMsg) {
+	char* end = nullptr;
+	errno = 0;
+	double v = strtod(s, &end);
+	if(end == s || *end != '\0' || errno == ERANGE || !std::isfinite(v)) throw errMsg;
+	return v;
+}
+static int parseInt(const char* s, const char* errMsg) {
+	char* end = nullptr;
+	errno = 0;
+	long v = strtol(s, &end, 10);
+	if(end == s || *end != '\0' || errno == ERANGE || v < INT_MIN || v > INT_MAX) throw errMsg;
+	return static_cast<int>(v);
+}
+
 void CommandLineOptions::init() {
 	mode = InvalidMode;
 
@@ -97,37 +113,37 @@ bool CommandLineOptions::parseFromCommandLine(int argc, char** argv) {
 				
 			case 2: // min
 				//if(!optarg) throw "An argument to --min must be provided.";
-				min = atof(optarg);
+				min = parseDouble(optarg, "--min must be a number.");
 				break;
 				
 			case 3: // max
 				//if(!optarg) throw "An argument to --max must be provided.";
-				max = atof(optarg);
+				max = parseDouble(optarg, "--max must be a number.");
 				break;
 				
 			case 4: // increment
 				//if(!optarg) throw "An argument to --increment must be provided.";
-				increment = atof(optarg);
+				increment = parseDouble(optarg, "--increment must be a number.");
 				break;
 				
 			case 5: // incidence angle
 				//if(!optarg) throw "An argument to --incidenceAngle must be provided.";
-				incidenceAngle = atof(optarg);
+				incidenceAngle = parseDouble(optarg, "--incidenceAngle must be a number.");
 				break;
 				
 			case 6: // includedAngle
 				//if(!optarg) throw "An argument to --includedAngle must be provided.";
-				includedAngle = atof(optarg);
+				includedAngle = parseDouble(optarg, "--includedAngle must be a number.");
 				break;
 				
 			case 7: // toOrder
 				//if(!optarg) throw "An argument to --toOrder must be provided.";
-				toOrder = atol(optarg);
+				toOrder = parseInt(optarg, "--toOrder must be an integer.");
 				break;
 				
 			case 8: // wavelength
 				//if(!optarg) throw "An argument to --wavelength must be provided.";
-				wavelength = atof(optarg);
+				wavelength = parseDouble(optarg,"--wavelength must be a number.");
 				break;
 				
 			case 9: // outputFile
@@ -156,7 +172,7 @@ bool CommandLineOptions::parseFromCommandLine(int argc, char** argv) {
 				char* token;
 				token = strtok_r(optarg, ",", &saveptr);
 				while(token) {
-					geometry.push_back(atof(token));
+					geometry.push_back(parseDouble(token, "--gratingGeometry values must be numbers."));
 					token = strtok_r(0, ",", &saveptr);
 				}
 				break;
@@ -164,7 +180,7 @@ bool CommandLineOptions::parseFromCommandLine(int argc, char** argv) {
 				
 			case 13: // gratingPeriod
 				//if(!optarg) throw "An argument to --gratingPeriod must be provided.";
-				period = atof(optarg);
+				period = parseDouble(optarg, "--gratingPeriod must be a number.");
 				break;
 				
 			case 14: // gratingMaterial
@@ -172,7 +188,7 @@ bool CommandLineOptions::parseFromCommandLine(int argc, char** argv) {
 				break;
 			
 			case 15: // N
-				N = atol(optarg);
+				N = parseInt(optarg, "--N must be an integer.");
 				break;
 				
 			case 16: // interpret as eV instead of wavelength
@@ -182,25 +198,25 @@ bool CommandLineOptions::parseFromCommandLine(int argc, char** argv) {
 				printDebugOutput = true;
 				break;
 			case 18: // number of threads to use for fine parallelization
-				threads = atol(optarg);
+				threads = parseInt(optarg, "--threads must be an integer.");
 				break;
 			case 19: // measure timing
 				measureTiming = true;
 				break;
 			case 20: // integrationTolerance
-				integrationTolerance = atof(optarg);
+				integrationTolerance = parseDouble(optarg, "--integrationTolerance must be a number.");
 				break;
 			case 21: // coatingMaterial
 				coating = optarg;
 				break;
 			case 22: // coatingThickness
-				coatingThickness = atof(optarg);
+				coatingThickness = parseDouble(optarg, "--coatingThickness must be a number.");
 				break;
 			case 23: // showLegal
 				showLegal = true;
 				break;
 			case 24: // rmsRoughnessNm
-				rmsRoughnessNm = atof(optarg);
+				rmsRoughnessNm = parseDouble(optarg, "--rmsRoughnessNm must be a number.");
 				break;
 			case 25: // compute TE efficiency
 				computeTE = true;
@@ -211,6 +227,8 @@ bool CommandLineOptions::parseFromCommandLine(int argc, char** argv) {
 			case 27: // compute averaged (TE+TM)/2 efficiency; requires both TE and TM internally
 				combineTETM = true;
 				break;
+			default:	// getopt_long returned '?': unknown option or missing argument
+				throw "Unknown option or missing option argument.";
 			}
 		} // end of loop over input options.
 				
@@ -315,6 +333,34 @@ bool CommandLineOptions::isValid() {
 	}
 	
 	firstErrorMessage_ = "No errors.";
+	return true;
+}
+
+int numSweepSteps(const CommandLineOptions& io) {
+	// +1e-9 absorbs floating-point error, e.g. (1.2-0.6)/0.05 = 11.999999999999998
+	return int(std::floor((io.max - io.min) / io.increment + 1e-9)) + 1;
+}
+
+bool checkMaterialData(const CommandLineOptions& io, std::string& error) {
+	// wavelengths (um) at both ends of the sweep
+	double wlA, wlB;
+	if(io.mode == CommandLineOptions::ConstantWavelength)
+		wlA = wlB = io.eV ? M_HC / io.wavelength : io.wavelength;
+	else {
+		double first = io.min;
+		double last  = io.min + io.increment * (numSweepSteps(io) - 1);
+		wlA = io.eV ? M_HC / first : first;
+		wlB = io.eV ? M_HC / last  : last;
+	}
+	for(const std::string* mat : {&io.material, &io.coating}) {
+		if(mat->empty()) continue;
+		for(double wl : {wlA, wlB})
+			if(Grating::refractiveIndex(wl, *mat) == std::complex<double>(0,0)) {
+				error = "No refractive-index data for '" + *mat + "' at " + std::to_string(wl)
+				      + " um (table missing, unsorted, or wavelength outside its range).";
+				return false;
+			}
+	}
 	return true;
 }
 
