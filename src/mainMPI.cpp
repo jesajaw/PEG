@@ -305,4 +305,4 @@ int main(int argc, char** argv) {
 	// Finalize MPI
 	MPI_Finalize();
 	return 0;
-}
+}}
