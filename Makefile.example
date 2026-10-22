@@ -1,0 +1,53 @@
+# ---------------------------------------------------------------
+# Pfade
+# ---------------------------------------------------------------
+SRCDIR   := src
+BUILDDIR := build
+OBJDIR   := $(BUILDDIR)/obj
+
+INCLUDEPATH += /usr/include/eigen3
+#LIBPATH    += /home/user/lib
+
+# ---------------------------------------------------------------
+# Compiler & Flags
+# ---------------------------------------------------------------
+CC      := mpic++
+CFLAGS  := -O3 -march=native -g -Wall -fopenmp -MMD -MP \
+           -I$(SRCDIR) $(addprefix -I,$(INCLUDEPATH))
+LDFLAGS := -fopenmp $(addprefix -L,$(LIBPATH))
+
+# ---------------------------------------------------------------
+# Objekte & Targets
+# ---------------------------------------------------------------
+COMMON  := PEG TESolver TMSolver mainSupport
+COMMON_OBJ := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(COMMON)))
+OBJECTS := $(OBJDIR)/mainSerial.o $(OBJDIR)/mainMPI.o $(COMMON_OBJ)
+
+SERIAL  := $(BUILDDIR)/pegSerial
+MPI     := $(BUILDDIR)/pegMPI
+
+all: $(SERIAL) $(MPI)
+
+# Kurznamen, damit "make pegMPI" weiterhin funktioniert
+pegSerial: $(SERIAL)
+pegMPI:    $(MPI)
+
+$(SERIAL): $(OBJDIR)/mainSerial.o $(COMMON_OBJ)
+	$(CC) $^ $(LDFLAGS) -o $@
+
+$(MPI): $(OBJDIR)/mainMPI.o $(COMMON_OBJ)
+	$(CC) $^ $(LDFLAGS) -o $@
+
+# src/xyz.cpp -> build/obj/xyz.o (+ xyz.d)
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJDIR):
+	mkdir -p $@
+
+clean:
+	rm -rf $(BUILDDIR)
+
+.PHONY: all clean pegSerial pegMPI
+
+-include $(OBJECTS:.o=.d)

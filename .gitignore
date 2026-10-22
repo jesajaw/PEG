@@ -26,8 +26,8 @@ pegMPI.exe
 vgcore.*
 
 # ---- Generated build files --------------------------------------------
-/Makefile
-/Makefile.*
+#/Makefile
+#/Makefile.*
 src/Makefile
 
 # More qmake / Qt Creator leftovers.
