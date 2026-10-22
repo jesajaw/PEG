@@ -1,0 +1,317 @@
+#!/usr/bin/env python3
+"""
+fetch_henke.py - optional helper: downloads refractive-index tables for PEG from the
+CXRO "Index of Refraction" form (https://henke.lbl.gov/optical_constants/getdb2.html)
+and stores them as <formula>.idx in materialDatabase/.
+
+Input : only the chemical formula (case sensitive, e.g. Si3N4, SiO2, Co vs CO).
+        The density is never asked: the form always gets -1 = CXRO's tabulated value.
+Output: the rows exactly as CXRO delivers them for a *wavelength (nm)* scan
+        (wavelength[nm]  delta  beta) - no unit conversion, no recalculation.
+
+CXRO allows at most 500 steps per download, so the range MIN_NM..MAX_NM is cut into
+as many pieces as needed (logarithmically spaced), every piece is downloaded with 499 steps,
+and the pieces are joined into ONE continuous, strictly ascending table.
+How many steps in total?  -> TOTAL_STEPS below (or --steps N).
+
+Usage:
+  python3 fetch_henke.py Si3N4
+  python3 fetch_henke.py Au SiO2 Ta2O5
+  python3 fetch_henke.py                      # asks for the formula
+  python3 fetch_henke.py Si3N4 --steps 10000 --force
+"""
+
+import argparse
+import math
+import os
+import re
+import sys
+import tempfile
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from html.parser import HTMLParser
+
+# ---------------------------------------------------------------- settings
+MIN_NM = 0.04133         # CXRO accepts 0.041 nm < wavelength < 41 nm
+MAX_NM = 40.0
+STEPS_PER_REQUEST = 499  # CXRO maximum is 500
+TOTAL_STEPS = 5000       # total number of steps wanted; split into 499-step downloads
+# ------------------------------------------------------------------------
+
+FORM_PAGE = "https://henke.lbl.gov/optical_constants/getdb2.html"
+DENSITY = "-1"           # negative = use CXRO's tabulated density; never asked from the user
+DEBUG_FILE = "henke_form_debug.html"
+
+
+# ============================================================ form discovery
+class PageParser(HTMLParser):
+    """Collects every <form>, <input> and <select> of the page (also controls outside a form)."""
+
+    def __init__(self):
+        super().__init__()
+        self.forms = []      # {"action", "method"}
+        self.inputs = []     # (form_index or None, name, type, value, checked)
+        self.selects = []    # {"form", "name", "options": [[value, text, selected], ...]}
+        self._cur = None
+        self._sel = self._opt = None
+
+    def handle_starttag(self, tag, attrs):
+        a = {k: (v if v is not None else "") for k, v in attrs}
+        if tag == "form":
+            self.forms.append({"action": a.get("action", ""), "method": a.get("method", "post").lower()})
+            self._cur = len(self.forms) - 1
+        elif tag == "input":
+            self.inputs.append((self._cur, a.get("name", ""), a.get("type", "text").lower(),
+                                a.get("value", ""), "checked" in a))
+        elif tag == "select":
+            self._sel = {"form": self._cur, "name": a.get("name", ""), "options": []}
+            self.selects.append(self._sel)
+        elif tag == "option" and self._sel is not None:
+            self._opt = [a.get("value"), "", "selected" in a]
+            self._sel["options"].append(self._opt)
+
+    def handle_data(self, data):
+        if self._opt is not None:
+            self._opt[1] += data
+
+    def handle_endtag(self, tag):
+        if tag == "option":
+            self._opt = None
+        elif tag == "select":
+            self._sel = self._opt = None
+        elif tag == "form":
+            self._cur = None
+
+
+def http(url, data=None, method="post"):
+    if data is not None and method == "get":
+        url += ("&" if "?" in url else "?") + urllib.parse.urlencode(data)
+        data = None
+    body = urllib.parse.urlencode(data).encode("latin-1") if data is not None else None
+    req = urllib.request.Request(url, data=body, headers={"User-Agent": "PEG-fetch-henke/3.0"})
+    err = None
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return r.geturl(), r.read().decode("latin-1")
+        except (urllib.error.URLError, OSError) as e:
+            err = e
+            time.sleep(2 * (attempt + 1))
+    raise RuntimeError("request to %s failed: %s" % (url, err))
+
+
+def opt_value(opt):
+    """Value that the browser would send for an <option> (value attribute, else its text)."""
+    return opt[0] if opt[0] is not None else opt[1].strip()
+
+
+def describe(page):
+    lines = ["  forms: %s" % page.forms]
+    for f, n, t, v, c in page.inputs:
+        lines.append("    input  form=%s name=%r type=%s value=%r%s" % (f, n, t, v, " checked" if c else ""))
+    for s in page.selects:
+        lines.append("    select form=%s name=%r options=%s" %
+                     (s["form"], s["name"], [(opt_value(o), o[1].strip()) for o in s["options"]]))
+    return "\n".join(lines)
+
+
+def _has(opt, needle):
+    return needle in opt[1].lower() or needle in (opt[0] or "").lower()
+
+
+def build_payload(page, formula, wl_from, wl_to, steps, overrides):
+    """Form data as the browser would send it, with formula/density/range/steps/wavelength/text filled in."""
+    # the five text boxes in page order: chemical formula, density, range from, range to, steps
+    texts = [i for i in page.inputs if i[1] and i[2] in ("text", "number", "")]
+    if len(texts) != 5:
+        raise RuntimeError("expected 5 text boxes (formula, density, from, to, steps), found %d" % len(texts))
+    form = texts[0][0]
+    payload = {}
+    for f, name, typ, value, checked in page.inputs:
+        if not name or f not in (form, None):
+            continue
+        if typ == "hidden" or (typ in ("radio", "checkbox") and checked):
+            payload[name] = value
+        elif typ == "submit":
+            payload.setdefault(name, value)
+    for s in page.selects:
+        if s["form"] in (form, None) and s["name"] and s["options"]:
+            sel = [o for o in s["options"] if o[2]] or s["options"][:1]
+            payload[s["name"]] = opt_value(sel[0])
+
+    # recognised by what the options say, not by their names. Wavelength is essential;
+    # "Text File" is set when it can be found, otherwise the form's default output is kept.
+    got_wavelength = got_text = False
+    for s in page.selects:
+        if s["form"] not in (form, None) or not s["name"]:
+            continue
+        for o in s["options"]:
+            if _has(o, "wavelength"):
+                payload[s["name"]] = opt_value(o)
+                got_wavelength = True
+            elif _has(o, "text"):
+                payload[s["name"]] = opt_value(o)
+                got_text = True
+    for f, name, typ, value, checked in page.inputs:        # radio buttons / submit buttons
+        if name and f in (form, None) and typ in ("radio", "submit"):
+            if "wavelength" in value.lower():
+                payload[name] = value
+                got_wavelength = True
+            elif "text" in value.lower():
+                payload[name] = value
+                got_text = True
+    if not got_wavelength:
+        raise RuntimeError("no 'Wavelength (nm)' choice found on the form")
+
+    for (f, name, *_), val in zip(texts, [formula, DENSITY, repr(wl_from), repr(wl_to), str(steps)]):
+        payload[name] = val
+    payload.update(overrides)
+    return payload, page.forms[form] if form is not None else page.forms[0], got_text
+
+
+def discover_form(page_url, formula, overrides, show_form):
+    url, html = http(page_url, method="get")
+    page = PageParser()
+    page.feed(html)
+    try:
+        if not page.forms:
+            raise RuntimeError("no <form> found on " + page_url)
+        _, meta, got_text = build_payload(page, formula, MIN_NM, MAX_NM, STEPS_PER_REQUEST, overrides)
+    except RuntimeError as err:
+        with open(DEBUG_FILE, "w", encoding="latin-1", errors="replace") as fh:
+            fh.write(html)
+        raise RuntimeError("%s\n  discovered controls:\n%s\n  The page was saved to %s - please send it along."
+                           % (err, describe(page), os.path.abspath(DEBUG_FILE)))
+    if show_form:
+        print("  action=%s method=%s\n%s" % (meta["action"], meta["method"], describe(page)))
+    if not got_text:
+        print("  note: no 'Text File' choice found - using the form's default output")
+    return page, urllib.parse.urljoin(url, meta["action"]), meta["method"]
+
+
+# ============================================================ download + parsing
+def data_rows(text):
+    """Lines with exactly three numbers -> ([wl, delta, beta] as floats, [same as original strings])."""
+    out = []
+    for line in text.splitlines():
+        p = line.replace(",", " ").split()
+        if len(p) != 3:
+            continue
+        try:
+            out.append(([float(x) for x in p], p))
+        except ValueError:
+            pass
+    return out
+
+
+def strip_tags(html):
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", html)).strip()
+
+
+def fetch_segment(page, action, method, formula, wl_from, wl_to, overrides):
+    payload, _, _ = build_payload(page, formula, wl_from, wl_to, STEPS_PER_REQUEST, overrides)
+    url, body = http(action, payload, method)
+    rows = data_rows(body)
+    if len(rows) < STEPS_PER_REQUEST // 2:       # the answer is a page that links to the text file
+        links = [l for l in re.findall(r"""href\s*=\s*["']([^"']+)["']""", body, re.I)
+                 if re.search(r"\.(dat|txt)\b|/tmp/", l, re.I)]
+        if not links:
+            raise RuntimeError("CXRO sent no data. Answer was: " + strip_tags(body)[:300])
+        _, body = http(urllib.parse.urljoin(url, links[0]), method="get")
+        rows = data_rows(body)
+    if len(rows) < STEPS_PER_REQUEST // 2:
+        raise RuntimeError("only %d data rows received for %d steps" % (len(rows), STEPS_PER_REQUEST))
+    first, last = rows[0][0][0], rows[-1][0][0]
+    if abs(first / wl_from - 1) > 1e-3 or abs(last / wl_to - 1) > 1e-3:
+        raise RuntimeError("first column runs %.6g..%.6g but %.6g..%.6g nm was requested - "
+                           "not a wavelength column?" % (first, last, wl_from, wl_to))
+    return rows
+
+
+def download(formula, total_steps, overrides, form_url, show_form):
+    page, action, method = discover_form(form_url, formula, overrides, show_form)
+    pieces = max(1, int(math.ceil(total_steps / float(STEPS_PER_REQUEST))))
+    edges = [MIN_NM * (MAX_NM / MIN_NM) ** (k / float(pieces)) for k in range(pieces + 1)]
+    edges[0], edges[-1] = MIN_NM, MAX_NM
+    table = []
+    for k in range(pieces):
+        print("  download %d/%d: %.6g - %.6g nm (%d steps)" % (k + 1, pieces, edges[k], edges[k + 1], STEPS_PER_REQUEST))
+        for r in fetch_segment(page, action, method, formula, edges[k], edges[k + 1], overrides):
+            if not table or r[0][0] > table[-1][0][0] * (1 + 1e-6):     # skip the row shared with the previous piece
+                table.append(r)
+        if k + 1 < pieces:
+            time.sleep(1.0)                      # be polite to the server
+    return table
+
+
+def write_idx(path, table):
+    # rows exactly as received (original number strings), CRLF like the existing files, no header
+    text = "\r\n".join("  %s  %s  %s" % tuple(r[1]) for r in table)
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(os.path.abspath(path)), suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", newline="") as fh:
+            fh.write(text)
+        os.replace(tmp, path)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        raise
+
+
+def default_db_dir():
+    env = os.environ.get("PEG_MATERIAL_DB")          # the variable PEG itself honours
+    if env:
+        return env
+    here = os.path.dirname(os.path.abspath(__file__))
+    for base in (here, os.path.dirname(here), os.getcwd()):   # script in PEG/, PEG/tools/ or run from PEG/
+        if os.path.isdir(os.path.join(base, "materialDatabase")):
+            return os.path.join(base, "materialDatabase")
+    return os.path.join(os.getcwd(), "materialDatabase")
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="Download PEG refractive-index tables (*.idx) from CXRO, formula only.")
+    ap.add_argument("formulas", nargs="*", help="chemical formulas, e.g. Si3N4 (case sensitive)")
+    ap.add_argument("--steps", type=int, default=TOTAL_STEPS,
+                    help="total number of steps, split into 499-step downloads (default %(default)s)")
+    ap.add_argument("--out", default=default_db_dir(), help="output folder (default: %(default)s)")
+    ap.add_argument("--force", action="store_true", help="overwrite existing .idx files")
+    ap.add_argument("--show-form", action="store_true", help="print the form fields that were discovered")
+    ap.add_argument("--form-url", default=FORM_PAGE, help=argparse.SUPPRESS)
+    ap.add_argument("--field", action="append", default=[], metavar="NAME=VALUE",
+                    help="emergency override of a raw form field")
+    args = ap.parse_args(argv)
+
+    formulas = args.formulas
+    if not formulas:
+        f = input("Chemical formula (case sensitive, e.g. Si3N4): ").strip() if sys.stdin.isatty() else ""
+        if not f:
+            ap.error("give a chemical formula")
+        formulas = [f]
+    if args.steps < 1:
+        ap.error("--steps must be >= 1")
+    overrides = dict(kv.split("=", 1) for kv in args.field if "=" in kv)
+
+    for formula in formulas:
+        name = re.sub(r"[^A-Za-z0-9_+-]", "_", formula)
+        target = os.path.join(args.out, name + ".idx")
+        if os.path.exists(target) and not args.force:
+            print("%s: %s exists - skipped (use --force to overwrite)" % (formula, target))
+            continue
+        print("%s: CXRO density = tabulated, %.6g - %.6g nm, about %d steps" % (formula, MIN_NM, MAX_NM, args.steps))
+        try:
+            table = download(formula, args.steps, overrides, args.form_url, args.show_form)
+        except RuntimeError as err:
+            print("  error: %s" % err, file=sys.stderr)
+            return 1
+        os.makedirs(args.out, exist_ok=True)
+        write_idx(target, table)
+        wl = [r[0][0] for r in table]
+        print("  wrote %s: %d rows, %.6g - %.6g nm" % (target, len(table), wl[0], wl[-1]))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
