@@ -1,11 +1,20 @@
-QT-=gui core
+# qmake project for pegSerial (Linux)
+QT      -= gui core
+CONFIG  += console c++17 release
+CONFIG  -= app_bundle debug_and_release debug_and_release_target
+TARGET   = pegSerial
+DESTDIR  = $$PWD
 
-TARGET=pegSerial
+INCLUDEPATH += $$PWD/src
+exists($$PWD/third_party/eigen/Eigen/Dense): INCLUDEPATH += $$PWD/third_party/eigen
+else: INCLUDEPATH += /usr/include/eigen3
+exists($$PWD/third_party/boost/boost/numeric/odeint.hpp): INCLUDEPATH += $$PWD/third_party/boost
 
-QMAKE_CXXFLAGS += -O3 -march=native -fopenmp
-QMAKE_LFLAGS += -fopenmp
-
-INCLUDEPATH += /usr/include/eigen3
+QMAKE_CXXFLAGS += -fopenmp
+QMAKE_LFLAGS   += -fopenmp
+QMAKE_CXXFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE += -O3
+contains(CONFIG, native): QMAKE_CXXFLAGS += -march=native
 
 HEADERS += src/PEG.h \
 	src/TESolver.h \
@@ -20,16 +29,6 @@ SOURCES += src/PEG.cpp\
 	src/sharedSolverSupport.cpp \
 	src/mainSerial.cpp
 
-DESTDIR = $$PWD
-OBJECTS_DIR = $$PWD/build/qt
-
-equals(OUT_PWD, $$_PRO_FILE_PWD_) {
-    error("I won't run qmake in the main folder, because that would overwrite the Makefile. Please use: mkdir -p build/qt && qmake -o build/qt/Makefile PEG_ubuntu.pro (Qt Creator does this on its own with a shadow build).")
-}
-
-# removes object files & finished programs
-QMAKE_CLEAN += $$PWD/pegSerial $$PWD/pegMPI
-
-# additionally removes the whole build folder.
-tidy.commands = rm -rf $$PWD/build
+QMAKE_CLEAN += $$DESTDIR/pegSerial
+tidy.commands = $(MAKE) clean && $(DEL_FILE) Makefile .qmake.stash
 QMAKE_EXTRA_TARGETS += tidy

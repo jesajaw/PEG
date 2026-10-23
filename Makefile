@@ -1,29 +1,50 @@
-# Library paths: Uncomment as required:
-#####################
-VPATH=src
-INCLUDEPATH += /usr/include/eigen3
-#LIBPATH=/home/user/lib
+SRCDIR  := src
+OBJDIR  := build/obj
+THIRD   := third_party
 
-CC=mpic++
-CFLAGS= -c -O3 -march=native -g -Wall -fopenmp -MMD -MP -Isrc $(addprefix -I,$(INCLUDEPATH))
-LDFLAGS=-fopenmp $(if $(LIBPATH),-L$(LIBPATH))
-SOURCES = mainSerial.cpp mainMPI.cpp PEG.cpp TESolver.cpp TMSolver.cpp mainSupport.cpp
-OBJECTS=$(SOURCES:.cpp=.o)
+EIGEN_INC ?= $(if $(wildcard $(THIRD)/eigen/Eigen/Dense),$(THIRD)/eigen,/usr/include/eigen3)
+BOOST_INC ?= $(if $(wildcard $(THIRD)/boost/boost/numeric/odeint.hpp),$(THIRD)/boost)
 
+CXX     ?= g++
+MPICXX  ?= mpic++
+NATIVE  ?= 0
+
+CXXFLAGS += -std=c++17 -O3 $(if $(filter 1,$(NATIVE)),-march=native) -g -Wall -fopenmp -MMD -MP -I$(SRCDIR) -isystem $(EIGEN_INC) $(addprefix -isystem ,$(BOOST_INC))
+LDFLAGS  += -fopenmp
+
+COMMON     := PEG TESolver TMSolver mainSupport sharedSolverSupport
+COMMON_OBJ := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(COMMON)))
+
+.DEFAULT_GOAL := pegSerial
+
+pegSerial: $(OBJDIR)/mainSerial.o $(COMMON_OBJ)
+	$(CXX) $^ $(LDFLAGS) -o $@
+
+pegMPI: $(OBJDIR)/mainMPI.o $(COMMON_OBJ)
+	$(MPICXX) $^ $(LDFLAGS) -o $@
+
+mpi: pegMPI
 all: pegSerial pegMPI
 
-pegSerial: mainSerial.o $(COMMON)
-	$(CC) $^ $(LDFLAGS) -o $@
+# only this file includes mpi.h
+$(OBJDIR)/mainMPI.o: $(SRCDIR)/mainMPI.cpp | $(OBJDIR)
+	$(MPICXX) $(CXXFLAGS) -c $< -o $@
 
-pegMPI: mainMPI.o $(COMMON)
-	$(CC) $^ $(LDFLAGS) -o $@
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-%.o: %.cpp
-	$(CC) $(CFLAGS) $< -o $@
+$(OBJDIR):
+	mkdir -p $@
+
+check: pegSerial
+	PEG_MATERIAL_DB=materialDatabase ./pegSerial --mode constantIncidence --min 100 --max 110 --increment 5 --eV \
+	  --incidenceAngle 87 --N 8 --gratingType sinusoidal --gratingMaterial Au --gratingPeriod 1.2 \
+	  --gratingGeometry 0.05 --computeTE --computeTM --outputFile build/check.txt > /dev/null
+	@test "$$(grep -cE '^[0-9]' build/check.txt)" = 6 && echo "check OK (6 result rows: TE+TM x 3 energies)" \
+	  || { echo "check FAILED"; exit 1; }
 
 clean:
-	rm -f $(OBJECTS) $(OBJECTS:.o=.d) pegSerial pegMPI
+	rm -rf build pegSerial pegMPI
 
-.PHONY: all clean
-
--include $(OBJECTS:.o=.d)
+.PHONY: all mpi check clean
+-include $(wildcard $(OBJDIR)/*.d)
