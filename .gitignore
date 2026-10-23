@@ -3,7 +3,7 @@
 *.o
 *.obj
 
-# Dependency files created by src/Makefile.example (the -MMD flag). They only tell make which headers a .cpp file uses.
+# Dependency files created by the Makefile (the -MMD flag). They only tell make which headers a .cpp file uses.
 *.d
 
 # Libraries, precompiled headers and debug leftovers.
@@ -14,16 +14,21 @@
 *.gch
 *.dSYM/
 
-# The finished programs (built from PEG_*.pro or from src/Makefile).
-pegSerial
-pegMPI
-pegSerial.exe
-pegMPI.exe
+# All build products: objects (make: build/obj, qmake: build/qt) ...
+/build/
+# ... and the finished programs in the project root (make, or qmake via DESTDIR).
+/pegSerial
+/pegMPI
+/pegSerial.exe
+/pegMPI.exe
 
 # Crash dumps.
 /core
 /core.[0-9]*
 vgcore.*
+
+# ---- Generated build files --------------------------------------------
+# (The root Makefile is hand-written and tracked. qmake output goes to build/qt, which is ignored above.)
 
 # More qmake / Qt Creator leftovers.
 .qmake.stash
@@ -32,7 +37,7 @@ object_script.*
 *.pro.user
 *.pro.user.*
 *.autosave
-/build/
+/build-*/
 /debug/
 /release/
 moc_*
@@ -41,9 +46,13 @@ qrc_*
 
 
 # ---- Calculation results ----------------------------------------------
+/output/
+/run/output/
 /benchmark_results/
 *.partial
 *.FAILED
+*.txt
+*.csv
 
 *.o[0-9]*
 *.e[0-9]*
@@ -58,3 +67,9 @@ qrc_*
 .DS_Store
 Thumbs.db
 desktop.ini
+
+
+# ---- Bundled third-party sources must be tracked completely ------------
+# (placed last so it overrides the *.txt / *.o rules above, e.g. CMakeLists.txt inside Eigen)
+!/third_party/
+!/third_party/**
