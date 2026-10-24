@@ -32,45 +32,43 @@ PEG no longer depends on the GNU Scientific Library (GSL). Linear algebra is pro
 sudo apt install libeigen3-dev libboost-dev
 ```
 
+TODO! -> third_party
+```text
+third_party/eigen/Eigen/Dense
+third_party/boost/boost/numeric/odeint.hpp
+```
+
 
 ## Building
-The `qmake` build tool from the Qt Framework can be used to generate Makefiles based on PEG_mac.pro or PEG_ubuntu.pro.  (The Qt library is not required to build PEG.)  Edit one of these files to define the include paths for Eigen (and Boost, if not already on your system include path) for your system.
-
-This will build the single-machine command-line program `pegSerial`:
+PEG is built with the included `Makefile`. You need a `C++17` compiler with OpenMP (`sudo apt install build-essential`) and, for `pegMPI`, an MPI implementation (`sudo apt install openmpi-bin libopenmpi-dev`).
 
 ```bash
-qmake PEG_ubuntu.pro
-make
+make pegSerial	# single-computer version
+make pegMPI		# cluster version
+make all		# both
+make check		# quick smoke self-test
+make clean		# remove build files and binaries
 ```
+| Option | Effect |
+|---|---|
+| `NATIVE=1` | Tune for the CPU you build on.|
+| `DEBUG=1` | Debug build, the default is an optimized release build (`-O3 -DNDEBUG`). |
+| `EIGEN_INC=<dir>`, `BOOST_INC=<dir>` | Header locations other than `third_party/` TODO!. |
 
-The pegSerial application can take advantage of fine-grained parallelization.
-
-There is also an application to exploit coarse-grained parallelization over an arbitrary number of nodes in a cluster or grid computer, using MPI:
-
-```bash
-sudo apt install build-essential openmpi-bin libopenmpi-dev
-```
-
-This speeds up the calculation of many efficiency data points. To build the pegMPI program, create a makefile based on `src/Makefile.example`.
-
-```bash
-cp src/Makefile.example src/Makefile
-cd src
-make pegMPI
-```
-
+Run `make clean` after changing options and rebuild it, since object files don't do that on their own.
 
 ## Running
+
 Single-computer version `pegSerial`:
 
 ```bash
-./pegSerial --mode constantIncidence --min 100 --max 200 --increment 5 --eV --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile results.txt --progressFile progress.txt --computeTE
+./pegSerial --mode constantIncidence --min 100 --max 200 --increment 5 --eV --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile results.txt --progressFile progress.txt --computeTE --threads <n>
 ```
 
 Cluster-version:
 
 ```bash
-mpiexec -n <number of nodes> ./pegMPI --mode constantIncidence --min 100 --max 200 --increment 5 --eV  --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile results.txt --progressFile progress.txt --computeTE
+mpiexec -n <number of MPI processes> ./pegMPI --mode constantIncidence --min 100 --max 200 --increment 5 --eV  --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile results.txt --progressFile progress.txt --computeTE --threads <n>
 ```
 
 ### Command-line options
@@ -86,14 +84,15 @@ mpiexec -n <number of nodes> ./pegMPI --mode constantIncidence --min 100 --max 2
 - **Sinusoidal profile**: depth (um)
 - **Trapezoial profile**: depth (um),valley width (um),blaze angle (deg),anti-blaze angle (deg)
 - **Custom profile**: depth (um), followed by list of (x,y) points that describe the surface profile y = g(x).  [x followed by y for each]. The points must go from (0,0) to (1,0) inclusive, and will be scaled so that (0,0)->(1,1) maps to (0,0)->(period,depth). For example, an isosceles triangular profile with a depth of 0.1um would need three points; the geometry argument would be: {0.1,0,0,0.5,1,1,0}.
-```
+```bash
 --gratingMaterial <grating substrate material>
-	This should be a name corresponding to a refractive index database filename, ex: Au, Ni, C, SiO2, etc. The standard tables cover photon energies of about 31 eV to 30 keV (0.0413-40 nm); other values are rejected at startup. The database folder is taken from the PEG_MATERIAL_DB environment variable if set, otherwise `./materialDatabase`.
-	
---N <truncation index>
-	Specifies the number of positive and negative orders to include in the Fourier expansion.
-	Will also determine the number of orders that are calculated, although if you only want to calculate 3 orders, you will still need a much larger truncation index for accurate results.
 ```
+This should be a name corresponding to a refractive index database filename, ex: Au, Ni, C, SiO2, etc. The standard tables cover photon energies of about 0.0413-40nm /  30eV to 30keV.
+
+```bash
+--N <truncation index>
+```
+Specifies the number of positive and negative orders to include in the Fourier expansion. Will also determine the number of orders that are calculated, although if you only want to calculate 3 orders, you will still need a much larger truncation index for accurate results.
 
 #### Operating mode
 
@@ -123,7 +122,9 @@ mpiexec -n <number of nodes> ./pegMPI --mode constantIncidence --min 100 --max 2
 	If included, computes and outputs the TE-polarized efficiency (section "# TE" in the output file) || TM-polarized efficiency (section "# TM" in the output file).
 	... computes both TE and TM internally and outputs their simple average as well ( $$(TE_eff + TM_eff)/2$$ per order -- section "# (TE+TM)/2" in the output file). Only points where both the TE and TM calculation succeeded are included. At least one of --computeTE, --computeTM, or --combineTETM must be specified.
 ```
+
 #### Optional
+
 ```bash
 --progressFile <file name>
 	If provided, the current status of the calculation will be written in this file; it can be monitored to determine the progress of long calculations.  This provides an interface for other processes to monitor the status of this calculation (for example, a web-based or GUI front-end, etc.).
@@ -148,6 +149,19 @@ mpiexec -n <number of nodes> ./pegMPI --mode constantIncidence --min 100 --max 2
 
 --showLegal
 	If included, prints the full copyright and license notice (including the disclaimer about modifications) instead of the short version.
+```
+#### runtime options
+PEG parallelizes on two levels, which can be combined:
+
+| Level | How | What it does |
+|---|---|---|
+| Fine (OpenMP) | `--threads <n>` | Uses several cores of one computer for a single calculation. Works in `pegSerial` and `pegMPI`. |
+| Coarse (MPI) | `mpiexec -n <p> ./pegMPI` | Runs `p` processes that each calculate different points of the scan; the processes can be spread over several cluster nodes. |
+
+```bash
+./pegSerial --threads 8 ...				# one computer, 8 cores
+./pegSerial --threads $(nproc) ...		# all hardware threads of this computer
+mpiexec -n 4 ./pegMPI --threads 2 ...	# 4 processes x 2 threads = 8 cores
 ```
 
 #### Example Output
@@ -202,4 +216,4 @@ Credit first and foremost to Mark Boots -- the vast majority of the effort lies 
 3. B.L. Henke, E.M. Gullikson, and J.C. Davis. X-ray interactions: photoabsorption, scattering, transmission, and reflection at E=50-30000 eV, Z=1-92, Atomic Data and Nuclear Data Tables Vol. 54 (no.2), 181-342 (July 1993). https://henke.lbl.gov/optical_constants/getdb2.html
 
 4. S.K. Sinha, E.B. Sirota, S. Garoff, and H.B. Stanley. X-ray and neutron scattering from rough surfaces. Physical Review B, Vol. 38, Issue 4, 2297 (1988), Equation 4.34. http://dx.doi.org/10.1103/PhysRevB.38.2297
-	Used for the optional RMS-roughness correction factor (`--rmsRoughnessNm`).
+	Used for the optional RMS-roughness correction factor (`--rmsRoughnessNm`). TODO
