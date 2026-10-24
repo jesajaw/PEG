@@ -45,6 +45,11 @@ int main(int argc, char** argv) {
 
 	// Prevent getopt() from printing error messages except on Process 0.
 	if(rank != 0) opterr = 0;
+	if(!io.parseFromCommandLine(argc, argv)) {
+		if(rank == 0) std::cerr << "Invalid command-line options: " << io.firstErrorMessage() << std::endl;
+		MPI_Finalize();
+		return -1;
+	}
 	std::string dataError;
 	if(!checkMaterialData(io, dataError)) {
 		if(rank == 0) std::cerr << dataError << std::endl;

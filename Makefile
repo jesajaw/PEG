@@ -8,8 +8,17 @@ BOOST_INC ?= $(if $(wildcard $(THIRD)/boost/boost/numeric/odeint.hpp),$(THIRD)/b
 CXX     ?= g++
 MPICXX  ?= mpic++
 NATIVE  ?= 0
+DEBUG   ?= 0
 
-CXXFLAGS += -std=c++17 -O3 $(if $(filter 1,$(NATIVE)),-march=native) -g -Wall -fopenmp -MMD -MP -I$(SRCDIR) -isystem $(EIGEN_INC) $(addprefix -isystem ,$(BOOST_INC))
+CXXFLAGS += -std=c++17 -Wall -fopenmp -MMD -MP -I$(SRCDIR) -isystem $(EIGEN_INC) $(addprefix -isystem ,$(BOOST_INC))
+ifeq ($(DEBUG),1)
+CXXFLAGS += -O0 -g
+else
+CXXFLAGS += -O3 -DNDEBUG
+ifeq ($(NATIVE),1)
+CXXFLAGS += -march=native
+endif
+endif
 LDFLAGS  += -fopenmp
 
 COMMON     := PEG TESolver TMSolver mainSupport sharedSolverSupport

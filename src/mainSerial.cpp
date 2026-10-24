@@ -32,6 +32,10 @@ int main(int argc, char** argv) {
 		std::cerr << "Invalid command-line options: " << io.firstErrorMessage() << std::endl;
 		return -1;
 	}
+	std::string dataError;
+	if(!checkMaterialData(io, dataError)) {
+		return -1;
+	}
 
 	if(io.showLegal) {
 		std::cout <<
