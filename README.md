@@ -101,17 +101,20 @@ Specifies the number of positive and negative orders to include in the Fourier e
 --min <min>
 --max <max>
 --increment <increment>
-
-[Required, depending on the \c mode]
-
+```
+Required, depending on the mode:
+In **constant incidence** mode, a calculation is performed for wavelengths from --min to --max in steps of --increment, at a fixed incidence angle given by --incidenceAngle.
+```bash
 --incidenceAngle <incidence angle in degrees>
+```
+In **constant included angle** mode, the incidence angle is calculated at each wavelength to ensure a constant included angle of --includedAngle between the incident light and the order specified in --toOrder. This is the operating mode for many monochromators. (Inside orders are negative, outside orders are positive.)
+```bash
 --includedAngle <deviation angle in degrees> --toOrder <diffraction order for the included angle>
+```
+In **constant wavelength** mode, a calculation is performed for incidence angles from --min to --max in steps of --increment, for a fixed wavelength given by --wavelength.
+```bash
 --wavelength <wavelength in um>
 ```
-
-- In **constant incidence** mode, a calculation is performed for wavelengths from --min to --max in steps of --increment, at a fixed incidence angle given by --incidenceAngle.
-- In **constant included angle** mode, the incidence angle is calculated at each wavelength to ensure a constant included angle of --includedAngle between the incident light and the order specified in --toOrder. This is the operating mode for many monochromators. (Inside orders are negative, outside orders are positive.)
-- In **constant wavelength** mode, a calculation is performed for incidence angles from --min to --max in steps of --increment, for a fixed wavelength given by --wavelength.
 
 #### Output
 ```bash
@@ -127,29 +130,36 @@ Specifies the number of positive and negative orders to include in the Fourier e
 
 ```bash
 --progressFile <file name>
-	If provided, the current status of the calculation will be written in this file; it can be monitored to determine the progress of long calculations.  This provides an interface for other processes to monitor the status of this calculation (for example, a web-based or GUI front-end, etc.).
-	
---eV
-	If this flag is included, all wavelength inputs (--min, --max, --increment, --wavelength) will instead be interpreted as photon energies in electron volts (eV).
-
---coatingThickness <thickness in um>
-	If provided, creates a layer of --coatingMaterial on top of the basic grating profile, by translating the profile vertically by coatingThickness um. Used to model overcoated, oxidized, or dielectric gratings.
-
---coatingMaterial <coating material>
-	Required if a non-zero --coatingThickness is provided. This should be a name corresponding to a refractive index database filename, ex: Au, Ni, C, MgF2, etc.
-	
---printDebugOutput
-	If this flag is included, each calculation will print intermediate results to standard output.
-
---measureTiming
-	If this flag is included, the solver will report the time required for each category of operations to standard output.
-
---integrationTolerance <tolerance>
-	If provided, specifies the error tolerance (eps) required at each step of the numerical integration process. Default if not provided is 1e-5.
-
---showLegal
-	If included, prints the full copyright and license notice (including the disclaimer about modifications) instead of the short version.
 ```
+If provided, the current status of the calculation will be written in this file; it can be monitored to determine the progress of long calculations.  This provides an interface for other processes to monitor the status of this calculation (for example, a web-based or GUI front-end, etc.).
+```bash
+--eV
+```
+If this flag is included, all wavelength inputs (--min, --max, --increment, --wavelength) will instead be interpreted as photon energies in electron volts (eV).
+```bash
+--coatingThickness <thickness in um>
+```
+If provided, creates a layer of --coatingMaterial on top of the basic grating profile, by translating the profile vertically by coatingThickness um. Used to model overcoated, oxidized, or dielectric gratings.
+```bash
+--coatingMaterial <coating material>
+```
+Required if a non-zero --coatingThickness is provided. This should be a name corresponding to a refractive index database filename, ex: Au, Ni, C, MgF2, etc.
+```bash
+--printDebugOutput
+```
+If this flag is included, each calculation will print intermediate results to standard output.
+```bash
+--measureTiming
+```
+If this flag is included, the solver will report the time required for each category of operations to standard output.
+```bash
+--integrationTolerance <tolerance>
+```
+If provided, specifies the error tolerance (eps) required at each step of the numerical integration process. Default if not provided is 1e-5.
+```bash
+--showLegal
+```
+If included, prints the full copyright and license notice (including the disclaimer about modifications) instead of the short version.
 #### runtime options
 PEG parallelizes on two levels, which can be combined:
 
