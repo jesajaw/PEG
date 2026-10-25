@@ -74,5 +74,4 @@ check:
 clean:
 	rm -rf build pegSerial pegMPI
 
-.PHONY: all mpi check clean
 -include $(wildcard $(OBJDIR)/*.d)
