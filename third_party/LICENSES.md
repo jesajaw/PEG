@@ -4,8 +4,8 @@ PEG bundles unmodified copies of the header-only libraries below, so that it bui
 
 | Component | Version | Location | License | License file |
 |---|---|---|---|---|
-| [Eigen](https://eigen.tuxfamily.org/) | 3.4.0 | `eigen/Eigen/` | Mozilla Public License 2.0 (MPL-2.0) | `eigen/COPYING.MPL2` |
-| [Boost.Odeint](https://www.boost.org/) | 1.90.0 | `boost/boost/` | Boost Software License 1.0 (BSL-1.0) | `boost/LICENSE_1_0.txt` |
+| [Eigen](https://eigen.tuxfamily.org/) | 3.4.0 | `eigen/Eigen/` | Mozilla Public License 2.0 (MPL-2.0) | `COPYING.MPL2` |
+| [Boost.Odeint](https://www.boost.org/) | 1.90.0 | `boost/boost/` | Boost Software License 1.0 (BSL-1.0) | `LICENSE_1_0.txt` |
 
 ## Eigen
 

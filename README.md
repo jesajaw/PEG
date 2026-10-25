@@ -24,20 +24,8 @@ This repository is a 2026 rework of the original PEG project by Jesaja Weintritt
 	- The custom grating profile does not yet support coatings.
 	- only single layer coatings
 
-
 ## Dependencies
-PEG no longer depends on the GNU Scientific Library (GSL). Linear algebra is provided by [Eigen](https://eigen.tuxfamily.org/), and ODE integration by [Boost.Odeint](https://www.boost.org/doc/libs/release/libs/numeric/odeint/). Both are header-only, so no separate library build or linking step is required -- just make sure the headers are reachable on your include path.
-
-```bash
-sudo apt install libeigen3-dev libboost-dev
-```
-
-TODO! -> third_party
-```text
-third_party/eigen/Eigen/Dense
-third_party/boost/boost/numeric/odeint.hpp
-```
-
+PEG uses [Eigen](https://eigen.tuxfamily.org/) for linear algebra and [Boost.Odeint](https://www.boost.org/doc/libs/release/libs/numeric/odeint/) for ODE integration. It no longer depends on the GNU Scientific Library (GSL). Both libraries are header-only and bundled in `third_party/`, so no separate installation is needed. They remain under their own licenses (MPL-2.0 and BSL-1.0), see `third_party/LICENSES`.
 
 ## Building
 PEG is built with the included `Makefile`. You need a `C++17` compiler with OpenMP (`sudo apt install build-essential`) and, for `pegMPI`, an MPI implementation (`sudo apt install openmpi-bin libopenmpi-dev`).
