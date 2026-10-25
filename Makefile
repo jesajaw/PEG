@@ -60,13 +60,13 @@ check:
 	if [ -x pegSerial ]; then found=1; \
 	  PEG_MATERIAL_DB=materialDatabase ./pegSerial $(CHECK_ARGS) --outputFile build/check.txt > /dev/null \
 	  && test "$$(grep -cE '^[0-9]' build/check.txt)" = 6 \
-	  && echo "check OK: pegSerial (6 result rows: TE+TM x 3 energies)" \
+	  && echo "check OK: pegSerial" \
 	  || { echo "check FAILED: pegSerial"; exit 1; }; \
 	fi; \
 	if [ -x pegMPI ]; then found=1; \
 	  PEG_MATERIAL_DB=materialDatabase $(MPIEXEC) -n $(MPI_NP) ./pegMPI $(CHECK_ARGS) --outputFile build/checkMPI.txt > /dev/null \
 	  && test "$$(grep -cE '^[0-9]' build/checkMPI.txt)" = 6 \
-	  && echo "check OK: pegMPI with $(MPI_NP) processes (6 result rows: TE+TM x 3 energies)" \
+	  && echo "check OK: pegMPI with $(MPI_NP) processes" \
 	  || { echo "check FAILED: pegMPI"; exit 1; }; \
 	fi; \
 	test $$found = 1 || { echo "check: no valid installation (pegSerial / pegMPI not found) -- run 'make pegSerial' or 'make pegMPI' first"; exit 1; }

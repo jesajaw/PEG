@@ -224,7 +224,7 @@ int main(int argc, char** argv) {
 				if(io.computeTM || io.combineTETM)
 					resultTM = grating->getEffTM(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
 			}
-
+		}
 		// Pack both results into this rank's send buffer.
 		resultTE.toDoubleArray(mpiSendBuffer.data());
 		resultTM.toDoubleArray(mpiSendBuffer.data() + resultSize);
@@ -307,5 +307,4 @@ int main(int argc, char** argv) {
 	// Finalize MPI
 	MPI_Finalize();
 	return 0;
-	}
 }
