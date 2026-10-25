@@ -2,8 +2,16 @@ SRCDIR  := src
 OBJDIR  := build/obj
 THIRD   := third_party
 
-EIGEN_INC ?= $(if $(wildcard $(THIRD)/eigen/Eigen/Dense),$(THIRD)/eigen,/usr/include/eigen3)
-BOOST_INC ?= $(if $(wildcard $(THIRD)/boost/boost/numeric/odeint.hpp),$(THIRD)/boost)
+EIGEN_INC := $(THIRD)/eigen
+BOOST_INC := $(THIRD)/boost
+ifneq ($(MAKECMDGOALS),clean)
+ifeq ($(wildcard $(EIGEN_INC)/Eigen/Dense),)
+$(error Eigen headers not found: $(EIGEN_INC)/Eigen/Dense is missing (see third_party/LICENSES))
+endif
+ifeq ($(wildcard $(BOOST_INC)/boost/numeric/odeint.hpp),)
+$(error Boost.Odeint headers not found: $(BOOST_INC)/boost/numeric/odeint.hpp is missing (see third_party/LICENSES))
+endif
+endif
 
 CXX     ?= g++
 MPICXX  ?= mpic++
