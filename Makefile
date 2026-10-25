@@ -40,10 +40,8 @@ pegSerial: $(OBJDIR)/mainSerial.o $(COMMON_OBJ)
 pegMPI: $(OBJDIR)/mainMPI.o $(COMMON_OBJ)
 	$(MPICXX) $^ $(LDFLAGS) -o $@
 
-mpi: pegMPI
 all: pegSerial pegMPI
 
-# only this file includes mpi.h
 $(OBJDIR)/mainMPI.o: $(SRCDIR)/mainMPI.cpp | $(OBJDIR)
 	$(MPICXX) $(CXXFLAGS) -c $< -o $@
 
@@ -53,12 +51,21 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
 $(OBJDIR):
 	mkdir -p $@
 
-check: pegSerial
-	PEG_MATERIAL_DB=materialDatabase ./pegSerial --mode constantIncidence --min 100 --max 110 --increment 5 --eV \
-	  --incidenceAngle 87 --N 8 --gratingType sinusoidal --gratingMaterial Au --gratingPeriod 1.2 \
-	  --gratingGeometry 0.05 --computeTE --computeTM --outputFile build/check.txt > /dev/null
-	@test "$$(grep -cE '^[0-9]' build/check.txt)" = 6 && echo "check OK (6 result rows: TE+TM x 3 energies)" \
-	  || { echo "check FAILED"; exit 1; }
+check:
+	@mkdir -p build; found=0; \
+	if [ -x pegSerial ]; then found=1; \
+	  PEG_MATERIAL_DB=materialDatabase ./pegSerial $(CHECK_ARGS) --outputFile build/check.txt > /dev/null \
+	  && test "$$(grep -cE '^[0-9]' build/check.txt)" = 6 \
+	  && echo "check OK: pegSerial (6 result rows: TE+TM x 3 energies)" \
+	  || { echo "check FAILED: pegSerial"; exit 1; }; \
+	fi; \
+	if [ -x pegMPI ]; then found=1; \
+	  PEG_MATERIAL_DB=materialDatabase $(MPIEXEC) -n $(MPI_NP) ./pegMPI $(CHECK_ARGS) --outputFile build/checkMPI.txt > /dev/null \
+	  && test "$$(grep -cE '^[0-9]' build/checkMPI.txt)" = 6 \
+	  && echo "check OK: pegMPI with $(MPI_NP) processes (6 result rows: TE+TM x 3 energies)" \
+	  || { echo "check FAILED: pegMPI"; exit 1; }; \
+	fi; \
+	test $$found = 1 || { echo "check: no valid installation (pegSerial / pegMPI not found) -- run 'make pegSerial' or 'make pegMPI' first"; exit 1; }
 
 clean:
 	rm -rf build pegSerial pegMPI
