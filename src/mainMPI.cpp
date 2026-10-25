@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
 	std::vector<double> mpiSendBuffer(pairSize);
 
 
-
+	// start calculation loop
 	for(int i=0; i<totalSteps; i+=commandSize) {
 		Result resultTE(Result::InactiveCalculation);
 		Result resultTM(Result::InactiveCalculation);
