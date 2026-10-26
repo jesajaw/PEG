@@ -111,52 +111,42 @@ bool CommandLineOptions::parseFromCommandLine(int argc, char** argv) {
 				else if(strcmp(optarg, "constantWavelength") == 0) mode = ConstantWavelength;
 				else throw "The argument to --mode must be one of: constantIncidence, constantIncludedAngle, or constantWavelength.";
 				break;
-				
 			case 2: // min
 				//if(!optarg) throw "An argument to --min must be provided.";
 				min = parseDouble(optarg, "--min must be a number.");
 				break;
-				
 			case 3: // max
 				//if(!optarg) throw "An argument to --max must be provided.";
 				max = parseDouble(optarg, "--max must be a number.");
 				break;
-				
 			case 4: // increment
 				//if(!optarg) throw "An argument to --increment must be provided.";
 				increment = parseDouble(optarg, "--increment must be a number.");
 				break;
-				
 			case 5: // incidence angle
 				//if(!optarg) throw "An argument to --incidenceAngle must be provided.";
 				incidenceAngle = parseDouble(optarg, "--incidenceAngle must be a number.");
 				break;
-				
 			case 6: // includedAngle
 				//if(!optarg) throw "An argument to --includedAngle must be provided.";
 				includedAngle = parseDouble(optarg, "--includedAngle must be a number.");
 				break;
-				
 			case 7: // toOrder
 				//if(!optarg) throw "An argument to --toOrder must be provided.";
 				toOrder = parseInt(optarg, "--toOrder must be an integer.");
 				break;
-				
 			case 8: // wavelength
 				//if(!optarg) throw "An argument to --wavelength must be provided.";
 				wavelength = parseDouble(optarg,"--wavelength must be a number.");
 				break;
-				
 			case 9: // outputFile
 				//if(!optarg) throw "An argument to --outputFile must be provided.";
 				outputFile = optarg;
 				break;
-				
 			case 10: // progressFile
 				//if(!optarg) throw "An argument to --progressFile must be provided.";
 				progressFile = optarg;
 				break;
-				
 			case 11: // gratingType
 				//if(!optarg) throw "An argument to --gratingType must be provided: rectangular, blazed, sinusoidal, or trapezoidal.";
 				if(strcmp(optarg, "rectangular") == 0) profile = Grating::RectangularProfile;
@@ -178,20 +168,16 @@ bool CommandLineOptions::parseFromCommandLine(int argc, char** argv) {
 				}
 				break;
 				}
-				
 			case 13: // gratingPeriod
 				//if(!optarg) throw "An argument to --gratingPeriod must be provided.";
 				period = parseDouble(optarg, "--gratingPeriod must be a number.");
 				break;
-				
 			case 14: // gratingMaterial
 				material = optarg;
 				break;
-			
 			case 15: // N
 				N = parseInt(optarg, "--N must be an integer.");
 				break;
-				
 			case 16: // interpret as eV instead of wavelength
 				eV = true;
 				break;
@@ -219,10 +205,10 @@ bool CommandLineOptions::parseFromCommandLine(int argc, char** argv) {
 			case 24: // rmsRoughnessNm
 				rmsRoughnessNm = parseDouble(optarg, "--rmsRoughnessNm must be a number.");
 				break;
-			case 25: // compute TE efficiency
+			case 25: // compute TE
 				TE = true;
 				break;
-			case 26: // compute TM efficiency
+			case 26: // compute TM
 				TM = true;
 				break;
 			case 27: // TE & TM
@@ -353,16 +339,32 @@ bool checkMaterialData(const CommandLineOptions& io, std::string& error) {
 		wlA = io.eV ? M_HC / first : first;
 		wlB = io.eV ? M_HC / last  : last;
 	}
-	for(const std::string* mat : {&io.material, &io.coating}) {
-		if(mat->empty()) continue;
-		for(double wl : {wlA, wlB})
-			if(Grating::refractiveIndex(wl, *mat) == std::complex<double>(0,0)) {
-				error = "No refractive-index data for '" + *mat + "' at " + std::to_string(wl)
-				      + " um (table missing, unsorted, or wavelength outside its range).";
-				return false;
-			}
+	try {
+		for(const std::string* mat : {&io.material, &io.coating}) {
+			if(mat->empty()) continue;
+			for(double wl : {wlA, wlB})
+				if(Grating::refractiveIndex(wl, *mat) == std::complex<double>(0,0))  throw "No refractive-index data for '" + *mat + "' at " + std::to_string(wl) + " um (table missing, unsorted, or wavelength outside its range).";
+		}
+	}
+	catch(const char* errMsg) {
+		firstErrorMessage_ = errMsg;
+		return false;
 	}
 	return true;
+}
+
+Result getEffCombined(const Result& teResult, const Result& tmResult) {
+	// teResult.eff.size() == tmResult.eff.size() is assumed here, since both must come from
+	// the same N (Fourier truncation index) / incidence / wavelength.
+	int N = int((teResult.eff.size()-1)/2);
+	Result combined(N);
+	combined.wavelength = teResult.wavelength;
+	combined.incidenceDeg = teResult.incidenceDeg;
+
+	for(size_t i=0, cc=teResult.eff.size(); i<cc; ++i)
+		combined.eff[i] = (teResult.eff[i] + tmResult.eff[i]) / 2.0;
+
+	return combined;
 }
 
 /// This helper function writes the header to the output file stream

@@ -143,6 +143,13 @@ If this flag is included, the solver will report the time required for each cate
 ```bash
 --integrationTolerance <tolerance>
 ```
+
+Not verified! 
+```bash
+--rmsRoughnessNm <surfaceroughness in nm>
+```
+
+
 If provided, specifies the error tolerance (eps) required at each step of the numerical integration process. Default if not provided is 1e-5.
 ```bash
 --showLegal
