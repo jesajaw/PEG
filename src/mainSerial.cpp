@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 	std::streampos outputFilePosition = outputFile.tellp();
 
 	// How many steps do we have?
-	int totalSteps = int((io.max - io.min)/io.increment) + 1;
+	int totalSteps = numSweepSteps(io);
 
 	// Write the initial progress to progressFile, if provided:
 	if(!io.progressFile.empty()) {
@@ -123,7 +123,6 @@ int main(int argc, char** argv) {
 	bool anySuccesses = false;
 	std::vector<Result> resultsTE;
 	std::vector<Result> resultsTM;
-	std::vector<Result> resultsCombined; // reuses Result's layout for the averaged spectrum
 
 	// sequential loop over calculation steps
 	for(int i=0; i<totalSteps; ++i) {
@@ -162,42 +161,31 @@ int main(int argc, char** argv) {
 		Result resultTE = Result(Result::InactiveCalculation);
 		Result resultTM = Result(Result::InactiveCalculation);
 
-		if(io.computeTE || io.combineTETM)
+		if(io.TE)
 			resultTE = grating->getEffTE(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, io.printDebugOutput, io.threads, io.measureTiming);
-		if(io.computeTM || io.combineTETM)
+		if(io.TM)
 			resultTM = grating->getEffTM(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, io.printDebugOutput, io.threads, io.measureTiming);
 
-		if(io.computeTE) {
+		if(io.TE) {
 			resultsTE.push_back(resultTE);
 			if(resultTE.status == Result::Success) anySuccesses = true; else anyFailures = true;
 		}
-		if(io.computeTM) {
+		if(io.TM) {
 			resultsTM.push_back(resultTM);
 			if(resultTM.status == Result::Success) anySuccesses = true; else anyFailures = true;
-		}
-		if(io.combineTETM && resultTE.status == Result::Success && resultTM.status == Result::Success) {
-			Result combined = resultTE;
-			for(std::size_t k = 0; k < combined.eff.size(); ++k)
-				combined.eff[k] = (resultTE.eff[k] + resultTM.eff[k]) / 2.0;
-			resultsCombined.push_back(combined);
 		}
 
 		// Print results to output file (no progress written here -- see --progressFile).
 		outputFile.seekp(outputFilePosition);
 		outputFile << "# Output" << std::endl;
-		if(io.computeTE){
+		if(io.TE){
 			outputFile << "# TE" << std::endl;
 			for(const auto& result : resultsTE)
 				writeOutputFileResult(outputFile, result, io);
 		}
-		if(io.computeTM){
+		if(io.TM){
 			outputFile << "# TM" << std::endl;
 			for(const auto& result : resultsTM)
-				writeOutputFileResult(outputFile, result, io);
-		}
-		if(io.combineTETM){
-			outputFile << "# (TE+TM)/2" << std::endl;
-			for(const auto& result : resultsCombined)
 				writeOutputFileResult(outputFile, result, io);
 		}
 

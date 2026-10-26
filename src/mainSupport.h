@@ -56,10 +56,8 @@ public:
 
 	double rmsRoughnessNm;
 
-	// Polarization calculation options
-	bool computeTE;
-	bool computeTM;
-	bool combineTETM;
+	bool TE;
+	bool TM;
 
 	////////////////////////////////
 	
@@ -93,7 +91,7 @@ protected:
 /// Combines an already-computed TE result and TM result into a single result, using the simple average (TE_eff + TM_eff) / 2 per diffraction order.
 /// Does not run any new calculation itself; \c teResult and \c tmResult must come from Grating::getEffTE() / Grating::getEffTM() for the same incidence/wavelength/N.
 /// \pre Callers must ensure both teResult.status and tmResult.status are Result::Success before calling this.
-Result getEffCombined(const Result& teResult, const Result& tmResult);
+/// Result getEffCombined(const Result& teResult, const Result& tmResult);
 
 /// Number of points in the sweep min..max in steps of increment, robust against floating-point truncation.
 int numSweepSteps(const CommandLineOptions& io);

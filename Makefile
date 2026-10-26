@@ -51,7 +51,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
 $(OBJDIR):
 	mkdir -p $@
 
-CHECK_ARGS := --mode constantIncidence --min 100 --max 110 --increment 5 --eV --incidenceAngle 87 --N 8 --gratingType sinusoidal --gratingMaterial Au --gratingPeriod 1.2  --gratingGeometry 0.05 --computeTE --computeTM
+CHECK_ARGS := --mode constantIncidence --min 100 --max 110 --increment 5 --eV --incidenceAngle 87 --N 8 --gratingType sinusoidal --gratingMaterial Au --gratingPeriod 1.2  --gratingGeometry 0.05 --TETM
 MPIEXEC ?= mpiexec
 MPI_NP  ?= 2
 

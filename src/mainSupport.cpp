@@ -52,9 +52,9 @@ void CommandLineOptions::init() {
 
 	showLegal = false;
 
-	computeTE = false;
-	computeTM = false;
-	combineTETM = false;
+	// Polarization calculation options
+	TE = false;
+	TM = false;
 }
 
 // Sets options based on command-line input arguments. Returns isValid().
@@ -89,9 +89,10 @@ bool CommandLineOptions::parseFromCommandLine(int argc, char** argv) {
 				{"coatingThickness", required_argument, 0, 22},
 				{"showLegal", no_argument, 0, 23},
 				{"rmsRoughnessNm", required_argument, 0, 24},
-				{"computeTE", no_argument, 0, 25},
-				{"computeTM", no_argument, 0, 26},
-				{"combineTETM", no_argument, 0, 27},
+				{"TE", no_argument, 0, 25},
+				{"TM", no_argument, 0, 26},
+				{"TETM", no_argument, 0, 27},
+				{"TMTE", no_argument, 0, 27},
 				{0, 0, 0, 0}
 			};
 				
@@ -219,13 +220,14 @@ bool CommandLineOptions::parseFromCommandLine(int argc, char** argv) {
 				rmsRoughnessNm = parseDouble(optarg, "--rmsRoughnessNm must be a number.");
 				break;
 			case 25: // compute TE efficiency
-				computeTE = true;
+				TE = true;
 				break;
 			case 26: // compute TM efficiency
-				computeTM = true;
+				TM = true;
 				break;
-			case 27: // compute averaged (TE+TM)/2 efficiency; requires both TE and TM internally
-				combineTETM = true;
+			case 27: // TE & TM
+				TE = true;
+				TM = true;
 				break;
 			default:	// getopt_long returned '?': unknown option or missing argument
 				throw "Unknown option or missing option argument.";
@@ -286,7 +288,7 @@ bool CommandLineOptions::isValid() {
 		if(!(integrationTolerance > 0)) throw "The integration tolerance --integrationTolerance must be a positive number.";
 
 		if(rmsRoughnessNm < 0) throw "The RMS roughness must be in nm, larger than or equal to 0.";
-		if(!computeTE && !computeTM && !combineTETM) throw "At least one of --computeTE, --computeTM, or --combineTETM must be specified.";
+		if(!TE && !TM) throw "At least one of --TE or --TM must be specified.";
 
 		// finiteness guards
 		if(!std::isfinite(min) || !std::isfinite(max) || !std::isfinite(increment))
@@ -337,7 +339,6 @@ bool CommandLineOptions::isValid() {
 }
 
 int numSweepSteps(const CommandLineOptions& io) {
-	// +1e-9 absorbs floating-point error, e.g. (1.2-0.6)/0.05 = 11.999999999999998
 	return int(std::floor((io.max - io.min) / io.increment + 1e-9)) + 1;
 }
 
@@ -362,20 +363,6 @@ bool checkMaterialData(const CommandLineOptions& io, std::string& error) {
 			}
 	}
 	return true;
-}
-
-Result getEffCombined(const Result& teResult, const Result& tmResult) {
-	// teResult.eff.size() == tmResult.eff.size() is assumed here, since both must come from
-	// the same N (Fourier truncation index) / incidence / wavelength.
-	int N = int((teResult.eff.size()-1)/2);
-	Result combined(N);
-	combined.wavelength = teResult.wavelength;
-	combined.incidenceDeg = teResult.incidenceDeg;
-
-	for(size_t i=0, cc=teResult.eff.size(); i<cc; ++i)
-		combined.eff[i] = (teResult.eff[i] + tmResult.eff[i]) / 2.0;
-
-	return combined;
 }
 
 /// This helper function writes the header to the output file stream

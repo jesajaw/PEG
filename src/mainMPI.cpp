@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
 	std::string dataError;
 	if(!checkMaterialData(io, dataError)) {
 		if(rank == 0) std::cerr << dataError << std::endl;
-		MPI_Finalize();
+		// MPI_Finalize(); ?
 		return -1;
 	}
 	Eigen::setNbThreads(io.threads);
@@ -160,7 +160,6 @@ int main(int argc, char** argv) {
 	// ... separate result histories per polarization / combination.
 	std::vector<Result> resultsTE;
 	std::vector<Result> resultsTM;
-	std::vector<Result> resultsCombined;
 
 	// ... create a buffer for receiving results from other processes.
 	// Both TE and TM results share the same array layout (eff[2N+1] + 4 scalar fields), so we pack one TE result followed by one TM result into each rank's send buffer.
@@ -214,14 +213,14 @@ int main(int argc, char** argv) {
 				Result bad(Result::OtherFailure);
 				bad.wavelength = wavelength;			// keeps the x-column of the failed row meaningful
 				bad.incidenceDeg = incidenceAngle;
-				if(io.computeTE || io.combineTETM) resultTE = bad;
-				if(io.computeTM || io.combineTETM) resultTM = bad;
+				if(io.TE) resultTE = bad;
+				if(io.TM) resultTM = bad;
 			}
 			else {
 
-				if(io.computeTE || io.combineTETM)
+				if(io.TE)
 					resultTE = grating->getEffTE(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
-				if(io.computeTM || io.combineTETM)
+				if(io.TM)
 					resultTM = grating->getEffTM(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
 			}
 		}
@@ -248,24 +247,16 @@ int main(int argc, char** argv) {
 				resultTMj.fromDoubleArray(mpiReceiveBuffer.data() + j*pairSize + resultSize);
 
 				// indicates non-calculation for inactive process on last round -- whichever result was actually requested tells us whether this rank had work this round
-				bool wasActive = (io.computeTE || io.combineTETM) ? (resultTEj.status != Result::InactiveCalculation) : (resultTMj.status != Result::InactiveCalculation);
+				bool wasActive = io.TE ? (resultTEj.status != Result::InactiveCalculation)
+				                       : (resultTMj.status != Result::InactiveCalculation);
 				if(wasActive) {
-					if(io.computeTE) {
+					if(io.TE) {
 						resultsTE.push_back(resultTEj);
 						if(resultTEj.status == Result::Success) anySuccesses = true; else anyFailures = true;
 					}
-					if(io.computeTM) {
+					if(io.TM) {
 						resultsTM.push_back(resultTMj);
 						if(resultTMj.status == Result::Success) anySuccesses = true; else anyFailures = true;
-					}
-					if(io.combineTETM) {	// succeeds only if both polarizations did
-						if(resultTEj.status == Result::Success && resultTMj.status == Result::Success) anySuccesses = true; else anyFailures = true;
-					}
-					if(io.combineTETM && resultTEj.status == Result::Success && resultTMj.status == Result::Success) {
-						Result combined = resultTEj;
-						for(std::size_t k = 0; k < combined.eff.size(); ++k)
-							combined.eff[k] = (resultTEj.eff[k] + resultTMj.eff[k]) / 2.0;
-						resultsCombined.push_back(combined);
 					}
 				}
 			}
@@ -273,19 +264,14 @@ int main(int argc, char** argv) {
 			// Print progress and results to output file.
 			outputFile.seekp(outputFilePosition);
 			outputFile << "# Output" << std::endl;
-			if(io.computeTE){
+			if(io.TE){
 				outputFile << "# TE" << std::endl;
 				for(const auto& result : resultsTE)
 					writeOutputFileResult(outputFile, result, io);
 			}
-			if(io.computeTM){
+			if(io.TM){
 				outputFile << "# TM" << std::endl;
 				for(const auto& result : resultsTM)
-					writeOutputFileResult(outputFile, result, io);
-			}
-			if(io.combineTETM){
-				outputFile << "# (TE+TM)/2" << std::endl;
-				for(const auto& result : resultsCombined)
 					writeOutputFileResult(outputFile, result, io);
 			}
 
