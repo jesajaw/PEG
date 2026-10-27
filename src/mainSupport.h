@@ -30,7 +30,7 @@ class CommandLineOptions {
 public:
 	enum Mode {InvalidMode, ConstantIncidence, ConstantIncludedAngle, ConstantWavelength};
 	
-	// Input variables ("not given" is marked with DBL_MAX for doubles and INT_MAX for integers):
+	/// Input variables ("not given" is marked with DBL_MAX for doubles and INT_MAX for integers):
 	Mode mode;
 
 	/// The swept range: wavelength (um) or energy (eV, if \c eV) in the modes ConstantIncidence / ConstantIncludedAngle; incidence angle (deg) in ConstantWavelength mode.

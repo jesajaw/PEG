@@ -15,16 +15,14 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 #include <fstream>
 #include <string>
 #include <getopt.h>
-#include <cfloat>
-#include <climits>
 #include <vector>
 #include <algorithm>
-#include <cmath>
 #include <memory>
-#include <Eigen/Core>
 
 /*
-This mainstructur provides a command-line interface to run the calculations. The results are written to an output file and optionally a second file for information on the status of the calculation. This file is only responsible for input processing and output; all physical and numerical details are structured somewhere else.
+This main program provides a command-line interface to run a series of grating efficiency calculations in parallel with MPI. The results are written to an output file and (optionally) a second progress file. This file is only responsible for input processing, distributing the sweep points and output; everything that is identical to the sequential version (options, sweep point, grating, output format) lives in mainSupport, and all numerical details are structured within Grating and both Solvers.
+
+Distribution: in every round each of the 'commandSize' processes calculates one sweep point (step i+rank); process 0 gathers all results of the round, appends them in step order and rewrites the output and progress file. All processes take part in every MPI_Gather, so none of them may leave the loop or throw out of it (computeSweepPoint never throws).
 */
 
 int main(int argc, char** argv) {
@@ -50,40 +48,24 @@ int main(int argc, char** argv) {
 		MPI_Finalize();
 		return -1;
 	}
+	
+	// is the chosen material available?
 	std::string dataError;
 	if(!checkMaterialData(io, dataError)) {
 		if(rank == 0) std::cerr << dataError << std::endl;
-		// MPI_Finalize(); ?
+		MPI_Finalize();
 		return -1;
 	}
-	Eigen::setNbThreads(io.threads);
+	applyThreadSettings(io);
 	
-	// Legal
-	if(rank == 0) {
-		if(io.showLegal) {
-			std::cout <<
-			"Copyright (C) 2026 Jesaja Weintritt (jesaja.weintritt@stud.eah-jena.de) \n"
-			"and 2012 Mark Boots (mark.boots@usask.ca).\n\n"
+	// copyright notice: the full legal text with --showLegal, otherwise the short one; once, from process 0
+	if(rank == 0)
+		printLegalNotice(std::cout, io.showLegal);
 
-			"This program was originally implemented as a part of the Parallel Efficiency of Gratings project (\"PEG\")\n"
-			"and got reworked in 2026. PEG is free software: you can redistribute it and/or modify it\n"
-			"under the terms of the GNU General Public License, version 3, as published by the Free Software Foundation.\n"
-			"See http://www.gnu.org/licenses/gpl.html for details.\n\n"
+	// How many steps do we have? number of points of the sweep 'min'..'max' in steps of 'increment'
+	int totalSteps = numSweepSteps(io);
 
-			"This reworked version contains substantial modifications by Jesaja Weintritt (2026) and has not been\n"
-			"independently verified against the original. It is distributed in the hope that it will be useful,\n"
-			"but WITHOUT ANY WARRANTY; use at your own risk and verify results independently.\n\n";
-		}
-		else {
-			std::cout <<
-			"PEG Copyright (C)\n"
-			"2026 Jesaja Weintritt (jesaja.weintritt@stud.eah-jena.de)\n"
-			"2012 Mark Boots (mark.boots@usask.ca)\n"
-			"This free software comes with ABSOLUTELY NO WARRANTY; you are welcome to redistribute it under certain conditions; run with --showLegal for details.\n";
-		}
-	}
-
-	// On Process 0: Open the output file:
+	// On Process 0: Open the output file, check the progress file, write the header
 	std::ofstream outputFile;
 	std::streampos outputFilePosition;
 	if(rank == 0) {
@@ -94,63 +76,35 @@ int main(int argc, char** argv) {
 			MPI_Abort(MPI_COMM_WORLD, -1);
 		}
 
-		// Check that we can open the progress file, if provided:
+		// Write the initial progress:
+		///\todo also visible to extern exc?
 		if(!io.progressFile.empty()) {
 			std::ofstream progressFile(io.progressFile.c_str(), std::ios::out | std::ios::trunc);
 			if(!progressFile.is_open()) {
 				std::cerr << "Could not open progress file " << io.progressFile << std::endl;
 				MPI_Abort(MPI_COMM_WORLD, -1);
 			}
+			writeOutputFileProgress(progressFile, 0, totalSteps, false, false);
 		}
 
-		// Write the file header:
+		// Write the file header: '# Input' block
 		writeOutputFileHeader(outputFile, io);
 
-		// Remember this position in the output file; it is where we will write the progress and output lines
+		// Remember this position in the output file; it is where we will (repeatedly) write the result lines
 		outputFilePosition = outputFile.tellp();
 	}
 	
-	// How many steps do we have
-	int totalSteps = numSweepSteps(io);
-	
-	// On Process 0: Write the initial progress:
-	if(rank == 0) {
-		if(!io.progressFile.empty()) {
-			std::ofstream progressFile(io.progressFile.c_str(), std::ios::out | std::ios::trunc);
-			writeOutputFileProgress(progressFile, 0, totalSteps, false, false);
-		}
-	}
 	
 	// create the grating object.
-	///\todo use array for coating & thickness -> multilayer
-	std::unique_ptr<Grating> grating;
-	switch(io.profile) {
-	case Grating::RectangularProfile:
-		grating = std::make_unique<RectangularGrating>(io.period, io.geometry[0], io.geometry[1], io.material, io.coating, io.coatingThickness);
-		break;
-	case Grating::BlazedProfile:
-		grating = std::make_unique<BlazedGrating>(io.period, io.geometry[0], io.geometry[1], io.material, io.coating, io.coatingThickness);
-		break;
-	case Grating::SinusoidalProfile:
-		grating = std::make_unique<SinusoidalGrating>(io.period, io.geometry[0], io.material, io.coating, io.coatingThickness);
-		break;
-	case Grating::TrapezoidalProfile:
-		grating = std::make_unique<TrapezoidalGrating>(io.period, io.geometry[0], io.geometry[1], io.geometry[2], io.geometry[3], io.material, io.coating, io.coatingThickness);
-		break;
-	case Grating::CustomProfile:
-		///\todo , io.coating, io.coatingThickness
-		grating = std::make_unique<CustomProfileGrating>(io.period, io.geometry, io.material);
-		break;
-	default:
-		if(rank == 0){
-			// this should never be the case through the MPI_Abort, just wrote it to be safe
-			std::cerr << "Unknown Grating-Profil." << std::endl;
-			MPI_Abort(MPI_COMM_WORLD, -1);
-			return -1;
-		}
+	std::unique_ptr<Grating> grating = makeGrating(io);
+	if(!grating) {
+		// this should never happen; input validation assures one of the valid grating types (and all processes get here together).
+		if(rank == 0) std::cerr << "Unknown Grating-Profil." << std::endl;
+		MPI_Abort(MPI_COMM_WORLD, -1);
+		return -1;
 	}
 
-	// set math options: truncation index from input.
+	// math options: numerical settings shared by all points: truncation index 'N' and ODE tolerance
 	MathOptions mathOptions(io.N, io.integrationTolerance);
 
 	// On Process 0: output data will be stored here:
@@ -169,64 +123,20 @@ int main(int argc, char** argv) {
 	std::vector<double> mpiReceiveBuffer;
 	if(rank == 0)
 		mpiReceiveBuffer.resize(pairSize * commandSize);
-
 	std::vector<double> mpiSendBuffer(pairSize);
 
 
-	// start calculation loop
+	// calculation loop: one round = 'commandSize' sweep points, one per process
 	for(int i=0; i<totalSteps; i+=commandSize) {
-		Result resultTE(Result::InactiveCalculation);
-		Result resultTM(Result::InactiveCalculation);
-		if(i+rank < totalSteps){
 
-			double currentValue = io.min + io.increment*(i+rank);
+		// results start as 'InactiveCalculation' (= nothing to do / not requested); the last round may have fewer points than processes.
+		PointResults point;
+		if(i+rank < totalSteps)
+			point = computeSweepPoint(*grating, io, mathOptions, i+rank, io.printDebugOutput && rank == 0);
 
-			// determine wavelength (um): depends on mode and eV/um setting.
-			double wavelength = (io.mode == CommandLineOptions::ConstantWavelength) ? io.wavelength : currentValue;
-			// interpret input wavelength as eV instead, and convert to actual wavelength.
-			if(io.eV)
-				// formular for wavelength = hc / eV. => hc = 1.23984172 eV * um.
-				wavelength = M_HC / wavelength;
-
-			// determine incidence angle: depends on mode and possibly wavelength.
-			double incidenceAngle;
-			switch(io.mode) {
-			case CommandLineOptions::ConstantIncidence:
-				incidenceAngle = io.incidenceAngle;
-				break;
-			case CommandLineOptions::ConstantIncludedAngle: {
-				double ciaRad = io.includedAngle * M_PI / 180;
-				// formula for constant included angle: satisfies alpha + beta = cia, and grating equation io.toOrder*wavelength/d = sin(beta) - sin(alpha).
-				incidenceAngle = (asin(-io.toOrder*wavelength/2/io.period/cos(ciaRad/2)) + ciaRad/2) * 180 / M_PI;
-				break;
-				}
-			case CommandLineOptions::ConstantWavelength:
-				incidenceAngle = currentValue; // static angle, no changes/formulars
-				break;
-			default:
-				// never happens: input validation assures valid mode.
-				incidenceAngle = 0;
-				break;
-			}
-
-			if(!std::isfinite(incidenceAngle) || std::fabs(incidenceAngle) >= 90) { // stay here? or to is valid
-				Result bad(Result::OtherFailure);
-				bad.wavelength = wavelength;			// keeps the x-column of the failed row meaningful
-				bad.incidenceDeg = incidenceAngle;
-				if(io.TE) resultTE = bad;
-				if(io.TM) resultTM = bad;
-			}
-			else {
-
-				if(io.TE)
-					resultTE = grating->getEffTE(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
-				if(io.TM)
-					resultTM = grating->getEffTM(incidenceAngle, wavelength, io.rmsRoughnessNm, mathOptions, (io.printDebugOutput && rank == 0), io.threads, io.measureTiming);
-			}
-		}
 		// Pack both results into this rank's send buffer.
-		resultTE.toDoubleArray(mpiSendBuffer.data());
-		resultTM.toDoubleArray(mpiSendBuffer.data() + resultSize);
+		point.te.toDoubleArray(mpiSendBuffer.data());
+		point.tm.toDoubleArray(mpiSendBuffer.data() + resultSize);
 
 		int err = MPI_Gather(mpiSendBuffer.data(), static_cast<int>(pairSize), MPI_DOUBLE, mpiReceiveBuffer.data(), static_cast<int>(pairSize), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
@@ -250,6 +160,7 @@ int main(int argc, char** argv) {
 				bool wasActive = io.TE ? (resultTEj.status != Result::InactiveCalculation)
 				                       : (resultTMj.status != Result::InactiveCalculation);
 				if(wasActive) {
+					// failed points are kept too (written as an 'Error:...' row), so every section has one row per point.
 					if(io.TE) {
 						resultsTE.push_back(resultTEj);
 						if(resultTEj.status == Result::Success) anySuccesses = true; else anyFailures = true;
@@ -261,29 +172,17 @@ int main(int argc, char** argv) {
 				}
 			}
 
-			// Print progress and results to output file.
-			outputFile.seekp(outputFilePosition);
-			outputFile << "# Output" << std::endl;
-			if(io.TE){
-				outputFile << "# TE" << std::endl;
-				for(const auto& result : resultsTE)
-					writeOutputFileResult(outputFile, result, io);
-			}
-			if(io.TM){
-				outputFile << "# TM" << std::endl;
-				for(const auto& result : resultsTM)
-					writeOutputFileResult(outputFile, result, io);
-			}
+			// Print results to output file
+			writeOutputFileResults(outputFile, outputFilePosition, resultsTE, resultsTM, io);
 
 			// Update progress in progressFile, if provided.
-			///\todo change progressoutput for extern live tracking
 			if(!io.progressFile.empty()) {
 				std::ofstream progressFile(io.progressFile.c_str(), std::ios::out | std::ios::trunc);
 				writeOutputFileProgress(progressFile, std::min(i+commandSize, totalSteps), totalSteps, anySuccesses, anyFailures);
 			}
 		}
 	} // end of calculation loop.
-
+	
 	// Timing: We know we're synchronized here because the last MPI_Gather has ensured that we have everyone's results.
 	double runTime = MPI_Wtime() - startTime;
 	if(rank == 0)
