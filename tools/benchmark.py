@@ -32,7 +32,7 @@ All files are plain-text .xyz tables: '#' header (title, context, description of
 
 --measureTiming is only printed to the terminal, so it is read from the program output: every solver call prints a "Timing Profile" block; the blocks of all calls (and ranks) are summed per section (alloc, refr, layers, integ, matrix, rayleigh, effs, solver). time = wall time of the whole process (same definition for pegSerial and pegMPI); "run" = "Run time" printed by pegMPI rank 0. "per point" = divided by S. speed-up = throughput / throughput of (pegSerial, T=1) at the same N,P.
 """
-import argparse, datetime, math, os, re, signal, socket, statistics, subprocess, time
+import argparse, datetime, math, os, re, shlex, signal, socket, statistics, subprocess, time
 
 # ============================== GLOBAL SETTINGS ===========================================================================================================
 N_RANGE = range(8, 33, 4) # truncation index / how many diffraction orders are taken into account
@@ -199,14 +199,22 @@ def run_job(a, geo, outdir, cfg, N, P, rep):
     d = os.path.join(outdir, "peg_results", "%s_N%d_P%d_T%d_R%d" % (prog, N, P, T, R))
     os.makedirs(d, exist_ok=True)
     out, prgf = os.path.join(d, "rep%d_output.txt" % rep), os.path.join(d, "rep%d_progress.txt" % rep)
+    geo_str = geo(P)
     cmd = ["--mode", "constantIncidence", "--incidenceAngle", "88", "--eV", "--min", "100", "--max", str(100 + S - 1),
            "--increment", "1", "--gratingType", "custom", "--gratingMaterial", "Au", "--gratingPeriod", "1",
-           "--gratingGeometry", geo(P), "--N", str(N), "--threads", str(T), "--TE", "--measureTiming",
+           "--gratingGeometry", geo_str, "--N", str(N), "--threads", str(T), "--TE", "--measureTiming",
            "--outputFile", out, "--progressFile", prgf]
     cmd = [a.serial] + cmd if prog == "serial" else a.mpi_launcher.format(ranks=R).split() + [a.mpi] + cmd
+
+    job = os.path.join(d, "rep%d_job.sh" % rep)           # Job-Datei: lässt sich auch von Hand neu starten
+    with open(job, "w") as f:
+        f.write("#!/usr/bin/env bash\nexport OMP_NUM_THREADS=%d\nexport PEG_MATERIAL_DB=%s\nGEO='%s'\n"
+                % (T, shlex.quote(a.material_db), geo_str))
+        f.write(" ".join('"$GEO"' if c == geo_str else shlex.quote(c) for c in cmd) + "\n")
+
     env = dict(os.environ, OMP_NUM_THREADS=str(T), PEG_MATERIAL_DB=a.material_db)
     t0 = time.perf_counter()
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env, start_new_session=True)
+    p = subprocess.Popen(["bash", job], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env, start_new_session=True)
     try:
         text, _ = p.communicate(timeout=a.max_job_seconds)
         rc = p.returncode
