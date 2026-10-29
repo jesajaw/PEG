@@ -31,130 +31,82 @@ PEG uses [Eigen](https://eigen.tuxfamily.org/) for linear algebra and [Boost.Ode
 PEG is built with the included `Makefile`. You need a `C++17` compiler with OpenMP (`sudo apt install build-essential`) and, for `pegMPI`, an MPI implementation (`sudo apt install openmpi-bin libopenmpi-dev`).
 
 ```bash
-make pegSerial	# single-computer version
-make pegMPI		# cluster version
-make all		# both
-make check		# quick smoke self-test
-make clean		# remove build files and binaries
+make pegSerial   # single-computer version
+make pegMPI      # cluster version
+make all         # both
+make check       # quick smoke self-test
+make clean       # remove build files and binaries
 ```
+
 | Option | Effect |
 |---|---|
-| `NATIVE=1` | Tune for the CPU you build on.|
-| `DEBUG=1` | Debug build, the default is an optimized release build (`-O3 -DNDEBUG`). |
-| `EIGEN_INC=<dir>`, `BOOST_INC=<dir>` | Header locations other than `third_party/` TODO!. |
+| `NATIVE=1` | Tune for the CPU you build on. |
+| `DEBUG=1` | Debug build (`-O0 -g`); the default is an optimized release build (`-O3 -DNDEBUG`). |
+| `EIGEN_INC=<dir>`, `BOOST_INC=<dir>` | Header locations other than `third_party/`. |
 
 Run `make clean` after changing options and rebuild it, since object files don't do that on their own.
 
 ## Running
 
-Single-computer version `pegSerial`:
-
 ```bash
-./pegSerial --mode constantIncidence --min 100 --max 200 --increment 5 --eV --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile results.txt --progressFile progress.txt --computeTE --threads <n>
-```
+# single computer
+./pegSerial --mode constantIncidence --min 100 --max 200 --increment 5 --eV --incidenceAngle 87 \
+            --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 \
+            --outputFile results.txt --progressFile progress.txt --TE --threads 2
 
-Cluster-version:
-
-```bash
-mpiexec -n <number of MPI processes> ./pegMPI --mode constantIncidence --min 100 --max 200 --increment 5 --eV  --incidenceAngle 87 --N 15 --gratingType blazed --gratingMaterial Pt --gratingPeriod 1.2 --gratingGeometry 1.2,30 --outputFile results.txt --progressFile progress.txt --computeTE --threads <n>
+# cluster: same options, started through MPI
+mpiexec -n <processes> ./pegMPI <same options>
 ```
 
 ### Command-line options
 
-#### Grating specification:
-```bash
+#### Grating
+```text
 --gratingType <rectangular|blazed|sinusoidal|trapezoidal|custom>
---gratingPeriod <grating period in um>
---gratingGeometry <command-delimited list of geometry parameters, in um and/or degrees>
+--gratingPeriod <um>
+--gratingMaterial <name>        refractive-index file: Au, Ni, C, SiO2, ... (about 30 eV - 30 keV)
+--N <n>                         truncation index: orders -N ... +N in the Fourier expansion
+--gratingGeometry <v1,v2,...>   comma-separated, depends on --gratingType (um / deg):
+    rectangular                 depth, valleyWidth
+    blazed                      blazeAngle, antiBlazeAngle
+    sinusoidal                  depth
+    trapezoidal                 depth, valleyWidth, blazeAngle, antiBlazeAngle
+    custom                      depth, x1,y1, x2,y2, ...
+								the points go from (0,0) to (1,0) inclusive and are scaled so that
+								(0,0)->(1,1) maps to (0,0)->(period,depth). An isosceles triangle
+								of 0.1um depth is `--gratingGeometry 0.1,0,0,0.5,1,1,0`.
 ```
-- **Rectangular profile**: depth (um),valley width (um)
-- **Blazed profile**: blaze angle (deg),anti-blaze angle (deg)
-- **Sinusoidal profile**: depth (um)
-- **Trapezoial profile**: depth (um),valley width (um),blaze angle (deg),anti-blaze angle (deg)
-- **Custom profile**: depth (um), followed by list of (x,y) points that describe the surface profile y = g(x).  [x followed by y for each]. The points must go from (0,0) to (1,0) inclusive, and will be scaled so that (0,0)->(1,1) maps to (0,0)->(period,depth). For example, an isosceles triangular profile with a depth of 0.1um would need three points; the geometry argument would be: {0.1,0,0,0.5,1,1,0}.
-```bash
---gratingMaterial <grating substrate material>
-```
-This should be a name corresponding to a refractive index database filename, ex: Au, Ni, C, SiO2, etc. The standard tables cover photon energies of about 0.0413-40nm /  30eV to 30keV.
-
-```bash
---N <truncation index>
-```
-Specifies the number of positive and negative orders to include in the Fourier expansion. Will also determine the number of orders that are calculated, although if you only want to calculate 3 orders, you will still need a much larger truncation index for accurate results.
 
 #### Operating mode
+```text
+--mode constantIncidence        --incidenceAngle <deg>                    # sweeps wavelength
+--mode constantIncludedAngle    --includedAngle <deg> --toOrder <n>       # sweeps wavelength
+--mode constantWavelength       --wavelength <um>                         # sweeps incidence angle (deg)
+--min <v> --max <v> --increment <v>
+```
 
-```bash
---mode <constantIncidence|constantIncludedAngle|constantWavelength>
---min <min>
---max <max>
---increment <increment>
-```
-Required, depending on the mode:
-In **constant incidence** mode, a calculation is performed for wavelengths from --min to --max in steps of --increment, at a fixed incidence angle given by --incidenceAngle.
-```bash
---incidenceAngle <incidence angle in degrees>
-```
-In **constant included angle** mode, the incidence angle is calculated at each wavelength to ensure a constant included angle of --includedAngle between the incident light and the order specified in --toOrder. This is the operating mode for many monochromators. (Inside orders are negative, outside orders are positive.)
-```bash
---includedAngle <deviation angle in degrees> --toOrder <diffraction order for the included angle>
-```
-In **constant wavelength** mode, a calculation is performed for incidence angles from --min to --max in steps of --increment, for a fixed wavelength given by --wavelength.
-```bash
---wavelength <wavelength in um>
-```
+`constantIncludedAngle` ("monochromator mode") sets the incidence angle at each wavelength so that the included angle between the incident beam and order `--toOrder` stays constant (inside orders negative, outside positive).
 
 #### Output
-```bash
---outputFile <file name>
-	The calculation output will be written to this file.
-
---computeTE | --computeTM | --combineTETM
-	If included, computes and outputs the TE-polarized efficiency (section "# TE" in the output file) || TM-polarized efficiency (section "# TM" in the output file).
-	... computes both TE and TM internally and outputs their simple average as well ( $$(TE_eff + TM_eff)/2$$ per order -- section "# (TE+TM)/2" in the output file). Only points where both the TE and TM calculation succeeded are included. At least one of --computeTE, --computeTM, or --combineTETM must be specified.
+```text
+--outputFile <file>
+--TE | --TM | --TETM = --TMTE   polarization(s) to compute (--TETM = both); at least one is required
 ```
 
 #### Optional
-
-```bash
---progressFile <file name>
-```
-If provided, the current status of the calculation will be written in this file; it can be monitored to determine the progress of long calculations.  This provides an interface for other processes to monitor the status of this calculation (for example, a web-based or GUI front-end, etc.).
-```bash
---eV
-```
-If this flag is included, all wavelength inputs (--min, --max, --increment, --wavelength) will instead be interpreted as photon energies in electron volts (eV).
-```bash
---coatingThickness <thickness in um>
-```
-If provided, creates a layer of --coatingMaterial on top of the basic grating profile, by translating the profile vertically by coatingThickness um. Used to model overcoated, oxidized, or dielectric gratings.
-```bash
---coatingMaterial <coating material>
-```
-Required if a non-zero --coatingThickness is provided. This should be a name corresponding to a refractive index database filename, ex: Au, Ni, C, MgF2, etc.
-```bash
---printDebugOutput
-```
-If this flag is included, each calculation will print intermediate results to standard output.
-```bash
---measureTiming
-```
-If this flag is included, the solver will report the time required for each category of operations to standard output.
-```bash
---integrationTolerance <tolerance>
+```text
+--progressFile <file>           status of a running calculation, for monitoring or front-ends
+--eV                            read --min/--max/--increment/--wavelength as photon energies in eV
+--coatingMaterial <name>        coating on top of the profile (requires --coatingThickness)
+--coatingThickness <um>         vertical shift of the profile (requires --coatingMaterial)
+--integrationTolerance <eps>    error tolerance per integration step (default 1e-5)
+--rmsRoughnessNm <nm>           surface roughness correction (not verified!)
+--threads <n>                   OpenMP threads (default 1)
+--printDebugOutput              print intermediate results to stdout
+--measureTiming                 print the time per operation category to stdout
+--showLegal                     print the full copyright and license notice
 ```
 
-Not verified! 
-```bash
---rmsRoughnessNm <surfaceroughness in nm>
-```
-
-
-If provided, specifies the error tolerance (eps) required at each step of the numerical integration process. Default if not provided is 1e-5.
-```bash
---showLegal
-```
-If included, prints the full copyright and license notice (including the disclaimer about modifications) instead of the short version.
 #### runtime options
 PEG parallelizes on two levels, which can be combined:
 
@@ -163,37 +115,42 @@ PEG parallelizes on two levels, which can be combined:
 | Fine (OpenMP) | `--threads <n>` | Uses several cores of one computer for a single calculation. Works in `pegSerial` and `pegMPI`. |
 | Coarse (MPI) | `mpiexec -n <p> ./pegMPI` | Runs `p` processes that each calculate different points of the scan; the processes can be spread over several cluster nodes. |
 
-```bash
-./pegSerial --threads 8 ...				# one computer, 8 cores
-./pegSerial --threads $(nproc) ...		# all hardware threads of this computer
-mpiexec -n 4 ./pegMPI --threads 2 ...	# 4 processes x 2 threads = 8 cores
+```text
+./pegSerial --threads 8 ...              # one computer, 8 cores
+./pegSerial --threads $(nproc) ...       # all hardware threads of this computer
+mpiexec -n 4 ./pegMPI --threads 2 ...    # 4 processes x 2 threads = 8 cores
 ```
 
 #### Example Output
+Output file (`--outputFile`), columns separated by tabs; a failed point is written as `<x>[tab]Error:<reason>`:
 ```text
 # Input
 mode=constantIncidence
-incidenceAngle=88
+incidenceAngle=87
 units=eV
 min=100
-max=300
+max=200
 increment=5
 gratingType=blazed
-gratingPeriod=1.6
-gratingGeometry=3.2,30.0
-gratingMaterial=Au
-N=5
-integrationTolerance=1e-5
+gratingPeriod=1.2
+gratingGeometry=1.2,30
+gratingMaterial=Pt
+coatingMaterial=[none]
+coatingThickness=0
+N=15
+integrationTolerance=1e-05
+# Output
+# TE
+100[tab]<e-5>[tab]<e-4>[tab]<e-3>[tab]<e-2>[tab]<e-1>[tab]<e0>[tab]<e1>[tab]<e2>[tab]<e3>[tab]<e4>[tab]<e5>
+105[tab]<e-5>[tab]<e-4>[tab]<e-3>[tab]<e-2>[tab]<e-1>[tab]<e0>[tab]<e1>[tab]<e2>[tab]<e3>[tab]<e4>[tab]<e5>
+...
+```
+Progress file (`--progressFile`):
+```text
 # Progress
 status=succeeded     (inProgress, someFailed, allFailed, succeeded)
 completedSteps=41
 totalSteps=41
-# Output
-# TE
-100[tab]<e-5>,<e-4>,<e-3>,<e-2>,<e-1>,<e0>,<e1>,<e2>,<e3>,<e4>,<e5>
-105[tab]<e-5>,<e-4>,<e-3>,<e-2>,<e-1>,<e0>,<e1>,<e2>,<e3>,<e4>,<e5>
-110[tab]<e-5>,<e-4>,<e-3>,<e-2>,<e-1>,<e0>,<e1>,<e2>,<e3>,<e4>,<e5>
-...
 ```
 
 The Output table lists reflected efficiencies at each (wavelength/eV/incidence angle) sequentially from the -N order to the +N order.  (Efficiencies are 0 if the orders are evanescent instead of propagating.)  Note that we use the sign convention where _inside diffraction orders_ are negative (n < 0), corresponding to the grating equation:

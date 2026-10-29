@@ -69,19 +69,15 @@ public:
 
 protected:
 	/// The whole efficiency calculation shared by TE and TM
-    /// flagg!
 	Result getEff(double incidenceDeg, double wl, double rmsRoughnessNm, bool printDebugOutput);
 
 	/// Weight used for the transmitted efficiency of substrate order \c i in the debug output (the quantity multiplying |A_i|^2 before dividing by Re(betaM_[N_])). For TE this is Re(beta1_[i]); for TM the eps_r of the substrate has to be divided out.
-    /// flagg!
 	virtual double transmittedOrderWeight(int i) const = 0;
 
 	/// Stores trial solution \c w (layout [u, second field], see wVectorForP()) of column \c j into the T-matrix blocks: columns j < 2N+1 go to T11_/T21_, the others to T12_/T22_. The second field (u' for TE, w = eps_r^-1 u' for TM) is divided by i*betaM_n.
-    /// flagg!
 	void storeTMatrixColumn(const std::vector<double>& w, int j);
 
 	/// Debug output of the initial (\c initial = true) or final values of trial solution \c w of column \c j. \c secondName is the name of the second field ("u'" or "w").
-    /// flagg
 	void printTrialSolution(bool initial, const char* secondName, const std::vector<double>& w, int j) const;
 
 	/// Number of threads to use for this calculation
