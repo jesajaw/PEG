@@ -17,8 +17,8 @@ Shared base class for the TE and TM solvers, due their partial similar calculati
 - conversion of the result into efficiencies
 */
 
-#ifndef SolverSupport_H
-#define SolverSupport_H
+#ifndef SolverBase_H
+#define SolverBase_H
 
 #include "PEG.h"
 

@@ -17,6 +17,10 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 #include <omp.h>
 #include <boost/numeric/odeint.hpp>
 
+namespace {
+	struct GratingExpansionError {};
+}
+
 TMSolver::TMSolver(const Grating& grating, const MathOptions& mo, int numThreads, bool measureTiming)
 	: SolverBase(grating, mo, numThreads, measureTiming)
 {
