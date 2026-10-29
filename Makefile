@@ -29,7 +29,7 @@ endif
 endif
 LDFLAGS  += -fopenmp
 
-COMMON     := PEG TESolver TMSolver mainSupport SolverSupport
+COMMON     := PEG TESolver TMSolver mainSupport SolverBase
 COMMON_OBJ := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(COMMON)))
 
 .DEFAULT_GOAL := pegSerial
