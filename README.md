@@ -71,10 +71,7 @@ mpiexec -n <processes> ./pegMPI <same options>
     blazed                      blazeAngle, antiBlazeAngle
     sinusoidal                  depth
     trapezoidal                 depth, valleyWidth, blazeAngle, antiBlazeAngle
-    custom                      depth, x1,y1, x2,y2, ...
-								the points go from (0,0) to (1,0) inclusive and are scaled so that
-								(0,0)->(1,1) maps to (0,0)->(period,depth). An isosceles triangle
-								of 0.1um depth is `--gratingGeometry 0.1,0,0,0.5,1,1,0`.
+    custom                      depth, x1,y1, x2,y2, ... the points go from (0,0) to (1,0) inclusive and are scaled so that (0,0)->(1,1) maps to (0,0)->(period,depth). An isosceles triangle of 0.1um depth is `--gratingGeometry 0.1,0,0,0.5,1,1,0`.
 ```
 
 #### Operating mode
