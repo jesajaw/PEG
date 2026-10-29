@@ -46,7 +46,7 @@ materials. Both are now correct:
 (TE has no analogous issue: TESolver::odeFunction() never inverts a Toeplitz matrix at all.)
 */
 
-class TMSolver {
+class TMSolver : public SolverBase {
 public:
 	/// Construct a solver context for the given \c grating and math options \c mo. \c numThreads specifies how many threads to use for fine parallelization
 	TMSolver(const Grating& grating, const MathOptions& mo = MathOptions(), int numThreads = 1, bool measureTiming = false);
@@ -65,21 +65,6 @@ public:
 	Result::Code computeTMatrixBelowLayer(int m, bool printDebugOutput = false);
 
 	/// Calculates the grating fourier expansion for k^2_m at a given \c y value and wavelength \c wl, and stores in \c k2. Identical to computeGratingExpansion, but expands 1/eps_r(y) instead. \c invEps must have space for 4*N_ + 2 coefficients, matching computeGratingExpansion()'s convention.
-	Result::Code computeInvEpsExpansion(double y, std::complex<double>* invEps) const;
-
-	/// Computes alpha_, beta1_, and betaM_ for all n. Identical in derivation and result to TESolver::computeAlphaAndBeta() -- see TMSolver_alg_ref.md \S2.2/\S7.4 (beta_n^2 = k^2 - alpha_n^2 is polarization-independent).
-	void computeAlphaAndBeta(double incidenceDeg);
-
-	/// Calculates how many vertical layers (numLayers_ and M_) are sufficient to keep exponentials from contamination. Fills y_ with the vertical coordinate at each layer. Identical to TESolver::computeLayers().
-	void computeLayers();
-
-	/// Computes the Fourier components of the grating expansion k^2_m into \c k2. Identical to TESolver's overload of the same name.
-	void computeGratingExpansion(const double* stepsX, const std::complex<double>* stepsK2, int numSteps, std::complex<double>* k2) const;
-
-	/// Same role as computeGratingExpansion(double, complex<double>*), but expands 1/eps_r(y) instead of
-	/// k^2(y) = k_0^2*eps_r(y) -- needed for Li's inverse-rule H(y) = Toeplitz(1/eps_r(y))^{-1} in odeFunction()'s
-	/// u' equation (see 2026-09-29 class-level note). \c invEps must have space for 4*N_ + 2 coefficients,
-	/// matching computeGratingExpansion()'s convention.
 	Result::Code computeInvEpsExpansion(double y, std::complex<double>* invEps) const;
 
 	/// Builds the full (2N_+1 x 2N_+1) Toeplitz matrix from a Fourier coefficient buffer of size 4*N_+2 (as produced by computeGratingExpansion()), for use in odeFunction()'s linear solve against Toeplitz(k^2(y)).
