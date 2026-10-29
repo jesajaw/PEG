@@ -20,7 +20,7 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 
 /// Contains the context (memory structures, etc.) and algorithm for solving the grating efficiency.
 
-class TESolver {
+class TESolver : public SolverBase{
 public:
 	/// Construct a solver context for the given \c grating and math options \c mo.  \c numThreads specifies how many threads to use for fine parallelization
 	TESolver(const Grating& grating, const MathOptions& mo = MathOptions(), int numThreads = 1, bool measureTiming = false);
