@@ -191,5 +191,5 @@ int main(int argc, char** argv) {
 
 	// Finalize MPI
 	MPI_Finalize();
-	return 0;
+	return (rank == 0 && anyFailures) ? 1 : 0;
 }
