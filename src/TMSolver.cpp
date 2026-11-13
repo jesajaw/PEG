@@ -107,40 +107,63 @@ void TMSolver::odeFunctionMatrix(double y, const std::vector<double>& state, std
 	}
 	buildToeplitz(k2Inv_.data(), N_, toeplitzInv_);
 
-	Eigen::PartialPivLU<Eigen::MatrixXcd> luInvEps(toeplitzInv_);
-	Eigen::PartialPivLU<Eigen::MatrixXcd> lu(toeplitz_);
 
-	// Unpack all fourNp2_ columns' [u,w] out of the flat, concatenated state (see combinedState_'s
-	// header comment for the layout -- identical to a single column's w_arr, repeated fourNp2_ times)
-	// into (twoNp1_ x fourNp2_) matrices, one column of each matrix per trial solution.
-	Eigen::MatrixXcd U(twoNp1_, fourNp2_), W(twoNp1_, fourNp2_), alphaU(twoNp1_, fourNp2_);
-	for(int j=0; j<fourNp2_; ++j) {
-		const double* col = state.data() + j*eightNp4_;
-		for(int i=0; i<twoNp1_; ++i) {
-			U(i,j) = std::complex<double>(col[2*i], col[2*i+1]);
-			W(i,j) = std::complex<double>(col[fourNp2_ + 2*i], col[fourNp2_ + 2*i + 1]);
-		}
-	}
-	for(int i=0; i<twoNp1_; ++i)
-		alphaU.row(i) = alpha_[i] * U.row(i);
 
-	double k0 = 2 * M_PI / wl_;
-	double k0sq = k0 * k0;
+	Eigen::PartialPivLU<Eigen::MatrixXcd> luInvEps, lu; // now default-constructed
 
-	// Same two equations as the old per-column odeFunction() (see class-level note for the physics),
-	// now with a MatrixXcd right-hand side: each solve() below reuses ONE LU factorization across
-	// every column at once, rather than refactorizing per column as the old code did.
-	Eigen::MatrixXcd dUdy = luInvEps.solve(W);
-	Eigen::MatrixXcd V = lu.solve(alphaU);
+	const double k0 = 2 * M_PI / wl_;
+	const double k0sq = k0 * k0;
 
-	for(int j=0; j<fourNp2_; ++j) {
-		double* col = f.data() + j*eightNp4_;
-		for(int i=0; i<twoNp1_; ++i) {
-			std::complex<double> dwDy_ij = k0sq * (alpha_[i] * V(i,j) - U(i,j));
-			col[2*i]              = dUdy(i,j).real();
-			col[2*i+1]            = dUdy(i,j).imag();
-			col[fourNp2_ + 2*i]   = dwDy_ij.real();
-			col[fourNp2_ + 2*i+1] = dwDy_ij.imag();
+	// Fine-grained OpenMP parallelism INSIDE one evaluation of the combined ODE:
+	// (1) the two independent LU factorizations run as two sections,
+	// (2) the fourNp2_ trial columns are split into one contiguous block per thread; each block unpacks, solves (against the shared, read-only LU factors) and repacks its own columns.
+	// The factorizations are still done once per y and the stepper still sees ONE combined state.
+	// Nothing in the region throws (expansion errors are raised above), as required for OpenMP.
+	const int nBlocks = std::max(1, std::min(numThreads_, fourNp2_));
+
+#pragma omp parallel num_threads(nBlocks) if(nBlocks > 1)
+	{
+#pragma omp sections
+		{
+#pragma omp section
+			luInvEps.compute(toeplitzInv_);
+#pragma omp section
+			lu.compute(toeplitz_);
+		}	// implicit barrier: both factorizations are complete before any thread starts solving
+
+#pragma omp for schedule(static)
+		for(int b=0; b<nBlocks; ++b) {
+			const int c0 = (fourNp2_ * b) / nBlocks;
+			const int c1 = (fourNp2_ * (b+1)) / nBlocks;
+			const int nc = c1 - c0;
+
+			// Unpack this block's columns' [u,w] out of the flat, concatenated state
+			Eigen::MatrixXcd U(twoNp1_, nc), W(twoNp1_, nc), alphaU(twoNp1_, nc);
+			for(int jj=0; jj<nc; ++jj) {
+				const double* col = state.data() + (c0+jj)*eightNp4_;
+				for(int i=0; i<twoNp1_; ++i) {
+					U(i,jj) = std::complex<double>(col[2*i], col[2*i+1]);
+					W(i,jj) = std::complex<double>(col[fourNp2_ + 2*i], col[fourNp2_ + 2*i + 1]);
+				}
+			}
+			for(int i=0; i<twoNp1_; ++i)
+				alphaU.row(i) = alpha_[i] * U.row(i);
+
+			// Same two equations as before, reusing the ONE LU factorization from above
+			Eigen::MatrixXcd dUdy = luInvEps.solve(W);
+			Eigen::MatrixXcd V = lu.solve(alphaU);
+
+			// Pack this block's results back into the flat derivative vector
+			for(int jj=0; jj<nc; ++jj) {
+				double* col = f.data() + (c0+jj)*eightNp4_;
+				for(int i=0; i<twoNp1_; ++i) {
+					std::complex<double> dwDy_ij = k0sq * (alpha_[i] * V(i,jj) - U(i,jj));
+					col[2*i]              = dUdy(i,jj).real();
+					col[2*i+1]            = dUdy(i,jj).imag();
+					col[fourNp2_ + 2*i]   = dwDy_ij.real();
+					col[fourNp2_ + 2*i+1] = dwDy_ij.imag();
+				}
+			}
 		}
 	}
 }
