@@ -176,6 +176,9 @@ std::ostream& operator<<(std::ostream& os, const Result& result) {
 	case Result::InactiveCalculation:
 		os << "Notice: Inactive Calculation" << std::endl;
 		break;
+	case Result::NonPhysicalResultFailure:
+		os << "Error: Non-physical result (efficiencies not finite, or reflected sum R > 1)" << std::endl;
+		break;
 	}
 	
 	return os;

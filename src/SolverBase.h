@@ -29,6 +29,7 @@ Shared base class for the TE and TM solvers, due their partial similar calculati
 
 #define PEG_RCOND_FAIL_THRESHOLD 1e-12  // below this, inverse is untrustworthy -> AlgebraFailure
 #define PEG_RCOND_WARN_THRESHOLD 1e-8  // below this, just a debug-output warning
+#define PEG_ENERGY_TOLERANCE 1e-2      // reflected efficiencies sum to at most =1; + this before the result is rejected
 
 
 /// Common steps of the solvers

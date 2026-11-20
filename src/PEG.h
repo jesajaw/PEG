@@ -35,7 +35,7 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 /// This type is returned by a single grating efficiency calculation. It contains a status code/error code to indicate the result of the calculation, a vector of inside order efficiencies, and a vector of outside order efficiencies. The first element in the output vectors is the 0 order, and is duplicated over both.
 class Result {
 public:
-	enum Code { Success, InvalidGratingFailure, ConvergenceFailure, InsufficientCoefficientsFailure, AlgebraFailure, MissingRefractiveDataFailure, OtherFailure, InactiveCalculation };
+	enum Code { Success, InvalidGratingFailure, ConvergenceFailure, InsufficientCoefficientsFailure, AlgebraFailure, MissingRefractiveDataFailure, OtherFailure, InactiveCalculation, NonPhysicalResultFailure };
 	
 	/// Constructs an empty result with the given \c statusCode
 	Result(Code statusCode = OtherFailure) { status = statusCode; }
@@ -44,7 +44,7 @@ public:
 		status = Success;
 	}
 	
-	/// Result of the calculation: Success, InvalidGratingFailure, ConvergenceFailure, InsufficientCoefficientsFailure, AlgebraError, or OtherFailure
+	/// Result of the calculation: Success, InvalidGratingFailure, ConvergenceFailure, InsufficientCoefficientsFailure, AlgebraError, NonPhysicalResultFailure, or OtherFailure
 	Code status;
 	/// Wavelength for this calculation
 	double wavelength = 0.0;
