@@ -241,7 +241,7 @@ Result SolverBase::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 		}
 	}
 
-	// 8. Now we have BM_. Compute efficiency and put into result structure.
+	// 5. Now we have BM_. Compute efficiency and put into result structure.
 	////////////////////////////////////////
 
 	Result result(N_);
@@ -253,6 +253,9 @@ Result SolverBase::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 		result.eff[i] = std::norm(BM_[i]) * betaM_[i].real() / betaM_[N_].real();
 		effSum += result.eff[i];
 	}
+
+	if(!std::isfinite(effSum) || effSum > 1.0 + PEG_ENERGY_TOLERANCE)
+    	return Result::NonPhysicalResultFailure;
 
 	timing_[6] = time_;
 	time_ = omp_get_wtime();
@@ -332,9 +335,7 @@ Result::Code SolverBase::computeGratingExpansion(double y, std::complex<double>*
 }
 
 double SolverBase::conditionNumber(const Eigen::MatrixXcd& A) {
-	// cond(A) = max(singular values) / min(singular values), 2-norm. Previously incomplete/broken
-	// in the GSL version (there was no straightforward way to get a complex matrix norm); Eigen's
-	// JacobiSVD gives this directly.
+	// cond(A) = max(singular values) / min(singular values), 2-norm. Previously incomplete/broken in the GSL version (there was no straightforward way to get a complex matrix norm); Eigen's JacobiSVD gives this directly.
 	Eigen::JacobiSVD<Eigen::MatrixXcd> svd(A);
 	const auto& sv = svd.singularValues();	// already sorted descending.
 	double maxSv = sv(0);
@@ -377,11 +378,13 @@ void SolverBase::computeLayers()
 {
 	double a = g_.totalHeight();
 
-	double magicNumber = 3;	// should be ln(1e15). However, emperically this is not enough to maintain stability (ex: REIXS LEG).  7 = ln(1e3) seems stable for all tests so far.
+	double magicNumber = 3;// should be ln(1e15). However, emperically this is not enough to maintain stability (ex: REIXS LEG).  7 = ln(1e3) seems stable for all tests so far.
+	// Empirical: each layer is thin enough that the largest evanescent exponential grows by about exp(magicNumber) (~20) across it.
 
-	numLayers_ = std::max( std::abs(betaM_[0])*a/magicNumber, std::abs(betaM_[2*N_])*a/magicNumber );
-	if(numLayers_ < 1)
-		numLayers_ = 1;
+	// Round UP: assigning the double directly to the int numLayers_ truncated.
+	double layers = std::max(std::abs(betaM_[0]), std::abs(betaM_[2*N_])) * a / magicNumber;
+	numLayers_ = std::max(1, static_cast<int>(std::ceil(layers)));
+
 
 	M_ = numLayers_+2;
 

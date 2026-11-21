@@ -28,7 +28,8 @@ Distribution: in every round each of the 'commandSize' processes calculates one 
 int main(int argc, char** argv) {
 	
 	// Initialize MPI
-	MPI_Init(&argc, &argv);
+	int providedThreadLevel = 0;
+	MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &providedThreadLevel);
 	
 	// Wait for all processes to be up and running, and then start timing
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -191,5 +192,5 @@ int main(int argc, char** argv) {
 
 	// Finalize MPI
 	MPI_Finalize();
-	return 0;
+	return (rank == 0 && anyFailures) ? 1 : 0;
 }

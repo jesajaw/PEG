@@ -182,9 +182,9 @@ double TESolver::transmittedOrderWeight(int i) const
 
 Result::Code TESolver::computeTMatrixBelowLayer(int m, bool printDebugOutput)
 {
-	bool integrationFailureOccurred = false;
+	Result::Code failure = Result::Success;
 
-#pragma omp parallel for num_threads(numThreads_) schedule(dynamic) reduction(||:integrationFailureOccurred)
+#pragma omp parallel for num_threads(numThreads_) schedule(dynamic)
 	for(int j=0; j<fourNp2_; ++j) {
 
 		std::vector<double>& w = wVectorForP(j);
@@ -199,14 +199,13 @@ Result::Code TESolver::computeTMatrixBelowLayer(int m, bool printDebugOutput)
 		if(printDebugOutput && omp_get_thread_num() == 0)
 			printTrialSolution(false, "u'", w, j);
 
-		if(status != Result::Success)
-			integrationFailureOccurred = true;
+		if(status != Result::Success) {
+			#pragma omp critical
+			failure = status;
+		}
 		else
 			storeTMatrixColumn(w, j);
 	}
 
-	if(integrationFailureOccurred)
-		return Result::ConvergenceFailure;
-	else
-		return Result::Success;
+	return failure;
 }

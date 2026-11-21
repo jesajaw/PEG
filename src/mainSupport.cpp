@@ -593,6 +593,9 @@ void writeOutputFileResult(std::ostream& of, const Result& result, const Command
 	case Result::MissingRefractiveDataFailure:
 		of << "Error:MissingRefractiveIndexData" << std::endl;
 		break;
+		case Result::NonPhysicalResultFailure:
+		of << "Error:NonPhysicalResultFailure" << std::endl;
+		break;
 	case Result::Success:
 		for(int i=0, cc=result.eff.size(); i<cc; ++i) {
 			if(i!=0)

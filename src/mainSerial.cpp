@@ -117,5 +117,5 @@ int main(int argc, char** argv) {
 
 	} // end of calculation loop.
 	outputFile.close();
-	return 0;
+	return anyFailures ? 1 : 0;
 }
