@@ -115,12 +115,6 @@ void applyThreadSettings(const CommandLineOptions& io);
 /// Returns false if there is no usable geometry for this point (non-finite angle, or |angle| >= 90 deg). This happens in ConstantIncludedAngle mode when the order \c toOrder does not exist at this wavelength. The outputs are set in either case.
 bool sweepPoint(const CommandLineOptions& io, int step, double& wavelength, double& incidenceDeg);
 
-/// The requested polarization results of one sweep point; the one not requested stays at Result::InactiveCalculation.
-struct PointResults {
-	Result te = Result(Result::InactiveCalculation);
-	Result tm = Result(Result::InactiveCalculation);
-};
-
 /// Calculates sweep point \c step for the polarizations requested in io.TE / io.TM. Never throws: a point without usable geometry or with an exception in the solver becomes Result::OtherFailure (with wavelength and incidence set, so the 'Error:' row has its x-value).
 /// \c printDebugOutput is a parameter (and not read from \c io), because the MPI version only wants it on rank 0.
 PointResults computeSweepPoint(const Grating& grating, const CommandLineOptions& io, const MathOptions& mathOptions, int step, bool printDebugOutput);

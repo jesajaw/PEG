@@ -23,6 +23,7 @@ Shared base class for the TE and TM solvers, due their partial similar calculati
 #include "PEG.h"
 
 #include <complex>
+#include <memory>
 #include <vector>
 
 #include <Eigen/Dense>
@@ -68,10 +69,13 @@ public:
 	/// Returns the condition number of a complex square matrix \c A (ratio of largest to smallest singular value), computed via Eigen's JacobiSVD.
 	static double conditionNumber(const Eigen::MatrixXcd& A);
 
-protected:
-	/// The whole efficiency calculation shared by TE and TM
+	/// Creates the solver for the given \c polarization (a TESolver or a TMSolver). Callers only need this class: create(), then getEff().
+	static std::unique_ptr<SolverBase> create(Polarization polarization, const Grating& grating, const MathOptions& mo = MathOptions(), int numThreads = 1, bool measureTiming = false);
+
+	/// The whole efficiency calculation shared by TE and TM: the efficiencies of all orders at incidence angle \c incidenceDeg and wavelength \c wl. One solver object is meant for one calculation (it overwrites its working storage).
 	Result getEff(double incidenceDeg, double wl, double rmsRoughnessNm, bool printDebugOutput);
 
+protected:
 	/// Weight used for the transmitted efficiency of substrate order \c i in the debug output (the quantity multiplying |A_i|^2 before dividing by Re(betaM_[N_])). For TE this is Re(beta1_[i]); for TM the eps_r of the substrate has to be divided out.
 	virtual double transmittedOrderWeight(int i) const = 0;
 

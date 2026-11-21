@@ -66,6 +66,15 @@ public:
 
 std::ostream& operator<<(std::ostream& os, const Result& result);
 
+/// The polarization of the incident light: TE or TM.
+enum class Polarization { TE, TM };
+
+/// The results of one calculation for the requested polarizations; one that was not requested stays at Result::InactiveCalculation.
+struct PointResults {
+	Result te = Result(Result::InactiveCalculation);
+	Result tm = Result(Result::InactiveCalculation);
+};
+
 /// Represents the numerical options to be used for a single grating calculation.
 class MathOptions {
 public:
@@ -127,11 +136,10 @@ public:
 	static double roughnessFactor(double sigma, double wl, const std::string& material, double incidence);
 	static double roughnessFactor(double sigma, double wl, const std::complex<double>& refractiveIndex, double incidence);
 
-	/// Calculates the TE-polarized grating efficiency at a given incidence angle \c incidenceDeg (degrees) and wavelength \c wl (um). \c numThreads is the number of threads to use for fine parallelization; ideally it should be <= the number of processor cores on your computer / on a single cluster node.
-	Result getEffTE(double incidenceDeg, double wl, double rmsRoughnessNm = 0, const MathOptions& mo = MathOptions(), bool printDebugOutput = false, int numThreads = 1, bool measureTiming = false) const;
 
-	/// Calculates the TM-polarized grating efficiency at a given incidence angle \c incidenceDeg (degrees) and wavelength \c wl (um). \c numThreads is the number of threads to use for fine parallelization; ideally it should be <= the number of processor cores on your computer / on a single cluster node.
-	Result getEffTM(double incidenceDeg, double wl, double rmsRoughnessNm = 0, const MathOptions& mo = MathOptions(), bool printDebugOutput = false, int numThreads = 1, bool measureTiming = false) const;
+	/// Calculates the grating efficiency at incidence angle \c incidenceDeg and wavelength \c wl for every polarization that is requested with \c TE / \c TM (the command-line options io.TE / io.TM); the other one stays at Result::InactiveCalculation. Never throws: an exception in a solver becomes Result::OtherFailure for that polarization. \c numThreads is the number of threads to use for fine parallelization; ideally it should be <= the number of processor cores on your computer / on a single cluster node.
+	PointResults getEff(bool TE, bool TM, double incidenceDeg, double wl, double rmsRoughnessNm = 0, const MathOptions& mo = MathOptions(), bool printDebugOutput = false, int numThreads = 1, bool measureTiming = false) const;
+	
 
 	// Detailed geometry
 	/////////////////////////

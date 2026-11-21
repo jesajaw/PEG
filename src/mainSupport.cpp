@@ -437,26 +437,8 @@ PointResults computeSweepPoint(const Grating& grating, const CommandLineOptions&
 		return r;
 	}
 
-	// One complete solve per polarization: the efficiencies of all orders -N..+N. An exception must not end the sweep
-	if(io.TE) {
-		try {
-			r.te = grating.getEffTE(incidenceDeg, wavelength, io.rmsRoughnessNm, mathOptions, printDebugOutput, io.threads, io.measureTiming);
-		}
-		catch(const std::exception& e) {
-			std::cerr << "Step " << step << " (TE) failed with an exception: " << e.what() << std::endl;
-			r.te = bad;
-		}
-	}
-	if(io.TM) {
-		try {
-			r.tm = grating.getEffTM(incidenceDeg, wavelength, io.rmsRoughnessNm, mathOptions, printDebugOutput, io.threads, io.measureTiming);
-		}
-		catch(const std::exception& e) {
-			std::cerr << "Step " << step << " (TM) failed with an exception: " << e.what() << std::endl;
-			r.tm = bad;
-		}
-	}
-	return r;
+	// One call for the requested polarizations (io.TE / io.TM). It never throws: an exception in a solver ends up as OtherFailure of that polarization, so the sweep goes on.
+	return grating.getEff(io.TE, io.TM, incidenceDeg, wavelength, io.rmsRoughnessNm, mathOptions, printDebugOutput, io.threads, io.measureTiming);
 }
 
 void printLegalNotice(std::ostream& os, bool full) {
@@ -562,8 +544,7 @@ void writeOutputFileHeader(std::ostream& of, const CommandLineOptions& io) {
 
 /// This helper function appends a single efficiency result to the output file stream
 void writeOutputFileResult(std::ostream& of, const Result& result, const CommandLineOptions& io) {
-	/// x-column depends on mode: incidence angle in ConstantWavelength mode,
-	/// otherwise wavelength (converted to eV if io.eV is set).
+	/// x-column depends on mode: incidence angle in ConstantWavelength mode, otherwise wavelength (converted to eV if io.eV is set).
 	if(io.mode == CommandLineOptions::ConstantWavelength) {
 		of << result.incidenceDeg << "\t";
 	}

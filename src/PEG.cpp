@@ -8,16 +8,17 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 */
 
 #include "PEG.h"
-#include "TESolver.h"
-#include "TMSolver.h"
+#include "SolverBase.h"
 
 #include <fstream>
 #include <iostream>
 #include <algorithm>
 #include <cstring>
 #include <cstdlib>
+#include <exception>
+#include <memory>
 
-// This packs the current result into a plain double \c array, for easy communication using standard MPI types.  The array must have pre-allocated room for 2N+1 + 4 elements.
+/// This packs the current result into a plain double \c array, for easy communication using standard MPI types.  The array must have pre-allocated room for 2N+1 + 4 elements.
 void Result::toDoubleArray(double* array) const {
 	array[0] = double(status);
 	array[1] = wavelength;
@@ -43,20 +44,29 @@ void Result::fromDoubleArray(const double* array) {
 	std::memcpy(&(eff[0]), array+4, eff.size()*sizeof(double));	
 }
 
-Result Grating::getEffTE(double incidenceDeg, double wl, double rmsRoughnessNm, const MathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
-	TESolver s(*this, mo, numThreads, measureTiming);
-	Result r = s.getEffTE(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
-	r.wavelength = wl;
-	r.incidenceDeg = incidenceDeg;
-	return r;
+namespace {
+	/// One complete solve for one polarization. Never throws.
+	Result solveOne(const Grating& grating, Polarization polarization, const char* name, double incidenceDeg, double wl, double rmsRoughnessNm, const MathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) {
+		Result r(Result::OtherFailure);
+		try {
+			std::unique_ptr<SolverBase> solver = SolverBase::create(polarization, grating, mo, numThreads, measureTiming);
+			r = solver->getEff(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
+		}
+		catch(const std::exception& e) {
+			std::cerr << "Calculation (" << name << ") at wavelength " << wl << " um, incidence " << incidenceDeg << " deg failed with an exception: " << e.what() << std::endl;
+			r = Result(Result::OtherFailure);
+		}
+		r.wavelength = wl;
+		r.incidenceDeg = incidenceDeg;
+		return r;
+	}
 }
 
-Result Grating::getEffTM(double incidenceDeg, double wl, double rmsRoughnessNm, const MathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
-	TMSolver s(*this, mo, numThreads, measureTiming);
-	Result r = s.getEffTM(incidenceDeg, wl, rmsRoughnessNm, printDebugOutput);
-	r.wavelength = wl;
-	r.incidenceDeg = incidenceDeg;
-	return r;
+PointResults Grating::getEff(bool TE, bool TM, double incidenceDeg, double wl, double rmsRoughnessNm, const MathOptions& mo, bool printDebugOutput, int numThreads, bool measureTiming) const {
+	PointResults point;
+	if(TE) point.te = solveOne(*this, Polarization::TE, "TE", incidenceDeg, wl, rmsRoughnessNm, mo, printDebugOutput, numThreads, measureTiming);
+	if(TM) point.tm = solveOne(*this, Polarization::TM, "TM", incidenceDeg, wl, rmsRoughnessNm, mo, printDebugOutput, numThreads, measureTiming);
+	return point;
 }
 
 std::complex<double> Grating::refractiveIndex(double wl, const std::string& material) {

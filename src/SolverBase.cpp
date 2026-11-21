@@ -8,6 +8,8 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 */
 
 #include "SolverBase.h"
+#include "TESolver.h"
+#include "TMSolver.h"
 
 #include <cmath>
 #include <algorithm>
@@ -94,6 +96,12 @@ void SolverBase::printTrialSolution(bool initial, const char* secondName, const 
 		std::cout << w[fourNp2_ + 2*n] << "," << w[fourNp2_ + 2*n+1] << "    ";
 	std::cout << std::endl;
 	std::cout << std::endl;
+}
+
+std::unique_ptr<SolverBase> SolverBase::create(Polarization polarization, const Grating& grating, const MathOptions& mo, int numThreads, bool measureTiming) {
+	if(polarization == Polarization::TM)
+		return std::make_unique<TMSolver>(grating, mo, numThreads, measureTiming);
+	return std::make_unique<TESolver>(grating, mo, numThreads, measureTiming);
 }
 
 Result SolverBase::getEff(double incidenceDeg, double wl, double rmsRoughnessNm, bool printDebugOutput) {
