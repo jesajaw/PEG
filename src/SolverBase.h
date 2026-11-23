@@ -12,9 +12,12 @@ Shared base class for the TE and TM solvers, due their partial similar calculati
 - storage
 - setup of alpha/beta
 - and layer stack
-- Fourier expansion of the grating
+- Fourier expansion of the grating (and the Toeplitz matrix built from it)
+- the combined integration of all trial solutions through one layer, and the T-matrix columns
 - S-matrix recursion
 - conversion of the result into efficiencies
+
+What is polarization-specific stays in TESolver / TMSolver and is plugged in through the virtual functions in the protected section: the equations themselves (columnDerivatives), their per-y preparation (prepareAtY, factorizeAtY), and three small details (secondFieldName, secondFieldIsEpsScaled, transmittedOrderWeight).
 */
 
 #ifndef SolverBase_H
@@ -28,9 +31,9 @@ Shared base class for the TE and TM solvers, due their partial similar calculati
 
 #include <Eigen/Dense>
 
-#define PEG_RCOND_FAIL_THRESHOLD 1e-12  // below this, inverse is untrustworthy -> AlgebraFailure
-#define PEG_RCOND_WARN_THRESHOLD 1e-8  // below this, just a debug-output warning
-#define PEG_ENERGY_TOLERANCE 1e-2      // reflected efficiencies sum to at most =1; + this before the result is rejected
+#define PEG_RCOND_FAIL_THRESHOLD 1e-12	// below this, inverse is untrustworthy -> AlgebraFailure
+#define PEG_RCOND_WARN_THRESHOLD 1e-8	// below this, just a debug-output warning
+#define PEG_ENERGY_TOLERANCE 1e-2		// reflected efficiencies sum to at most =1; + this before the result is rejected
 
 
 /// Common steps of the solvers
@@ -43,9 +46,6 @@ public:
 	/// Kept non-copyable to avoid accidentally copying large per-thread buffers/matrices.
 	SolverBase(const SolverBase&) = delete;
 	SolverBase& operator=(const SolverBase&) = delete;
-
-	/// Computes the blocks of the T matrix (T11_, T12_, T21_, T22_) for the layer below \c y_[m]. Since \c m = 1 is the top of the substrate, \c m can range from [2, M-1]. This is the polarization-specific step: it integrates the trial solutions and then calls storeTMatrixColumn().
-	virtual Result::Code computeTMatrixBelowLayer(int m, bool printDebugOutput = false) = 0;
 
 	/// Computes alpha_, beta1_, and betaM_ for all n, based on v_1_ (material refractive index) and wl_. beta_n^2 = k^2 - alpha_n^2 is polarization-independent.
 	void computeAlphaAndBeta(double incidenceDeg);
@@ -76,8 +76,48 @@ public:
 	Result getEff(double incidenceDeg, double wl, double rmsRoughnessNm, bool printDebugOutput);
 
 protected:
+	/// Thrown while evaluating the ODE when the grating expansion cannot be computed at some y (invalid geometry, or y above the profile height). Caught in integrateAllTrialSolutionsAlongY() and mapped to Result::InvalidGratingFailure.
+	struct GratingExpansionError {};
+
+	// ---- What is polarization-specific (TESolver / TMSolver implement these) ----
+
 	/// Weight used for the transmitted efficiency of substrate order \c i in the debug output (the quantity multiplying |A_i|^2 before dividing by Re(betaM_[N_])). For TE this is Re(beta1_[i]); for TM the eps_r of the substrate has to be divided out.
 	virtual double transmittedOrderWeight(int i) const = 0;
+
+	/// Name of the second field of the trial solutions, for the debug output: "u'" (TE) or "w" (TM).
+	virtual const char* secondFieldName() const = 0;
+
+	/// true if the second field is w = eps_r^-1 u' (TM), whose start value at the substrate boundary (m == 1) is therefore divided by v_1_^2; false if it is u' itself (TE).
+	virtual bool secondFieldIsEpsScaled() const = 0;
+
+	/// Called once per y, before the ODE right-hand side is evaluated, after k2_ and toeplitz_ (the Toeplitz matrix of k^2(y)) have been filled. For extra per-y preparation that is not shared (TM: the Toeplitz matrix of 1/eps_r). May throw GratingExpansionError. Default: nothing.
+	virtual void prepareAtY(double y) { (void)y; }
+
+	/// Called once per y by every thread of the team that evaluates the right-hand side, before any column is processed. May contain an OpenMP \c sections block (TM factorizes two matrices here). Default: nothing.
+	virtual void factorizeAtY() {}
+
+	/// The polarization-specific equations. \c U and \c W hold a block of trial columns (2N+1 rows each): U = u, W = the second field. Computes d(u)/dy into \c dU and d(second field)/dy into \c dW (same size). Must only read members that prepareAtY() / factorizeAtY() filled.
+	virtual void columnDerivatives(const Eigen::MatrixXcd& U, const Eigen::MatrixXcd& W, Eigen::MatrixXcd& dU, Eigen::MatrixXcd& dW) const = 0;
+
+	// ---- What both polarizations share ----
+
+	/// Computes the blocks of the T matrix (T11_, T12_, T21_, T22_) for the layer below \c y_[m]. Since \c m = 1 is the top of the substrate, \c m can range from [2, M-1]. Fills the starting values of all 4N+2 trial solutions, integrates them as ONE combined ODE, and calls storeTMatrixColumn() for each.
+	Result::Code computeTMatrixBelowLayer(int m, bool printDebugOutput);
+
+	/// Initializes an 8N+4 array of double [\c u, second field] with the starting values of trial solution \c j for layer \c m: u = delta_{n,p}, second field = -i*beta_n*delta_{n,p} (+i*beta_n for the second round, j >= 2N+1), with beta1_ if m == 1 and betaM_ otherwise. At m == 1 an eps-scaled second field (TM) is divided by v_1_^2.
+	void setIntegrationStartingValues(std::vector<double>& w, int j, int m);
+
+	/// Integrates ALL 4N+2 trial solutions from y = \c yStart to y = \c yEnd as one combined ODE (Boost.Odeint, bulirsch_stoer). \c state holds the per-column [u, second field] blocks end-to-end (length fourNp2_*eightNp4_). Returns Success, InvalidGratingFailure (GratingExpansionError), or ConvergenceFailure (any other exception).
+	Result::Code integrateAllTrialSolutionsAlongY(std::vector<double>& state, double yStart, double yEnd);
+
+	/// Computes d(state)/dy for all trial solutions at once: the grating expansion and the Toeplitz matrices are built ONCE per y and shared by all columns, then the columns are processed in blocks (one per thread) with the polarization's columnDerivatives().
+	void odeFunctionMatrix(double y, const std::vector<double>& state, std::vector<double>& f);
+
+	/// Builds the full (2N+1 x 2N+1) Toeplitz matrix from the Fourier coefficients \c coeffs[p + N], p in [-N, N]. Entries with |n-m| > N are zero.
+	static void buildToeplitz(const std::complex<double>* coeffs, int N, Eigen::MatrixXcd& toeplitz);
+
+	/// The x crossings and k^2 values (vacuum, substrate, coating at wl_) of the grating at height \c y; returns the number of steps (< 1: invalid). \c stepsX and \c stepsK2 need room for PEG_MAX_PROFILE_CROSSINGS entries.
+	int computeStepsAtY(double y, double* stepsX, std::complex<double>* stepsK2) const;
 
 	/// Stores trial solution \c w (layout [u, second field], see wVectorForP()) of column \c j into the T-matrix blocks: columns j < 2N+1 go to T11_/T21_, the others to T12_/T22_. The second field (u' for TE, w = eps_r^-1 u' for TM) is divided by i*betaM_n.
 	void storeTMatrixColumn(const std::vector<double>& w, int j);
@@ -113,10 +153,11 @@ protected:
 
 	/// Returns the wVector for a trial solution \c p, where \c p is numbered from [0, 4*N_+1].
 	std::vector<double>& wVectorForP(int p) { return wVectors_[p]; }
-	/// Returns the electric field Fourier component \c u for order \c n (index \c i) and trial solution \c p (index \c j), out of wVectors_. i and j are numbered from 0.
-	std::complex<double>* u(int i, int j) {
-		return reinterpret_cast<std::complex<double>*>(wVectorForP(j).data() + 2*i);
-	}
+	/// Fourier coefficients k^2(y) of the grating (size 2N+1) and the Toeplitz matrix built from them, refilled at every y of the ODE.
+	std::vector<std::complex<double>> k2_;
+	Eigen::MatrixXcd toeplitz_;
+	/// Scratch space of the combined integration: the 4N+2 per-column [u, second field] blocks end-to-end.
+	std::vector<double> combinedState_;
 
 	/// Blocks of T matrix, used in computation of a single layer.
 	Eigen::MatrixXcd T11_, T12_, T21_, T22_;

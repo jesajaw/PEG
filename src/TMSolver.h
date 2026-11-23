@@ -13,120 +13,33 @@ This reworked version contains substantial modifications by Jesaja Weintritt (20
 
 #include "SolverBase.h"
 
-#include <complex>
-#include <vector>
-
-#include <Eigen/Dense>
-
-/*
-Contains the context (memory structures, etc.) and algorithm for solving the grating efficiency
-for TM polarization. Structurally mirrors TESolver; see TMSolver_alg_ref.md for the physics/math
-that differs, and TESolver_alg_ref.md for everything that is shared (Floquet expansion, transfer-/
-S-matrix formalism, layering, mode truncation, energy conservation).
-///
-Key structural difference from TESolver: the state carried through the ODE integration and the
-T-matrix construction is [u, w] rather than [u, u'], where w = eps_r^{-1} * u' is the quantity
-physically proportional to the tangential E-field (E_x) and hence the one that must be continuous
-across layer boundaries (see TMSolver_alg_ref.md \S3.1).
-///
-*** 2026-09-29 correctness fix: the two odeFunction() equations below each couple a discontinuous
-eps_r(x,y) to a field with a complementary discontinuity, and Li's factorization rules (Li, JOSA A
-13, 1996, "Use of Fourier series in the analysis of discontinuous periodic structures") require
-each equation to use whichever Toeplitz
-(eps_r, or its reciprocal) is inverted, NOT the same one for both. Only the w' equation was using the
-correct rule; the u' equation was previously using Toeplitz(k^2(y)) directly (equivalent to the
-*direct* rule for eps_r), which converges very poorly for absorbing/high-contrast (e.g. metallic)
-materials. Both are now correct:
- u'(y) = H(y) * w(y),      H(y)  = Toeplitz(1/eps_r(y))^{-1}   -- *inverse* rule.
-     eps_r * w is proportional to D_x = eps_r * E_x, the continuous electric displacement, so
-     its coefficients must come from inverting Toeplitz(1/eps_r), not from Toeplitz(eps_r).
- w'(y) = k_0^2 * ( D_alpha * v(y) - u(y) ), Toeplitz(k^2(y)) * v(y) = D_alpha * u(y)  -- *direct*
-     rule (unchanged): this term is proportional to the continuous tangential field E_y, and
-     here it is eps_r itself (not its reciprocal) whose Toeplitz matrix gets inverted.
-(TE has no analogous issue: TESolver::odeFunction() never inverts a Toeplitz matrix at all.)
-*/
-
 class TMSolver : public SolverBase {
 public:
 	/// Construct a solver context for the given \c grating and math options \c mo. \c numThreads specifies how many threads to use for fine parallelization
 	TMSolver(const Grating& grating, const MathOptions& mo = MathOptions(), int numThreads = 1, bool measureTiming = false);
 
-	/// Destroy a solver context. All storage is owned by std::vector / Eigen types with automatic memory management, so there is nothing left to free manually.
-	~TMSolver() = default;
-
-	/// Kept non-copyable to avoid accidentally copying large per-thread buffers/matrices
-	TMSolver(const TMSolver&) = delete;
-	TMSolver& operator=(const TMSolver&) = delete;
-
-	/// Calculates the efficiency at incidence angle \c incidenceDeg and wavelength \c wl. Side effects: sets the refractive index member variable v_1_; modifies the contents of u_, w_, alpha_, beta_, etc.
-	Result getEffTM(double incidenceDeg, double wl, double rmsRoughnessNm = 0, bool printDebugOutput = false);
-
-	/// Computes the blocks of the T matrix (T11_, T12_, T21_, T22_) for the layer below \c y_[m].
-	Result::Code computeTMatrixBelowLayer(int m, bool printDebugOutput = false);
-
-	/// Calculates the grating fourier expansion for k^2_m at a given \c y value and wavelength \c wl, and stores in \c k2. Identical to computeGratingExpansion, but expands 1/eps_r(y) instead. \c invEps must have space for 4*N_ + 2 coefficients, matching computeGratingExpansion()'s convention.
+	/// Calculates the grating fourier expansion of 1/eps_r(y) at a given \c y value (same step geometry as computeGratingExpansion(), but expanding 1/eps_r instead of k^2). \c invEps must have space for 2*N_ + 1 coefficients.
 	Result::Code computeInvEpsExpansion(double y, std::complex<double>* invEps) const;
 
-	/// Builds the full (2N_+1 x 2N_+1) Toeplitz matrix from a Fourier coefficient buffer of size 4*N_+2 (as produced by computeGratingExpansion()), for use in odeFunction()'s linear solve against Toeplitz(k^2(y)).
-	static void buildToeplitz(const std::complex<double>* coeffs, int N, Eigen::MatrixXcd& toeplitz);
-
-	/// Initializes an 8N+4 array of double [\c u, \c w] to contain the starting integration values. The first half of the array \c w_arr contains \c u, the second half contains \c w = eps_r^{-1}*u'. The u value is set to $\delta_{n,p}$; the w value is set to $(\mp i \beta_n^{(M)} \delta_{n,p})$ if layer \c m > 1 (vacuum-referenced, eps_r=1), or to $(\mp i \beta_n^{(1)} \delta_{n,p}) / v_1^2$ if \c m == 1 (substrate-referenced, eps_r = v_1^2) -- see TMSolver_alg_ref.md \S7.6.
-	void setIntegrationStartingValues(std::vector<double>& w_arr, int p, int m);
-
-	/// *** 2026-09-29 performance fix: integrates ALL fourNp2_ trial solutions for the layer between
-	/// y = \c yStart and y = \c yEnd as ONE combined ODE, rather than fourNp2_ independent ones (see
-	/// odeFunctionMatrix() for why). Replaces the old per-column integrateTrialSolutionAlongY() /
-	/// odeFunction() pair, which is why computeTMatrixBelowLayer() no longer needs a
-	/// \c \#pragma \c omp \c parallel \c for over columns: the batching already does the work sharing
-	/// that parallelization was compensating for, and does more of it than \c numThreads_ threads
-	/// plausibly could (see note below). \c state is the fourNp2_ per-column [u,w] blocks (see
-	/// wVectorForP() layout) concatenated end-to-end, length fourNp2_*eightNp4_.
-	Result::Code integrateAllTrialSolutionsAlongY(std::vector<double>& state, double yStart, double yEnd);
-
-	/// Computes d(state)/dy for ALL fourNp2_ trial solutions at once. The key saving over the old
-	/// per-column odeFunction(): building the two (2N_+1 x 2N_+1) Toeplitz matrices and LU-factorizing
-	/// them is O(N^3) and was previously repeated once per column (fourNp2_ = 4N_+2 times) at every y
-	/// the stepper visited; here it happens ONCE per y, and each factorization's solve() is then
-	/// reused across all fourNp2_ columns as one matrix right-hand side (each such solve is only
-	/// O(N^2) per extra column). For the N this solver normally runs at, the O(N^3) factorization
-	/// dominates the O(N^2) per-column solves, so batching cuts the total work roughly fourNp2_-fold
-	/// -- typically far more than \c numThreads_ way parallelism recovers, which is why this replaces
-	/// (rather than runs alongside) the old \c \#pragma \c omp \c parallel \c for over columns.
-	void odeFunctionMatrix(double y, const std::vector<double>& state, std::vector<double>& f);
-
-	/// Computes the \c BM_ outgoing reflected Rayleigh coefficients, based on a finished S matrix (S12_ block). Identical to TESolver::computeBMFromSMatrix() -- the phase-referenced S-matrix-column extraction (TMSolver_alg_ref.md \S0) does not depend on polarization.
-	/// void computeBMFromSMatrix();
-
 protected:
-
 	/// Weight of substrate order \c i in the debug transmission sum (see SolverBase::transmittedOrderWeight()).
 	double transmittedOrderWeight(int i) const override;
 
-	/// pre-allocated storage for the grating k^2 fourier coefficients (actual size 2N_+1, matching the
-	/// banded |n-m|<=N_ coupling in buildToeplitz() -- see accompanying note there). *** 2026-09-29:
-	/// no longer one-buffer-per-thread -- odeFunctionMatrix() is called by a single shared stepper
-	/// (integrateAllTrialSolutionsAlongY() runs one combined integration, not fourNp2_ parallel ones),
-	/// so only one buffer is ever in use at a time now.
-	std::vector<std::complex<double>> k2_;
-	/// pre-allocated (2N_+1 x 2N_+1) Toeplitz(k^2(y)) workspace, rebuilt at each odeFunctionMatrix()
-	/// call from k2_ via buildToeplitz(). Avoids re-allocating the matrix on every call.
-	Eigen::MatrixXcd toeplitz_;
+	const char* secondFieldName() const override { return "w"; }
+	bool secondFieldIsEpsScaled() const override { return true; }
 
-	/// pre-allocated storage for the grating 1/eps_r fourier coefficients (size 2N_+1, parallel to
-	/// k2_) -- see computeInvEpsExpansion() and the 2026-09-29 correctness-fix note above.
+	/// Fills k2Inv_ and toeplitzInv_ (the Toeplitz matrix of 1/eps_r(y)) for this y.
+	void prepareAtY(double y) override;
+
+	/// Factorizes the two Toeplitz matrices (LU), in parallel as two OpenMP sections. Called by every thread of the team in SolverBase::odeFunctionMatrix().
+	void factorizeAtY() override;
+
+	/// The TM equations for a block of trial columns, reusing the ONE LU factorization per y for all columns: dU = Toeplitz(1/eps_r)^{-1} W, dW = k_0^2 ( D_alpha * Toeplitz(k^2)^{-1} D_alpha U - U ) (see the class-level comment above).
+	void columnDerivatives(const Eigen::MatrixXcd& U, const Eigen::MatrixXcd& W, Eigen::MatrixXcd& dU, Eigen::MatrixXcd& dW) const override;
+
+	/// Fourier coefficients of 1/eps_r(y) (size 2N_+1), the Toeplitz matrix built from them, and the LU factorizations of both Toeplitz matrices (refilled at every y).
 	std::vector<std::complex<double>> k2Inv_;
-	/// pre-allocated (2N_+1 x 2N_+1) Toeplitz(1/eps_r(y)) workspace. Parallel to toeplitz_.
 	Eigen::MatrixXcd toeplitzInv_;
-
-	/// *** 2026-09-29 performance fix: scratch space for the batched integration -- the fourNp2_
-	/// per-column [u,w] blocks written by setIntegrationStartingValues() into wVectors_, concatenated
-	/// end-to-end (length fourNp2_*eightNp4_) so integrateAllTrialSolutionsAlongY() can integrate all
-	/// of them as one ODE. See odeFunctionMatrix().
-	std::vector<double> combinedState_;
-
-	/// Returns w_n = eps_r^{-1} u'_n for order \c n (index \c i) and trial solution \c p (index \c j). Named wComp() (not uprime()) since it is not the plain field derivative -- see class-level comment.
-	std::complex<double>* wComp(int i, int j) {
-		return reinterpret_cast<std::complex<double>*>(wVectorForP(j).data() + fourNp2_ + 2*i);
-	}
+	Eigen::PartialPivLU<Eigen::MatrixXcd> luInvEps_, lu_;
 };
 #endif

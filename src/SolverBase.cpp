@@ -30,7 +30,7 @@ SolverBase::SolverBase(const Grating& grating, const MathOptions& mo, int numThr
 	fourNp2_ = 4*N_ + 2;
 	eightNp4_ = 8*N_ + 4;
 
-	// All storage below is RAII (std::vector / Eigen); nothing needs manual freeing.
+	/// All storage below is RAII (std::vector / Eigen); nothing needs manual freeing.
 	wVectors_.assign(fourNp2_, std::vector<double>(eightNp4_));
 
 	T11_.resize(twoNp1_, twoNp1_);
@@ -48,26 +48,26 @@ SolverBase::SolverBase(const Grating& grating, const MathOptions& mo, int numThr
 	beta1_.resize(twoNp1_);
 	BM_.resize(twoNp1_);
 
-	// The derived solver allocates its own buffers and then finishes timing_[0] (time to allocate memory).
+	/// The derived solver allocates its own buffers and then finishes timing_[0] (time to allocate memory).
 	timing_[0] = omp_get_wtime() - time_;
 }
 
 void SolverBase::storeTMatrixColumn(const std::vector<double>& w, int j)
 {
-	// Fill T-matrix at this column. If j >= 2*N+1, we're dealing with the right-side blocks T12_, T22_.
+	/// Fill T-matrix at this column. If j >= 2*N+1, we're dealing with the right-side blocks T12_, T22_.
 	if(j >= twoNp1_) {
 		int jj = j - twoNp1_;
 
 		for(int i=0; i<twoNp1_; ++i) {
 			std::complex<double> u_ij(w[2*i], w[2*i+1]);
 			std::complex<double> second_ij(w[fourNp2_ + 2*i], w[fourNp2_ + 2*i + 1]);
-			std::complex<double> temp = second_ij / (betaM_[i] * std::complex<double>(0,1)); // = second_ij / (i*betaM_n)
+			std::complex<double> temp = second_ij / (betaM_[i] * std::complex<double>(0,1)); /// = second_ij / (i*betaM_n)
 
 			T12_(i, jj) = 0.5*(u_ij - temp);
 			T22_(i, jj) = 0.5*(u_ij + temp);
 		}
 	}
-	// Otherwise we're filling T11, T21. (left-side blocks).
+	/// Otherwise we're filling T11, T21. (left-side blocks).
 	else {
 		for(int i=0; i<twoNp1_; ++i) {
 			std::complex<double> u_ij(w[2*i], w[2*i+1]);
@@ -108,9 +108,7 @@ Result SolverBase::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 
 	time_ = omp_get_wtime();
 
-	// 1. Setup incidence variables and constants
-	/////////////////////////////////////////
-
+	/// 1. Setup incidence variables and constants
 	wl_ = wl;
 	v_1_ = g_.substrateRefractiveIndex(wl_);
 	if(v_1_.real() == 0.0 && v_1_.imag() == 0.0) {
@@ -125,17 +123,15 @@ Result SolverBase::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 
 	timing_[1] = time_;
 	time_ = omp_get_wtime();
-	timing_[1] = time_ - timing_[1];	// time to look up refractive index.
+	timing_[1] = time_ - timing_[1];	/// time to look up refractive index.
 
-	// 2. compute all alpha_n and beta1_n, betaM_n.
-	///////////////////////////////////
-
-	computeAlphaAndBeta(incidenceDeg);	// (This uses a parallel loop).
+	/// 2. compute all alpha_n and beta1_n, betaM_n.
+	computeAlphaAndBeta(incidenceDeg);	/// (This uses a parallel loop).
 	computeLayers();
 
 	timing_[2] = time_;
 	time_ = omp_get_wtime();
-	timing_[2] = time_ - timing_[2];	// time to calculate alpha, beta, and layers.
+	timing_[2] = time_ - timing_[2];	/// time to calculate alpha, beta, and layers.
 
 	if(printDebugOutput) {
 		std::cout << "\nWavelength wl (um): " << wl_ << std::endl;
@@ -158,22 +154,20 @@ Result SolverBase::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 		}
 	}
 
-	// 3. Recursive computation of S-matrix below each layer.
-	/////////////////////////////////////////////////////////////
-
-	// Handle first layer separately, as a special case.
+	/// 3. Recursive computation of S-matrix below each layer.
+	/// Handle first layer separately, as a special case.
 	Result::Code status = computeTMatrixBelowLayer(2, printDebugOutput);
 	if(status != Result::Success)
 		return status;
 
 	timing_[3] = time_;
 	time_ = omp_get_wtime();
-	timing_[3] = time_ - timing_[3];	// timing_[3]: numerical integration.
+	timing_[3] = time_ - timing_[3];	/// timing_[3]: numerical integration.
 
-	// For the first layer, we have Zinv_ = T11_.
-	// S12_ = T21_ Zinv_^{-1}
-	// S22_ = Zinv_^{-1}
-	///////////////
+	/// For the first layer, we have Zinv_ = T11_.
+	/// S12_ = T21_ Zinv_^{-1}
+	/// S22_ = Zinv_^{-1}
+
 	Zinv_ = T11_;
 	{
 		Eigen::PartialPivLU<Eigen::MatrixXcd> lu(Zinv_);
@@ -185,16 +179,16 @@ Result SolverBase::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 				std::cout << "Algebra failure: Zinv_ is singular to working precision below layer 2 (rcond = " << rcond << ")." << std::endl;
 			return Result::AlgebraFailure;
 		}
-		S22_ = lu.inverse();	// S22_ = Zinv_^{-1}, ie, Z.
+		S22_ = lu.inverse();	/// S22_ = Zinv_^{-1}, ie, Z.
 	}
 	S12_ = T21_ * S22_;
 
 	timing_[4] = time_;
 	time_ = omp_get_wtime();
-	timing_[4] = time_ - timing_[4];	// timing_[4]: matrix calcs.
+	timing_[4] = time_ - timing_[4];	/// timing_[4]: matrix calcs.
 
 
-	// First layer done. Handle subsequent layers
+	/// First layer done. Handle subsequent layers
 	for(int m=3; m<M_; ++m) {
 
 		time_ = omp_get_wtime();
@@ -206,14 +200,14 @@ Result SolverBase::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 
 		time_ = omp_get_wtime();
 
-		// Zinv_ = T11_ + T12_ S12_.
+		/// Zinv_ = T11_ + T12_ S12_.
 		Zinv_ = T11_ + T12_ * S12_;
 
-		// Invert Zinv_...
+		/// Invert Zinv_...
 		{
 			Eigen::PartialPivLU<Eigen::MatrixXcd> lu(Zinv_);
 			double rcond = lu.rcond();
-			if(!(rcond >= PEG_RCOND_FAIL_THRESHOLD)) {	// also catches NaN
+			if(!(rcond >= PEG_RCOND_FAIL_THRESHOLD)) {	/// also catches NaN
 				if(printDebugOutput)
 					std::cout << "Algebra failure: Zinv_ is singular to working precision below layer " << m << " (rcond = " << rcond << ")." << std::endl;
 				return Result::AlgebraFailure;
@@ -223,24 +217,23 @@ Result SolverBase::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 			Z_ = lu.inverse();
 		}
 
-		// S12 = (T21 + T22 S12) Z
+		/// S12 = (T21 + T22 S12) Z
 		workMatrix_ = T21_ + T22_ * S12_;
 		S12_ = workMatrix_ * Z_;
-		// S22 = S22 Z
+		/// S22 = S22 Z
 		S22_ = S22_ * Z_;
 
 		timing_[4] += omp_get_wtime() - time_;
 	}
 
-	// 4.  Calculate B_n^M from center column of S matrix * exp(...).
-	//////////////////////////////////////////////
+	/// 4.  Calculate B_n^M from center column of S matrix * exp(...).
 	time_ = omp_get_wtime();
 
 	computeBMFromSMatrix();
 
 	timing_[5] = time_;
 	time_ = omp_get_wtime();
-	timing_[5] = time_ - timing_[5];	// timing_[5]: compute BM_ from S-matrix.
+	timing_[5] = time_ - timing_[5];	/// timing_[5]: compute BM_ from S-matrix.
 
 	if(printDebugOutput) {
 		std::cout << "\nBM_:" << std::endl;
@@ -249,9 +242,7 @@ Result SolverBase::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 		}
 	}
 
-	// 5. Now we have BM_. Compute efficiency and put into result structure.
-	////////////////////////////////////////
-
+	/// 5. Now we have BM_. Compute efficiency and put into result structure.
 	Result result(N_);
 	result.wavelength = wl_;
 	result.incidenceDeg = incidenceDeg;
@@ -267,7 +258,7 @@ Result SolverBase::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 
 	timing_[6] = time_;
 	time_ = omp_get_wtime();
-	timing_[6] = time_ - timing_[6];	// timing_[6]: calculate efficiencies from BM_
+	timing_[6] = time_ - timing_[6];	/// timing_[6]: calculate efficiencies from BM_
 
 	if(measureTiming_) {
 		std::cout << "Timing Profile:" << std::endl;
@@ -285,7 +276,7 @@ Result SolverBase::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 	if(printDebugOutput) {
 		std::cout << "Sum of reflected efficiencies: " << effSum << std::endl;
 
-		// in debugging, let's also compute and sum the transmitted efficiencies:
+		/// in debugging, let's also compute and sum the transmitted efficiencies:
 		double a = g_.totalHeight();
 		std::vector<std::complex<double>> A1(twoNp1_);
 		std::vector<double> e_t(twoNp1_);
@@ -310,13 +301,11 @@ Result SolverBase::getEff(double incidenceDeg, double wl, double rmsRoughnessNm,
 
 std::complex<double> SolverBase::complex_sqrt_upperComplexPlane(std::complex<double> z) {
 
-	std::complex<double> w = std::sqrt(z); // returns w in the right half of the complex plane.
+	std::complex<double> w = std::sqrt(z); /// returns w in the right half of the complex plane.
 
 	if(w.imag() < 0) {
-		// flip to the upper half-plane: e^{i*pi} = -1, same square, opposite branch.
-		w = -w;
+		w = -w;  /// flip to the upper half-plane: e^{i*pi} = -1, same square, opposite branch.
 	}
-
 	return w;
 }
 
@@ -343,9 +332,9 @@ Result::Code SolverBase::computeGratingExpansion(double y, std::complex<double>*
 }
 
 double SolverBase::conditionNumber(const Eigen::MatrixXcd& A) {
-	// cond(A) = max(singular values) / min(singular values), 2-norm. Previously incomplete/broken in the GSL version (there was no straightforward way to get a complex matrix norm); Eigen's JacobiSVD gives this directly.
+	/// cond(A) = max(singular values) / min(singular values), 2-norm. Previously incomplete/broken in the GSL version (there was no straightforward way to get a complex matrix norm); Eigen's JacobiSVD gives this directly.
 	Eigen::JacobiSVD<Eigen::MatrixXcd> svd(A);
-	const auto& sv = svd.singularValues();	// already sorted descending.
+	const auto& sv = svd.singularValues();	/// already sorted descending.
 	double maxSv = sv(0);
 	double minSv = sv(sv.size()-1);
 	if(minSv == 0)
@@ -369,14 +358,14 @@ void SolverBase::computeAlphaAndBeta(double incidenceDeg)
 		double alpha = k_2 * sin(theta_2) + 2 * M_PI * n / d;
 		alpha_[i] = alpha;
 
-		// betaM_: rayleigh expansion above grating.
+		/// betaM_: rayleigh expansion above grating.
 		double k22minusAn2 = k_2*k_2 - alpha*alpha;
 		if(k22minusAn2 >= 0)
 			betaM_[i] = std::complex<double>(sqrt(k22minusAn2), 0);
 		else
 			betaM_[i] = std::complex<double>(0, sqrt(-k22minusAn2));
 
-		// beta1_: rayleigh expansion inside grating
+		/// beta1_: rayleigh expansion inside grating
 		std::complex<double> k12minusAn2 = k_1*k_1 - alpha*alpha;
 		beta1_[i] = complex_sqrt_upperComplexPlane(k12minusAn2);
 	}
@@ -386,17 +375,17 @@ void SolverBase::computeLayers()
 {
 	double a = g_.totalHeight();
 
-	double magicNumber = 3;// should be ln(1e15). However, emperically this is not enough to maintain stability (ex: REIXS LEG).  7 = ln(1e3) seems stable for all tests so far.
-	// Empirical: each layer is thin enough that the largest evanescent exponential grows by about exp(magicNumber) (~20) across it.
+	double magicNumber = 3;/// should be ln(1e15). However, emperically this is not enough to maintain stability (ex: REIXS LEG).  7 = ln(1e3) seems stable for all tests so far.
+	/// Empirical: each layer is thin enough that the largest evanescent exponential grows by about exp(magicNumber) (~20) across it.
 
-	// Round UP: assigning the double directly to the int numLayers_ truncated.
+	/// Round UP: assigning the double directly to the int numLayers_ truncated.
 	double layers = std::max(std::abs(betaM_[0]), std::abs(betaM_[2*N_])) * a / magicNumber;
 	numLayers_ = std::max(1, static_cast<int>(std::ceil(layers)));
 
 
 	M_ = numLayers_+2;
 
-	y_.resize(M_);	// y_[0] unused, so that y_m = y_[m], lowest m=1, highest m=M-1.
+	y_.resize(M_);	/// y_[0] unused, so that y_m = y_[m], lowest m=1, highest m=M-1.
 
 	for(int m=1; m<M_; ++m) {
 		y_[m] = double(m-1)/numLayers_*a;
@@ -413,13 +402,13 @@ void SolverBase::computeBMFromSMatrix()
 	}
 }
 
-// computes the fourier expansion of the multistep function given by values stepsK2 at x-axis locations stepsX, and stores in k2.
+/// computes the fourier expansion of the multistep function given by values stepsK2 at x-axis locations stepsX, and stores in k2.
 void SolverBase::computeGratingExpansion(const double *stepsX, const std::complex<double> *stepsK2, int numSteps, std::complex<double> *k2) const
 {
 	double d = g_.period();
 	double K = 2*M_PI/d;
 
-	/// \warning assumes numSteps is in [1, PEG_MAX_PROFILE_CROSSINGS]
+	//// \warning assumes numSteps is in [1, PEG_MAX_PROFILE_CROSSINGS]
 
 	if(numSteps == 1) {
 		for(int i=0; i<twoNp1_; ++i)
